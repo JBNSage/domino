@@ -9,5 +9,7 @@ function vibrate(pattern: number | number[]): void {
 
 export const haptics = {
   tap: () => vibrate(15),
+  lead: () => vibrate([20, 40, 20]),
   win: () => vibrate([30, 60, 30, 60, 80]),
+  champion: () => vibrate([40, 60, 40, 60, 40, 60, 120]),
 };

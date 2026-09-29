@@ -4,6 +4,8 @@ import {
   cleanName,
   cleanPlayers,
   initialState,
+  leadTaken,
+  matchPoint,
   parseAmount,
   parseState,
   reducer,
@@ -333,5 +335,58 @@ describe('sharedPlayer', () => {
     expect(sharedPlayer(['Ana', 'Luis'], ['Rosa', 'luís'])).toBe('Luis');
     expect(sharedPlayer(['Ana', 'Luis'], ['Rosa', 'Marta'])).toBeNull();
     expect(sharedPlayer(null, ['Rosa', 'Marta'])).toBeNull();
+  });
+});
+
+describe('leadTaken', () => {
+  const rows = (...hands: ['a' | 'b', number][]) =>
+    hands.map(([team, points], index) => ({ id: `r${index}`, team, points }));
+
+  it('is not taken by the first hand of a match', () => {
+    expect(leadTaken(rows(['a', 20]), 'a')).toBe(false);
+  });
+
+  it('is taken by overtaking the team in front', () => {
+    expect(leadTaken(rows(['a', 20], ['b', 30]), 'b')).toBe(true);
+  });
+
+  it('is not taken by drawing level', () => {
+    expect(leadTaken(rows(['a', 20], ['b', 20]), 'b')).toBe(false);
+  });
+
+  it('is taken by going ahead after a tie, when the other team led last', () => {
+    expect(leadTaken(rows(['a', 20], ['b', 20], ['b', 5]), 'b')).toBe(true);
+  });
+
+  it('is not taken by going back ahead after a tie the team caused', () => {
+    expect(leadTaken(rows(['a', 20], ['b', 20], ['a', 5]), 'a')).toBe(false);
+  });
+
+  it('is not taken by the leader pulling away', () => {
+    expect(leadTaken(rows(['a', 20], ['b', 10], ['a', 30]), 'a')).toBe(false);
+  });
+});
+
+describe('matchPoint', () => {
+  it('holds within 30 of the target', () => {
+    expect(matchPoint(play([add('a', 170, '1')]), 'a')).toBe(30);
+    expect(matchPoint(play([add('a', 169, '1')]), 'a')).toBeNull();
+  });
+
+  it('shrinks with a small target', () => {
+    const small = { ...initialState, target: 60 };
+    expect(matchPoint(play([add('a', 45, '1')], small), 'a')).toBe(15);
+    expect(matchPoint(play([add('a', 44, '1')], small), 'a')).toBeNull();
+  });
+
+  it('needs points first', () => {
+    const tiny = { ...initialState, target: 20 };
+    expect(matchPoint(tiny, 'a')).toBeNull();
+  });
+
+  it('ends with the match', () => {
+    const won = play([add('a', 190, '1'), add('b', 185, '2'), add('a', 10, '3')]);
+    expect(matchPoint(won, 'a')).toBeNull();
+    expect(matchPoint(won, 'b')).toBeNull();
   });
 });

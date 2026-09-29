@@ -30,6 +30,7 @@ import {
   Team,
   TeamId,
   initialState,
+  leadTaken,
   reducer,
   selectTotals,
   selectWinner,
@@ -107,6 +108,16 @@ export type MatchResult = {
 /** The change that can end a round, kept so the winner screen can take it back. */
 type LastChange = { kind: 'hand' } | { kind: 'target' | 'edit'; snapshot: State };
 
+/**
+ * Something worth showing as it happens: a hand, or the start of a match.
+ * Only forward actions set one; an undo, a correction or another tab never do.
+ */
+type Happening =
+  | { kind: 'hand'; team: TeamId; points: number; lead: boolean }
+  | { kind: 'start'; label: string | null };
+
+export type Moment = Happening & { seq: number };
+
 /** What `correct` did, so the screen can follow up. */
 export type Correction = 'restored' | 'deleted' | 'settings';
 
@@ -118,6 +129,8 @@ export class GameStore {
   readonly undo = signal<Undo | null>(null);
   /** Text for the screen reader's live region. */
   readonly announcement = signal('');
+  /** The latest moment, for the board to play. */
+  readonly moment = signal<Moment | null>(null);
 
   readonly totals = computed(() => selectTotals(this.state()));
   readonly winner = computed(() => selectWinner(this.state()));
@@ -223,8 +236,12 @@ export class GameStore {
 
     this.lastChange.set({ kind: 'hand' });
     this.boardChanged();
-    haptics.tap();
-    this.announce(copy.team.announce(state.teams[team].name, this.totals()[team]));
+    const lead = leadTaken(state.rows, team);
+    if (lead) haptics.lead();
+    else haptics.tap();
+    this.play({ kind: 'hand', team, points, lead });
+    const announcement = copy.team.announce(state.teams[team].name, this.totals()[team]);
+    this.announce(lead ? `${announcement}. ${copy.moments.lead}` : announcement);
     return state.rows[state.rows.length - 1];
   }
 
@@ -288,6 +305,7 @@ export class GameStore {
   startMatch(): void {
     if (this.state().between === null) return;
     this.dispatch({ type: 'resume' });
+    this.play({ kind: 'start', label: null });
   }
 
   /**
@@ -444,6 +462,10 @@ export class GameStore {
       return { matches: [id], tournaments: [] };
     });
 
+    // The same teams play on at once; any other way on has its own step first.
+    if (tournament === null && this.state().between === null) {
+      this.play({ kind: 'start', label: null });
+    }
     const winner = this.tournamentWinner();
     if (winner !== null) this.announce(copy.tournament.announceChampion(winner));
   }
@@ -479,6 +501,7 @@ export class GameStore {
     const playing = startMatch(tournament);
     this.tournament.set(playing);
     this.seat(playing);
+    this.playTournamentMatch(playing);
   }
 
   /** Ends the tournament by hand, with whoever leads as champion. */
@@ -505,6 +528,8 @@ export class GameStore {
       this.tournament.set(tied);
       this.seat(tied);
     });
+    const tied = this.tournament();
+    if (tied !== null) this.playTournamentMatch(tied);
   }
 
   /** Keeps the finished tournament in the history and returns to a clean board. */
@@ -631,6 +656,22 @@ export class GameStore {
   announce(message: string): void {
     // A live region only speaks when its text changes, so a repeat gets a trailing space.
     this.announcement.update((current) => (current === message ? message + REPEAT_MARK : message));
+  }
+
+  private play(happening: Happening): void {
+    this.moment.set({ ...happening, seq: (this.moment()?.seq ?? 0) + 1 });
+  }
+
+  private playTournamentMatch(tournament: Tournament): void {
+    const match = copy.moments.match(tournament.results.length + 1);
+    // The first match also says what the tournament is played for.
+    const label =
+      tournament.tieBreak !== null
+        ? `${copy.moments.tieBreak} · ${match}`
+        : tournament.results.length === 0
+          ? `${match} · ${copy.tournament.rule(tournament.rule)}`
+          : match;
+    this.play({ kind: 'start', label });
   }
 
   private newId(): string {

@@ -293,6 +293,36 @@ export function selectWinner(state: State): TeamId | null {
   return null;
 }
 
+/**
+ * Whether the last hand put `team` in front of a team that was in front before.
+ * A tie passes the lead on to nobody, so going ahead again after one still counts.
+ */
+export function leadTaken(rows: Row[], team: TeamId): boolean {
+  const running: Record<TeamId, number> = { a: 0, b: 0 };
+  let leader: TeamId | null = null;
+  let before: TeamId | null = null;
+  for (const row of rows) {
+    before = leader;
+    running[row.team] += row.points;
+    if (running.a !== running.b) leader = running.a > running.b ? 'a' : 'b';
+  }
+  const last = rows[rows.length - 1];
+  const ahead = running[team] > running[otherTeam(team)];
+  return last?.team === team && ahead && before === otherTeam(team);
+}
+
+/** Close enough to the target to win with one more hand. */
+export const MATCH_POINT = 30;
+
+/** The points a team still needs when it is at match point, or null. */
+export function matchPoint(state: State, team: TeamId): number | null {
+  if (selectWinner(state) !== null) return null;
+  const total = selectTotals(state)[team];
+  const remaining = state.target - total;
+  const threshold = Math.min(MATCH_POINT, Math.floor(state.target / 4));
+  return total > 0 && remaining <= threshold ? remaining : null;
+}
+
 /** Validates persisted data; anything malformed yields null so defaults apply. */
 export function parseState(value: unknown): State | null {
   if (typeof value !== 'object' || value === null) return null;
