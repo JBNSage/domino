@@ -14,6 +14,7 @@ import { FitText } from '../directives/fit-text';
 import { GameStore } from '../game/game.store';
 import { TEAM_IDS, TeamId, sharedPlayer } from '../game/state';
 import { available, standings, teamOf } from '../game/tournament';
+import { play } from '../platform/motion';
 import { PlayerPair } from './player-pair';
 import { Screen } from './screen';
 import { SeatSheet } from './seat-sheet';
@@ -47,6 +48,9 @@ import { TeamEdit } from './team-sheet';
             "
             (click)="pick(seat.side)"
           >
+            @if (seat.enters) {
+              <span class="enters lean">{{ copy.moments.enters }}</span>
+            }
             <span class="who">
               <span class="name">{{ seat.name }}</span>
               @if (seat.players; as players) {
@@ -66,6 +70,7 @@ import { TeamEdit } from './team-sheet';
             }
           </button>
         }
+        <span class="vs lean" aria-hidden="true">{{ copy.moments.vs }}</span>
       </div>
 
       @if (shared(); as player) {
@@ -138,9 +143,45 @@ import { TeamEdit } from './team-sheet';
     }
 
     .seats {
+      position: relative;
       display: flex;
       flex-direction: column;
       gap: var(--s-md);
+    }
+
+    /* The two sides face each other across the gap. */
+    .vs {
+      --fill: var(--c-ink);
+      --edge: var(--c-text);
+      --lean-inset: 6px;
+
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      padding: var(--s-xs) var(--s-xl);
+      color: var(--c-on-ink);
+      font: italic 800 var(--t-title) / 1.1 var(--font);
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+
+    .seat {
+      position: relative;
+    }
+
+    /* The team that comes in from the queue. */
+    .enters {
+      --fill: var(--c-ink);
+      --lean-inset: 3px;
+
+      position: absolute;
+      top: var(--s-sm);
+      right: min(var(--s-xxl), 8vw);
+      padding: 2px var(--s-md);
+      color: var(--team);
+      font: italic 800 var(--t-label) / 1.3 var(--font);
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
     }
 
     .seat {
@@ -347,12 +388,20 @@ export class NextMatchScreen {
     const tournament = this.store.tournament();
     if (tournament === null) {
       const { teams } = this.store.state();
-      return TEAM_IDS.map((side) => ({ side, ...teams[side], won: teams[side].roundsWon }));
+      return TEAM_IDS.map((side) => ({
+        side,
+        ...teams[side],
+        won: teams[side].roundsWon,
+        enters: false,
+      }));
     }
     const table = this.table$();
     return TEAM_IDS.map((side) => {
       const team = teamOf(tournament, tournament.seats[side]);
-      return { side, ...team, won: table.find((row) => row.id === team.id)?.won ?? 0 };
+      const last = tournament.results[tournament.results.length - 1];
+      // Anyone who did not sit at the last match comes in from the queue.
+      const enters = last !== undefined && !TEAM_IDS.some((seat) => last.seats[seat] === team.id);
+      return { side, ...team, won: table.find((row) => row.id === team.id)?.won ?? 0, enters };
     });
   });
 
@@ -387,6 +436,7 @@ export class NextMatchScreen {
       if (this.visible()) {
         if (screen.isOpen) return;
         screen.open();
+        requestAnimationFrame(() => this.faceOff());
         // The choice on this screen is the two teams, so reading starts there.
         queueMicrotask(() => this.host.querySelector<HTMLElement>('.seat:not(:disabled)')?.focus());
       } else {
@@ -394,6 +444,40 @@ export class NextMatchScreen {
         screen.close();
       }
     });
+  }
+
+  /** The two sides slam in from their own edges and meet at the VS. */
+  private faceOff(): void {
+    this.host.querySelectorAll('.seat').forEach((seat, index) => {
+      const side = index === 0 ? -1 : 1;
+      play(
+        seat,
+        [
+          { transform: `translateX(${side * 55}%)`, opacity: 0 },
+          { transform: `translateX(${side * -4}px)`, opacity: 1, offset: 0.65 },
+          { transform: 'none' },
+        ],
+        { duration: 440, delay: index * 40, fill: 'backwards' },
+      );
+    });
+    play(
+      this.host.querySelector('.seats > .vs'),
+      [
+        { transform: 'translate(-50%, -50%) scale(2)', opacity: 0 },
+        { transform: 'translate(-50%, -50%) scale(1)', opacity: 1 },
+      ],
+      { duration: 240, delay: 260, fill: 'backwards' },
+    );
+    this.host.querySelectorAll('.enters').forEach((stamp) =>
+      play(
+        stamp,
+        [
+          { transform: 'scale(1.8) rotate(-6deg)', opacity: 0 },
+          { transform: 'none', opacity: 1 },
+        ],
+        { duration: 260, delay: 420, fill: 'backwards' },
+      ),
+    );
   }
 
   protected undo(): void {

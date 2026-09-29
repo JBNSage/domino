@@ -65,6 +65,15 @@ export const copy = {
     a11yHint: 'Anotar puntos',
     announce: (name: string, total: number) => `${name}: ${total}`,
   },
+  moments: {
+    lead: '¡Se pone delante!',
+    vs: 'VS',
+    match: (position: number) => `Partida ${position}`,
+    tieBreak: 'Desempate',
+    matchPoint: (points: number) => `Faltan ${points} para ganar`,
+    toWin: 'para ganar',
+    enters: 'Entra',
+  },
   list: {
     emptyTitle: 'Sin manos anotadas',
     emptyBody: 'Toca Anotar, abajo, para apuntar la primera mano.',

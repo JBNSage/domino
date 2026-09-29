@@ -40,6 +40,45 @@ describe('GameStore', () => {
     expect(store.announcement()).toBe(copy.winner.body('Equipo B'));
   });
 
+  describe('moments', () => {
+    it('plays each hand, and says when it takes the lead', () => {
+      store.addPoints('a', 20);
+      expect(store.moment()).toMatchObject({ kind: 'hand', team: 'a', points: 20, lead: false });
+
+      store.addPoints('b', 25);
+      expect(store.moment()).toMatchObject({ kind: 'hand', team: 'b', lead: true });
+      expect(store.announcement()).toBe(
+        `${copy.team.announce('Equipo B', 25)}. ${copy.moments.lead}`,
+      );
+    });
+
+    it('keeps the lead in what a quick hand says', () => {
+      store.addPoints('a', 10);
+      store.addQuick('b');
+      expect(store.announcement()).toBe(
+        `${copy.undo.quickAdded(30, 'Equipo B')}. ${copy.undo.action} ${copy.moments.lead}`,
+      );
+    });
+
+    it('plays the start of the next match', () => {
+      store.addPoints('a', 200);
+      store.closeRound();
+      expect(store.moment()).toMatchObject({ kind: 'start', label: null });
+    });
+
+    it('stays quiet on an undo, a correction or a deleted hand', () => {
+      store.addQuick('a');
+      const played = store.moment();
+      store.restore();
+      store.addPoints('b', 10);
+      const again = store.moment();
+      store.editRow(store.state().rows[0], 0, 15);
+      store.deleteRow(store.state().rows[0], 0);
+      expect(store.moment()).toBe(again);
+      expect(again?.seq).toBe((played?.seq ?? 0) + 1);
+    });
+  });
+
   describe('quick points', () => {
     it('add the quick value and can be taken back without touching later hands', () => {
       store.addQuick('a');
@@ -340,6 +379,16 @@ describe('GameStore', () => {
       store.restore();
       expect(store.tournament()).toBeNull();
       expect(store.state()).toEqual(before);
+    });
+
+    it('names the match as each one starts', () => {
+      store.startTournament(teams, { kind: 'firstTo', count: 2 });
+      store.startNextMatch();
+      expect(store.moment()).toMatchObject({ kind: 'start', label: 'Partida 1 · Primero a 2' });
+
+      win('a');
+      store.startNextMatch();
+      expect(store.moment()).toMatchObject({ kind: 'start', label: 'Partida 2' });
     });
 
     it('sits the chosen teams at the board with their players', () => {

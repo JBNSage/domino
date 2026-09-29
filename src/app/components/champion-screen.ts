@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  ElementRef,
   computed,
   effect,
   inject,
@@ -11,6 +12,8 @@ import { copy } from '../copy';
 import { FitText } from '../directives/fit-text';
 import { GameStore } from '../game/game.store';
 import { champion, lastWinningSeat, leaders, standings } from '../game/tournament';
+import { haptics } from '../platform/haptics';
+import { burst, play } from '../platform/motion';
 import { ChampionSlab } from './champion-slab';
 import { RankingList } from './ranking-list';
 import { Screen } from './screen';
@@ -114,6 +117,7 @@ export class ChampionScreen {
   protected readonly store = inject(GameStore);
 
   private readonly screen = viewChild.required(Screen);
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
 
   private readonly ended = computed(() => {
     const tournament = this.store.tournament();
@@ -147,11 +151,48 @@ export class ChampionScreen {
   });
 
   constructor() {
+    // A tournament that was already over when the app opened is shown, not celebrated.
+    let quiet = this.ended() !== null;
     effect(() => {
       const screen = this.screen();
-      if (this.ended() !== null) screen.open();
-      else screen.close();
+      if (this.ended() === null) {
+        quiet = false;
+        screen.close();
+        return;
+      }
+      if (screen.isOpen) return;
+      screen.open();
+      if (!quiet) requestAnimationFrame(() => this.celebrate());
+      quiet = false;
     });
+  }
+
+  /** The champion lands, the bars fly, and the table follows in order. */
+  private celebrate(): void {
+    haptics.champion();
+    const slab = this.host.querySelector<HTMLElement>('app-champion-slab');
+    play(
+      slab?.querySelector('.slab-box'),
+      [
+        { transform: 'scale(1.35)', opacity: 0 },
+        { transform: 'scale(0.97)', opacity: 1, offset: 0.6 },
+        { transform: 'none' },
+      ],
+      { duration: 420, fill: 'backwards' },
+    );
+    if (slab) {
+      setTimeout(() => burst(slab, ['var(--c-ink)', 'var(--c-on-ink)', 'var(--team)'], 36), 220);
+    }
+    this.host.querySelectorAll('app-ranking-list .row').forEach((row, index) =>
+      play(
+        row,
+        [
+          { transform: 'translateY(16px)', opacity: 0 },
+          { transform: 'none', opacity: 1 },
+        ],
+        { duration: 300, delay: 380 + index * 50, fill: 'backwards' },
+      ),
+    );
   }
 
   // System Back can close a dialog whatever the page says; the step is still owed.

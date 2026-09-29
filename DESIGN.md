@@ -360,7 +360,7 @@ Density is low and the targets are large: the smallest control is 48 pixels and 
 - One forward-leaning parallelogram as the shape of every filled element; zero corner radius anywhere.
 - Kanit extra-bold italic capitals with tabular numerals; hull-sized totals at 4.75rem.
 - Flat tonal layering on a single ground colour per appearance.
-- Brief motion, 200 to 220 ms, exponential ease-out, entering from the side that owns it; all of it removed under reduced motion.
+- Brief motion, 200 to 220 ms, exponential ease-out, entering from the side that owns it; a few moments of the game (a hand, the lead changing, a new match, a win, a champion) go further, never holding up a tap. All of it is removed under reduced motion.
 - Spanish interface copy throughout, in the informal second person, with short imperative commands.
 
 ## Colors
@@ -522,7 +522,8 @@ The target slab is a compact outlined slab in the header holding the "Meta" labe
 ### Liveries
 The two panels of the lockup. Each is a full-height team-colour cut holding, top to bottom: team name (Button) with the players line under it when the team has players (Label, "ANA · LUIS"), total (Hull), points remaining (Meta) and the rounds chip. All text is Graphite Ink. The whole panel is one button that opens the points sheet.
 - **Hover:** fill brightens by 6%. **Pressed:** fill at 70% opacity. **Focus-visible:** Graphite Ink ring drawn 8 pixels inside the panel.
-- **Total pop:** when a total changes it scales from 1.14 back to 1 over 220 ms, anchored at its left edge.
+- **A hand lands:** the total rolls up to its new value, kicks and settles, a "+25" tag rises off it, and a light passes across that livery (see Moments).
+- **Match point stripe:** when a team that has scored is within 30 points of the target (a quarter of the target when that is less), its "Faltan 25" line becomes a Graphite Ink leaning stripe (lean inset 6, padding 2 vertical and 16 horizontal) in the panel's colour: "Faltan 25" (Meta, 800) over "para ganar" (Label, 800), each line fitted on its own, so the stripe is two lines at any width. It slides in from its side, and a light crosses it every 2.4 s. The panel's accessible label ends with the same sentence.
 
 ### Players Line
 A team's two players on one line under its name, joined by a middle dot: "ANA · LUIS". The type is never shrunk. When the line has no room the second name moves under the first, and the dot stays with the first name so a wrapped line never starts with it. A name that does not fit by itself ends in an ellipsis. The names sit 0.4em apart. The line takes its size and colour from where it sits: Label on a livery, on the winner screen, in a ranking row, in a match entry, in an option of the team picker and on the side of a finished match; Meta on a seat slab; Body size in 600 italic on the champion slab. It is Muted Text on a neutral surface and Graphite Ink on a team colour. The team rows of the tournament setup and of a mesa write it the same way, with "Sin jugadores" in its place when there are none.
@@ -601,6 +602,8 @@ A full-screen `<dialog>` above the board for what takes more than a moment. Grou
 
 ### Seat Slabs
 The two sides of the next match, stacked: left seat above in Safety Orange, right seat below in Acid Yellow. Each is a leaning team-colour layer (lean inset 18, Team Edge keyline), minimum height 120, padding 16 vertical and 40 horizontal, holding the team name (Title), its players line (Meta) and the wins chip 8 below; all text is Graphite Ink.
+- **VS mark:** a Graphite Ink leaning layer with a 2-pixel Text colour keyline, "VS" in On Ink (Title), centred on the gap between the two slabs. It never takes a tap.
+- **"Entra":** in a tournament, a team that did not play the last match carries a Graphite Ink chip at its top right, "Entra" in its own colour (Label, 800).
 - **The slab is a button** that opens the seat sheet for that side, and shows a 28-pixel mark of two passing arrows at its right in Graphite Ink. With no team waiting it is disabled, the arrows are left out and it does not respond.
 - **Hover:** fill brightens by 6%. **Pressed:** fill at 70% opacity. **Focus-visible:** Graphite Ink ring drawn 8 pixels inside the slab.
 
@@ -622,6 +625,7 @@ A player or a couple and how often they won, on a leaning Surface layer (lean in
 The team that won a tournament, on a large leaning layer (lean inset 22, padding 16 vertical and 48 horizontal): the name (Display, shrinks to fit), its players line (Body size, 600 italic) and the wins line (Meta) 4 below. On a tournament record the role "Campeón" (Meta) is printed above the name; on the champion screen the title already says it.
 - **On the ground:** the colour of the side the champion last won on, Graphite Ink type, Team Edge keyline. With no side, Text colour fill with Ground colour type and no keyline.
 - **On its own flood:** Graphite Ink fill with type in the flood's colour, as the winner's slab.
+- **On the champion screen** it lands with a stamp and a burst when the tournament has just been decided (see Moments); opened again, it is simply there.
 
 ### Navigation
 There is no navigation bar. The header's menu control, a 24-pixel mark of three leaning bars in a 48-pixel square, opens the menu sheet, which leads to the tournament, the history, the statistics, the mesas, the two teams, the appearance and the reset sheet. Hover turns the icon from Muted Text to Text colour; pressed drops it to 70% opacity. Full screens open one over another (history, then a tournament, then one of its matches) and each returns through its own back control. The steps that must be answered, the next match and the champion, open by themselves and are locked.
@@ -650,7 +654,16 @@ Every authored movement is brief and uses one curve, an exponential ease-out (`-
 - **Undo bar rise:** 200 ms, 12 pixels up with a fade.
 - **Press shift:** 90 ms, 3 pixels right.
 
-All of it is declared only when the reader has not asked for reduced motion. Under `prefers-reduced-motion` every surface appears in its final state, the press keeps its opacity change but not its shift, and the list jumps to the end instead of scrolling smoothly. Where the browser supports it, a new hand gives a 15 ms vibration and a win gives a short pattern; iOS stays silent. The screen is kept awake while the scoreboard is visible.
+#### Moments
+The game's events get more than a slide, so the table feels the score change hands. Every moment follows three rules. It never waits: its layers never take a tap, and the sheets, dialogs and buttons work from the first frame. A newer moment replaces one still playing. Only a forward action plays one; an undo, a correction, another tab or opening the app never do.
+- **Hand:** the total rolls up from its old value over 380 ms (a lower value simply jumps), kicks to scale 1.12 with 3 degrees more lean and settles over 260 ms. A Graphite Ink tag with the points in the team colour ("+25", Compact) rises 28 pixels off the total and fades over 600 ms. A band of white light at 42% crosses that livery once, over 320 ms.
+- **Lead change:** when a hand puts a team in front and the last team in front was the other one (a tie hands the lead to nobody), a Graphite Ink leaning band crosses both liveries 8 below their top edge, from the new leader's side: its name (Meta) over "¡Se pone delante!" (Title), in its colour. It arrives in 240 ms, holds and leaves by the far side, 1.1 s in all. On a short screen it is one line at Button size across the middle of the strip. The phone gives a double pulse, and the live region adds "¡Se pone delante!".
+- **Match start:** after "Nueva partida", the start of a match at a mesa, or a tournament match, both liveries slam in from their own sides and recoil 6 pixels at the seam (520 ms). A Graphite Ink "VS" (Title, On Ink) lands on the seam at scale 2 and stays until 900 ms. In a tournament a second band below it names the match: "Partida 1 · Primero a 2", "Partida 3", "Desempate · Partida 5" (1.3 s).
+- **Win:** the flood sweeps in over 300 ms, followed by a Graphite Ink band a third of the screen wide that crosses and leaves by the far side (440 ms). The mark streaks in from the winner's side, the heading slams down from scale 1.3, the sentence rises, the winner's slab and then the other team's slide in from their own sides, and the winning total counts up from 0 over 640 ms. The wins line turns over: the old count slides up and out as the new one comes up from below. The actions only fade in, over 120 ms.
+- **Next match:** the seat slabs slam in from their own sides (440 ms), the VS lands at scale 2 and "Entra" is stamped in.
+- **Champion:** the champion slab stamps down from scale 1.35 (420 ms), about 36 small leaning bars in Graphite Ink, On Ink and the champion's colour burst from it and fall away (1.1 to 1.4 s, removed when done), and the ranking rows rise in 50 ms apart. The phone gives a long pattern.
+
+All of it is declared only when the reader has not asked for reduced motion. Under `prefers-reduced-motion` every surface appears in its final state (the lead band and the VS still appear, fading in and out without moving, and the match point stripe keeps still), the press keeps its opacity change but not its shift, and the list jumps to the end instead of scrolling smoothly. Where the browser supports it, a new hand gives a 15 ms vibration and a win gives a short pattern; iOS stays silent. The screen is kept awake while the scoreboard is visible.
 
 ### Accessibility Behaviour
 - **Announcements.** One visually hidden live region (`role="status"`) speaks each change: the scoring team's name and new total after a hand, the winner sentence when a match is won, the champion when a tournament is won, the appearance when it is chosen, the undo message followed by "Deshacer" when an undo is offered, and "Deshecho" once it is taken. A repeated message is altered invisibly so it is spoken again. Every full screen carries its own copy of the region, because the board's is out of reach while a dialog is open. Field errors and notices sit in their own always-present status element tied to the field, so they are heard as they arrive.
@@ -687,8 +700,10 @@ All of it is declared only when the reader has not asked for reduced motion. Und
 ### Don't:
 - **Don't** print a team colour as text on the ground or on a neutral surface; it is only legible as text on a Graphite Ink fill.
 - **Don't** round a corner. No radius exists in this system.
-- **Don't** skew or rotate the element that holds text. The layer behind it leans; the italic does the rest.
-- **Don't** add shadows, gradients or blur to slabs, rows, chips, liveries, fields or sheets.
+- **Don't** skew or rotate the element that holds text at rest. The layer behind it leans; the italic does the rest. A moment may pass through a skew and settle.
+- **Don't** add shadows, gradients or blur to slabs, rows, chips, liveries, fields or sheets. The only gradient is the passing light of a moment.
+- **Don't** make a moment wait for itself: nothing that plays may delay a tap, a sheet or the next hand.
+- **Don't** celebrate an undo or a correction.
 - **Don't** invert the ink on team colours in the day appearance.
 - **Don't** use Danger for anything other than an invalid value or an action that deletes or ends.
 - **Don't** add a second ornament alongside the triple-slash mark.
