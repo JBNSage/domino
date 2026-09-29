@@ -211,6 +211,128 @@ components:
     typography: "{typography.body}"
     padding: "4px 8px 4px 24px"
     height: "52px"
+  slab-button-danger-outlined:
+    backgroundColor: "{colors.ground-night}"
+    textColor: "{colors.danger-night}"
+    typography: "{typography.compact}"
+    padding: "0 16px"
+    height: "48px"
+  menu-button:
+    backgroundColor: "{colors.ground-night}"
+    textColor: "{colors.text-muted-night}"
+    size: "48px"
+  choice-slab-off:
+    backgroundColor: "{colors.ground-night}"
+    textColor: "{colors.text-night}"
+    typography: "{typography.compact}"
+    padding: "0 8px"
+    height: "48px"
+  choice-slab-on:
+    backgroundColor: "{colors.text-night}"
+    textColor: "{colors.ground-night}"
+    typography: "{typography.compact}"
+    padding: "0 8px"
+    height: "48px"
+  text-field:
+    backgroundColor: "{colors.ground-night}"
+    textColor: "{colors.text-night}"
+    typography: "{typography.title}"
+    padding: "4px 0"
+    height: "48px"
+  screen:
+    backgroundColor: "{colors.ground-night}"
+    textColor: "{colors.text-night}"
+    typography: "{typography.title}"
+    padding: "8px 16px 24px 16px"
+    width: "480px"
+  screen-flood-team-a:
+    backgroundColor: "{colors.team-a}"
+    textColor: "{colors.ink}"
+    typography: "{typography.title}"
+    padding: "8px 16px 24px 16px"
+    width: "480px"
+  screen-flood-team-b:
+    backgroundColor: "{colors.team-b}"
+    textColor: "{colors.ink}"
+    typography: "{typography.title}"
+    padding: "8px 16px 24px 16px"
+    width: "480px"
+  ranking-row:
+    backgroundColor: "{colors.surface-night}"
+    textColor: "{colors.text-night}"
+    typography: "{typography.button}"
+    padding: "8px 24px 8px 16px"
+    height: "60px"
+  ranking-row-first:
+    backgroundColor: "{colors.surface-raised-night}"
+    textColor: "{colors.text-night}"
+    typography: "{typography.button}"
+    padding: "8px 24px 8px 16px"
+    height: "60px"
+  team-row:
+    backgroundColor: "{colors.surface-night}"
+    textColor: "{colors.text-night}"
+    typography: "{typography.button}"
+    padding: "8px 24px 8px 16px"
+    height: "60px"
+  picker-option:
+    backgroundColor: "{colors.surface-night}"
+    textColor: "{colors.text-night}"
+    typography: "{typography.button}"
+    padding: "8px 24px"
+    height: "60px"
+  match-entry:
+    backgroundColor: "{colors.surface-night}"
+    textColor: "{colors.text-night}"
+    typography: "{typography.button}"
+    padding: "12px 24px"
+  tournament-entry:
+    backgroundColor: "{colors.surface-raised-night}"
+    textColor: "{colors.text-night}"
+    typography: "{typography.button}"
+    padding: "12px 24px"
+  match-side-team-a:
+    backgroundColor: "{colors.team-a}"
+    textColor: "{colors.ink}"
+    typography: "{typography.display}"
+    padding: "12px 36px"
+  match-side-team-b:
+    backgroundColor: "{colors.team-b}"
+    textColor: "{colors.ink}"
+    typography: "{typography.display}"
+    padding: "12px 36px"
+  seat-slab-team-a:
+    backgroundColor: "{colors.team-a}"
+    textColor: "{colors.ink}"
+    typography: "{typography.title}"
+    padding: "16px 40px"
+    height: "120px"
+  seat-slab-team-b:
+    backgroundColor: "{colors.team-b}"
+    textColor: "{colors.ink}"
+    typography: "{typography.title}"
+    padding: "16px 40px"
+    height: "120px"
+  champion-slab:
+    backgroundColor: "{colors.text-night}"
+    textColor: "{colors.ground-night}"
+    typography: "{typography.display}"
+    padding: "16px 48px"
+  champion-slab-team-a:
+    backgroundColor: "{colors.team-a}"
+    textColor: "{colors.ink}"
+    typography: "{typography.display}"
+    padding: "16px 48px"
+  champion-slab-team-b:
+    backgroundColor: "{colors.team-b}"
+    textColor: "{colors.ink}"
+    typography: "{typography.display}"
+    padding: "16px 48px"
+  champion-slab-on-flood:
+    backgroundColor: "{colors.ink}"
+    textColor: "{colors.team-a}"
+    typography: "{typography.display}"
+    padding: "16px 48px"
 ---
 
 # Design System: Dominó
@@ -221,11 +343,11 @@ Dominó is an Angular progressive web app. Every token below is a CSS custom pro
 
 **Creative North Star: "Liga de Carreras"**
 
-The scoreboard is painted like two rival race cars parked nose to nose. Each team owns a flood of one loud colour with its total set in numerals large enough to read from the far seat at the table, and every other surface steps back to graphite at night or pit silver by day. There is one screen, and its four overlays (points sheet, settings sheet, reset sheet, winner screen) are built from the same parts.
+The scoreboard is painted like two rival race cars parked nose to nose. Each team owns a flood of one loud colour with its total set in numerals large enough to read from the far seat at the table, and every other surface steps back to graphite at night or pit silver by day. There is one board. Above it sit seven bottom sheets (menu, points, settings, reset, team, team picker, end of tournament), seven full screens (history, match, tournament record, tournament setup, next match, standings, champion) and the winner screen, all built from the same parts.
 
-The system has one shape and one typeface. The shape is a parallelogram that leans 12 degrees forward, used for buttons, rows, chips, the two liveries, the undo bar and the full-screen winner flood. The typeface is Kanit, set in heavy italic capitals for everything that is a name, a number or a command, and in upright medium only for full sentences. The only ornament is a mark of three small leaning bars cut from the same shape.
+The system has one shape and one typeface. The shape is a parallelogram that leans 12 degrees forward, used for buttons, rows, list entries, chips, the two liveries, the seat and champion slabs, the undo bar and the full-screen floods. The typeface is Kanit, set in heavy italic capitals for everything that is a name, a number or a command, and in upright medium only for full sentences. The only ornament is a mark of three small leaning bars cut from the same shape.
 
-Density is low and the targets are large: the smallest control is 48 pixels, slab buttons are 56 pixels tall (48 on a short screen), and the screen carries no navigation, no cards and no icons beyond two small utility symbols. On a wide screen the same phone column sits centred on the ground, 480 pixels wide.
+Density is low and the targets are large: the smallest control is 48 pixels and slab buttons are 56 pixels tall (48 on a short screen). The board has no navigation bar and no tabs: one menu button in the header opens a sheet that leads to everything that is not scoring, and a full screen returns through its back control. There are no cards, and the icons are a few small line symbols. On a wide screen the same phone column sits centred on the ground, 480 pixels wide.
 
 **Key Characteristics:**
 - Two saturated team colours used as fills, always carrying graphite ink.
@@ -237,37 +359,39 @@ Density is low and the targets are large: the smallest control is 48 pixels, sla
 
 ## Colors
 
-Two loud liveries on a neutral ground that flips between graphite and pit silver. The appearance follows the system until the reader chooses otherwise: "Sistema", "Claro" or "Oscuro". The choice is kept on the device, resolved to `data-scheme` on the root element before the first paint, and is not part of the match, so "Todo" in the reset sheet leaves it alone.
+Two loud liveries on a neutral ground that flips between graphite and pit silver. The appearance follows the system until the reader chooses otherwise in the menu sheet: "Sistema", "Claro" or "Oscuro". The choice is kept on the device, resolved to `data-scheme` on the root element before the first paint, and is not part of the match, so "Todo" in the reset sheet leaves it alone.
 
 ### Primary
-- **Safety Orange** (`team-a`): team A. Floods the left livery, the team A points chip in each row, the left "Anotar" slab, the slash mark and confirm slab on team A's points sheet, and the whole screen when team A wins.
+- **Safety Orange** (`team-a`): the left side of the board. Floods the left livery, the left points chip in each row, the left "Anotar" slab, the slash mark and confirm slab on that side's points sheet, and the whole screen when that side wins. Away from the board it fills the left team's slab in the menu, the upper seat slab, the left side of a finished match, the winner's total in a match entry, and the champion slab, chip and flood of a team that last won on the left.
 
 ### Secondary
-- **Acid Yellow** (`team-b`): team B. The same roles on the right side.
+- **Acid Yellow** (`team-b`): the right side of the board. The same roles on the right side.
 
 ### Neutral
-- **Graphite Ink** (`ink`): everything printed on a team colour, in both appearances. Also the fill of the rounds chip, the winner's slab and the "Nueva ronda" slab on the winner screen, the outline of slabs that sit on the winner flood, and the scrollbar thumb of the winner screen.
-- **On Ink** (`on-ink`): the label of the "Nueva ronda" slab. White in both appearances.
-- **Graphite Ground** (`ground-night`) / **Pit Silver Ground** (`ground-day`): the page, the sheet panel and the interior of outlined slabs. Also the text and focus ring colour on the undo bar.
-- **Surface** (`surface-night` / `surface-day`): score rows and the number field.
-- **Raised Surface** (`surface-raised-night` / `surface-raised-day`): the most recent row in the list, a selected row, the fill of a disabled slab, and the scrollbar thumb of the list.
-- **Line** (`line-night` / `line-day`): the 2-pixel outline of outlined slabs and fields, the underline of the name field, the 1-pixel hairlines above the quick bar and above the install hint, the text selection colour, and the slash mark in the empty state.
-- **Text** (`text-night` / `text-day`): primary text on the ground, the default focus ring, the fill of the neutral "Guardar" and "Corregir" slabs and of the undo bar, the keyline of a selected row, the hand number of the newest row and of a selected one, the caret, the "Ahora no" action, the note on the reset sheet, and the slash mark of every sheet by day.
-- **Muted Text** (`text-muted-night` / `text-muted-day`): field labels, hand numbers, zero cells, explanatory sentences, the help under each reset choice, the two utility icons, and the label of a disabled slab.
+- **Graphite Ink** (`ink`): everything printed on a team colour, in both appearances, including the swap arrows on a seat slab and the back control of a flooded screen. Also the fill of the rounds chip, the wins chip on a seat slab, the "Ganador" chip, the winner's slab and the closing slab on the winner screen, and the champion slab and "Guardar y salir" on a flooded champion screen; the outline of slabs that sit on a flood; the footer hairline and the scrollbar thumb on a flood.
+- **On Ink** (`on-ink`): the label of the closing slab on the winner screen and of "Guardar y salir" on a flooded champion screen. White in both appearances.
+- **Graphite Ground** (`ground-night`) / **Pit Silver Ground** (`ground-day`): the page, the sheet panel, the full screens and the interior of outlined slabs. Also the text and focus ring colour on the undo bar, and the label of any neutral fill.
+- **Surface** (`surface-night` / `surface-day`): score rows and the number field; away from the board, match entries, ranking rows, the team rows of the tournament setup, the options of the team picker and the hands of a finished match.
+- **Raised Surface** (`surface-raised-night` / `surface-raised-day`): the most recent row in the list, a selected row, the leading rows of a ranking, a tournament among the entries of the history, the fill of a disabled slab, and the scrollbar thumb of the list and of a screen.
+- **Line** (`line-night` / `line-day`): the 2-pixel outline of outlined slabs and fields, the underline of the name field and of a text field, the 1-pixel hairlines above the quick bar, above the install hint and above a screen's pinned actions, the text selection colour, and the slash mark in an empty state.
+- **Text** (`text-night` / `text-day`): primary text on the ground, the default focus ring, the fill of the neutral slabs ("Guardar", "Corregir", "Empezar torneo", "Empezar partida", "Guardar y salir", "Jugar desempate"), of the chosen slab in a choice group, of the undo bar and of a champion that has no side; the keyline of a selected row and of the leading rows of a ranking, the hand number of the newest row and of a selected one, the underline of a text field in focus, the caret, the "Ahora no" action, the note on the reset sheet, the "Desempate" flag of a match entry, the slash mark of a tournament entry, and the slash mark of every sheet by day.
+- **Muted Text** (`text-muted-night` / `text-muted-day`): field labels, group labels and column heads, hand numbers, zero cells, explanatory sentences, the help under each reset choice, the players line on a neutral surface, the facts line of a screen, dates, position numbers and matches lost in a ranking, the losing team in a match entry, a placeholder, the pencil and menu icons, and the label of a disabled slab.
 - **Team Edge** (`team-edge-night` / `team-edge-day`): a keyline around every team-colour fill that sits on the ground or a surface. Transparent and 0 pixels wide at night; Graphite Ink and 2 pixels wide by day (`--team-edge-width`), because orange and acid yellow lose their edge against pit silver and white.
-- **Danger** (`danger-night` / `danger-day`) with **On Danger** (`on-danger-night` / `on-danger-day`): the border of an invalid number field and its error sentence; the fill of the two destructive slabs ("Eliminar" on a selected hand, "Todo" on the reset sheet); the slash mark of the reset sheet at night.
+- **Danger** (`danger-night` / `danger-day`) with **On Danger** (`on-danger-night` / `on-danger-day`): the border of an invalid number field, the underline of an invalid text field, and their error sentence; the fill of the destructive slabs ("Eliminar" on a selected hand, a match or a tournament of the history, "Todo" on the reset sheet, and the confirming slab of the end-of-tournament sheet); the outline, label and icon of the outlined destructive slabs ("Borrar" in the menu, "Quitar equipo", "Borrar historial", "Terminar torneo"); the slash mark of the reset sheet and of the end-of-tournament sheet at night.
 - **Scrim** (`scrim-night` / `scrim-day`): the dimmed backdrop behind a sheet.
 
 ### Named Rules
 **The Livery Rule.** A team colour is a fill. It carries Graphite Ink and never prints as text on the ground or on a surface.
 
-**The Graphite Exception Rule.** A team colour prints as text only on a Graphite Ink fill: the rounds chip inside each livery and the winner's slab on the winner screen.
+**The Seat Rule.** In a tournament a team colour belongs to a side of the board, not to a team: the left seat is Safety Orange and the right seat is Acid Yellow, and a team wears the colour of the seat it takes. A champion is shown in the colour of the side it last won on, and in Text colour when there is none.
+
+**The Graphite Exception Rule.** A team colour prints as text only on a Graphite Ink fill: the rounds chip inside each livery, the wins chip on a seat slab, the "Ganador" chip on the side of a finished match, the winner's slab on the winner screen and the champion slab on its own flood.
 
 **The Same Ink Rule.** Ink on a team colour is Graphite Ink in both appearances. It does not invert when the ground does.
 
-**The Day Keyline Rule.** By day every team-colour fill on the ground or a surface wears a 2-pixel Graphite Ink keyline: liveries, points chips and team slabs. At night the keyline has no width. The winner flood never wears one.
+**The Day Keyline Rule.** By day every team-colour fill on the ground or a surface wears a 2-pixel Graphite Ink keyline: liveries, points chips, team slabs, seat slabs, the sides of a finished match, and the champion slab and chip. At night the keyline has no width. The winner flood and the flood of a screen never wear one.
 
-**The Danger Rule.** Danger means an invalid value or an action that deletes. It is never decoration and never a team.
+**The Danger Rule.** Danger means an invalid value or an action that deletes or ends what was being kept. It is never decoration and never a team.
 
 ## Typography
 
@@ -282,14 +406,14 @@ The three cuts are self-hosted from `@fontsource/kanit` (latin subset), so they 
 ### Hierarchy
 - **Winner** (800 italic, 8.25rem, line-height 1.06, tabular): the winner's total on the winner screen.
 - **Hull** (800 italic, 4.75rem, line-height 1.05, tabular): the team totals in the lockup. Both totals drop to Display size together when either has more than four digits.
-- **Display** (800 italic, 3.5rem, uppercase): the winner heading and the other team's total on the winner screen.
+- **Display** (800 italic, 3.5rem, uppercase): the winner heading and the other team's total on the winner screen; the two totals of a finished match (line-height 1.1, tabular); the name on the champion slab.
 - **Field** (800 italic, 2.75rem, line-height 1.2, tabular): the text typed into a number field.
-- **Title** (800 italic, 1.75rem, uppercase): the target value in the header, the team name field, sheet titles (including the heading of a hand being corrected), the empty-state heading, the winner sentence. Headings use line-height 1.15 and balanced wrapping. On a short screen it also sets the text of a number field, the winner heading and the other team's total.
-- **Button** (800 italic, 1.25rem, uppercase, 0.5px letter-spacing on slabs): slab labels, team names on the liveries and the winner screen, points inside row chips. Zero cells use the same size in the 600 italic cut.
-- **Compact** (800 italic, 1.125rem, uppercase): the label of a compact slab.
-- **Body** (500 upright, 1rem, line-height 1.45, sentence case): the empty-state and install sentences (capped at 34ch), the help and note on the reset sheet (capped at 65ch, line-height 1.35), field messages, the undo message. The header's "Meta" label and the winner's rounds line use this size in the 600 italic cut, uppercase; the text actions ("Deshacer", "Actualizar", "Ahora no") use it in 800 italic, uppercase, underlined.
-- **Meta** (600 italic, 0.9375rem, uppercase, 0.4px letter-spacing, tabular): points remaining and the rounds chip inside a livery; the team name on a livery on a short screen.
-- **Label** (600 italic, 0.8125rem, uppercase): field labels and hand numbers. The hand number of the newest row and of a selected row is 800.
+- **Title** (800 italic, 1.75rem, uppercase): the target value in the header, the team name field and the text field, sheet and screen titles (including the heading of a hand being corrected), the empty-state headings, the winner sentence, the team name on a seat slab, "Sin campeón" on a tournament record. Position numbers and the matches won and lost in a ranking use this size at line-height 1, held to 8vw on a narrow phone; matches lost are 600. Headings use line-height 1.15 and balanced wrapping. On a short screen it also sets the text of a number field, the winner heading, the other team's total and the name on the champion slab.
+- **Button** (800 italic, 1.25rem, uppercase, 0.5px letter-spacing on slabs): slab labels, team names on the liveries, the winner screen, list entries, ranking rows and the sides of a finished match, points inside row chips, the two player fields of the team sheet, the section headings of a screen ("Clasificación", "Partidas"), the names waiting their turn. Zero cells and the losing total of a match entry use the same size in the 600 italic cut.
+- **Compact** (800 italic, 1.125rem, uppercase): the label of a compact slab. The header's "Tabla" slab holds it to 5.5vw on a narrow phone.
+- **Body** (500 upright, 1rem, line-height 1.45, sentence case): the empty-state, install and lead sentences (capped at 34ch), the notes of the tournament screens (capped at 40ch), the help and note on the reset and end-of-tournament sheets (capped at 65ch, line-height 1.35), field messages, the undo message. The header's "Meta" label, the winner's wins line and the players line on the champion slab use this size in the 600 italic cut, uppercase; the text actions ("Deshacer", "Actualizar", "Ahora no") use it in 800 italic, uppercase, underlined.
+- **Meta** (600 italic, 0.9375rem, uppercase, 0.4px letter-spacing, tabular): points remaining and the rounds chip inside a livery; the wins chip and the players line on a seat slab; the "Ganador" chip; the role and wins lines on the champion slab; the team name on a livery on a short screen.
+- **Label** (600 italic, 0.8125rem, uppercase): field labels, group labels ("Apariencia", "Equipos y jugadores", "Equipos", "Esperan turno"), column heads and hand numbers; the players line under a team name on a livery, on the winner screen, in a ranking row, in a team row and on the side of a finished match; dates, summaries and the facts line of a screen (line-height 1.5). The hand number of the newest row and of a selected row is 800.
 
 ### Named Rules
 **The Caps Italic Rule.** Names, numbers and commands are italic capitals. Upright sentence case is reserved for full sentences: explanations, errors, notices and the undo message.
@@ -298,16 +422,16 @@ The three cuts are self-hosted from `@fontsource/kanit` (latin subset), so they 
 
 **The Hull Cap Rule.** Type is sized in rem and follows the reader's font size, up to a pixel cap written into each token as `min(rem, px)`. Text stops at 1.6 times its designed size (Title, Button, Compact, Body, Meta, Label). Numerals and the winner heading stop at 1.2 times (Winner, Hull, Display, Field), because they are already large and must stay on one line.
 
-**The One Line Rule.** Totals, team names, slab labels and the winner heading shrink to fit their box on one line rather than wrap or truncate. They never shrink below 0.5 of their designed size; the winner's total may go to 0.4. The fit leaves 4% of slack, because letter-spacing does not shrink with the type, and only the width is clipped, so tall glyphs such as an opening exclamation mark stay whole.
+**The One Line Rule.** Totals, team names, players lines, slab labels, screen titles and the winner heading shrink to fit their box on one line rather than wrap or truncate. They never shrink below 0.5 of their designed size; the winner's total and the labels of a choice group may go to 0.4. The fit leaves 4% of slack, because letter-spacing does not shrink with the type, and only the width is clipped, so tall glyphs such as an opening exclamation mark stay whole.
 
 ### Voice
-Copy lives in `src/app/copy.ts`. Commands are one or two words ("Anotar", "Guardar", "Cancelar", "Corregir", "Eliminar", "Deshacer", "Instalar", "Nueva ronda"). The score that wins a round has one name everywhere: "Meta". Sentences address the reader as "tú" and say what to do ("Escribe un número entre 1 y 999, sin signos ni decimales."). A consequence is stated before it happens ("Equipo A ya tiene 210: al guardar, gana la ronda.") and the confirm label changes to match ("Terminar ronda"). Exclamation is used once, on the winner heading.
+Copy lives in `src/app/copy.ts`. Commands are one to three words ("Anotar", "Guardar", "Cancelar", "Corregir", "Eliminar", "Deshacer", "Instalar", "Nueva partida", "Empezar torneo", "Guardar y salir"). A game to the target is a "partida" everywhere, a hand is a "mano", and the score that wins a match has one name: "Meta". Matches won are counted as "1 victoria", "2 victorias". Two players are written as a pair joined by a middle dot ("ANA · LUIS"). Sentences address the reader as "tú" and say what to do ("Escribe un número entre 1 y 999, sin signos ni decimales."). A consequence is stated before it happens ("Equipo A ya tiene 210: al guardar, gana la partida.") and the confirm label changes to match ("Terminar partida"). Exclamation is used once, on the winner heading.
 
 ## Layout
 
-One column, the full dynamic viewport tall (`100dvh`), capped at 480 pixels wide (`--column`) and centred on the ground. The page itself never scrolls; only the list does. Four bands, top to bottom:
+One column, the full dynamic viewport tall (`100dvh`), capped at 480 pixels wide (`--column`) and centred on the ground. The page itself never scrolls; only the list does. The board has four bands, top to bottom:
 
-1. **Header.** Target slab at the left; at the right, two 48-pixel icon controls side by side: appearance, then reset. Padding 24 left, 8 right, 12 vertical. The top safe-area inset is added above it.
+1. **Header.** Target slab at the left; at the right, the compact "Tabla" slab while a tournament is being played, then one 48-pixel menu control, 4 apart. 8 between the two groups. Padding 24 left, 8 right, 12 vertical. The top safe-area inset is added above it.
 2. **Lockup.** Two equal panels, edge to edge, minimum height 172. Each livery bleeds 48 past the column edge and leans a fixed 36 pixels, leaving a diagonal seam of ground about 6 pixels wide between them.
 3. **List.** Fills the remaining height and scrolls inside itself. 16 horizontal padding, 12 vertical, 8 between rows. Each row has two equal team columns with a 44-wide hand number between them, so points sit centred under their livery. The list follows a new hand to the end; a correction or a deletion further up leaves the reader where they are, unless the undo bar arrives while the end of the list is within 80 pixels, in which case the list moves to the end so the bar does not cover it. When empty, the content is left-aligned and vertically centred with 32 horizontal padding. While the undo bar is showing, the list gains bottom padding equal to the bar's height so the last row stays visible.
 4. **Quick bar.** Pinned to the bottom, separated from the list by a 1-pixel Line hairline. Two equal columns with a 24 gap, one per team. Each column stacks a compact outlined quick-points slab above the team's filled "Anotar" slab with an 8 gap, so the every-hand action sits at the bottom edge. Padding 12 top, 24 sides, 12 plus the bottom safe-area inset below.
@@ -315,6 +439,8 @@ One column, the full dynamic viewport tall (`100dvh`), capped at 480 pixels wide
 Spacing comes from a six-step scale (4, 8, 12, 16, 24, 32). Minimum target is 48 pixels in either dimension (`--min-target`).
 
 Sheets are anchored to the bottom edge, capped at the same 480 column, and no taller than 92% of the viewport minus the keyboard; they scroll inside themselves past that. The app shell measures the on-screen keyboard from the visual viewport and publishes it as `--keyboard-inset`; a sheet's bottom edge sits at that inset, so its buttons stay above the keyboard. Sheet panels pad 24 on top and sides, the larger of 16 and the bottom safe-area inset below, with 16 between blocks.
+
+Full screens cover the board and keep to the same 480 column, in three bands. The bar holds a 48-pixel back control and the title (Title, shrunk to fit), 4 apart, with padding 8 left, 24 right and 12 vertical; a locked screen has no back control and pads 24 at the left and above. The body fills the remaining height and is the only part that scrolls: 24 between blocks, padding 8 above, 16 at the sides and 24 below. The actions are pinned in a footer under a 1-pixel Line hairline, stacked with a 12 gap, 32 from the sides, 12 above and the larger of 12 and the bottom safe-area inset, plus 4, below; a screen with no actions has no footer. Blocks inside the body are inset a further 8 where they are text rather than slabs.
 
 Pairs of actions sit side by side and wrap onto separate lines once the reader's text size needs the room (each wants at least 7.5rem; the primary action grows 1.5 times faster than the other).
 
@@ -326,17 +452,22 @@ There is one responsive step, and it is about height. When the viewport is no ta
 - **Lockup:** the panels lose their minimum height and become a strip with 8 vertical padding. The team name is set in Meta size on its own line, the total in Field size, and the points remaining and rounds chip sit under the total, or beside it at 30em wide. An empty rounds chip is removed instead of keeping its space.
 - **Quick bar:** 8 top and bottom padding, 16 between the columns, both slabs 48 tall. At 30em wide the quick-points slab sits beside "Anotar" in each column, each taking half, with 12 horizontal padding.
 - **Number field:** minimum height 56, Title size.
-- **Sheets:** 12 between blocks, 16 top padding, and the triple-slash mark is not shown.
+- **Sheets:** 12 between blocks, 16 top padding, and the triple-slash mark is not shown. At 30em wide the two entries of the menu sheet sit side by side, each taking half, 48 tall.
+- **Full screens:** the bar's vertical padding drops to 4 (12 above on a locked screen), blocks in the body are 16 apart, and the footer pads 8 above and the larger of 8 and the bottom safe-area inset below. At 30em wide the footer's actions sit in one row, each taking an equal share, with 12 horizontal padding.
+- **Seat slabs:** no minimum height, 8 vertical padding, and the wins chip 4 under the name. At 30em wide the two seats sit side by side, 4 apart, with 24 horizontal padding.
+- **Champion slab:** 8 vertical padding and the name in Title size.
 - **Winner screen:** the compact variant described under Components.
+
+One rule is keyed to a narrow width: below 24em wide (`@media (max-width: 24em)`), while a tournament is being played, the header hides the "Meta" label and the value stands alone, so the three controls fit. On a narrow phone a few paddings and figures are also held to a share of the width (the "Tabla" slab, the choice slabs, the ranking and team rows, the seat slabs and the sides of a finished match), so the names keep their room.
 
 A desktop window shows the phone column centred. Tablets are not designed for. The web manifest still asks for portrait.
 
 ## Elevation & Depth
 
-Depth is tonal. Three neutral steps stack on each other (ground, surface, raised surface) and the team colours sit on top of all of them as flat fills. Overlays separate from the screen with a scrim, and the undo bar separates from the list by inverting the neutral colours. There are no shadows, gradients or blurs anywhere in the build.
+Depth is tonal. Three neutral steps stack on each other (ground, surface, raised surface) and the team colours sit on top of all of them as flat fills. Sheets separate from what is beneath them with a scrim, a full screen covers the board completely with its own ground or flood, and the undo bar separates from the list by inverting the neutral colours. There are no shadows, gradients or blurs anywhere in the build.
 
 ### Named Rules
-**The Tonal Step Rule.** A surface is distinguished from what is beneath it by stepping one neutral tone, never by a shadow or a gradient. The newest row is marked by moving from Surface to Raised Surface. A selected row takes the same step and adds a 2-pixel Text colour keyline.
+**The Tonal Step Rule.** A surface is distinguished from what is beneath it by stepping one neutral tone, never by a shadow or a gradient. The newest row is marked by moving from Surface to Raised Surface. A selected row takes the same step and adds a 2-pixel Text colour keyline, and so do the rows that lead a ranking. In the history a tournament sits on Raised Surface among matches on Surface.
 
 ## Shapes
 
@@ -344,14 +475,14 @@ One silhouette: a parallelogram whose top edge is shifted right of its bottom ed
 
 The shape is drawn in CSS in two ways, and the content is never skewed in either.
 
-- **The leaning layer.** Any element that needs the shape gets a pseudo-element behind its content, filled with `--fill`, bordered 2 pixels in `--edge`, and skewed 12 degrees (`transform: skewX(-12deg)`). The element isolates its own stacking context so the layer stays behind its label and in front of the page. The layer is inset horizontally (`--lean-inset`) by half the lean so the slanted ends stay inside the element's box: 6 by default, 3 for chips, 5 for the three option slabs under a selected hand, 8 for the other team's slab on the winner screen, 24 for the winner's slab (12 in its compact form). An outline is the layer's own border, so fill and outline are one box. Used for slabs, rows, chips, the undo bar and the winner screen's slabs.
+- **The leaning layer.** Any element that needs the shape gets a pseudo-element behind its content, filled with `--fill`, bordered 2 pixels in `--edge`, and skewed 12 degrees (`transform: skewX(-12deg)`). The element isolates its own stacking context so the layer stays behind its label and in front of the page. The layer is inset horizontally (`--lean-inset`) by half the lean so the slanted ends stay inside the element's box: 6 by default; 3 for chips; 5 for slabs that share a row in thirds or halves (the options under a selected hand, the choice slabs, the team slabs of the menu, the header's "Tabla"); 8 for list entries, ranking rows, team rows, picker options and the other team's slab on the winner screen; 18 for a seat slab and the side of a finished match; 22 for the champion slab; 24 for the winner's slab (12 in its compact form). An outline is the layer's own border, so fill and outline are one box. Used for slabs, rows, entries, chips, the undo bar and the slabs of the winner and tournament screens.
 - **The cut.** Where the lean must be a fixed distance rather than a fixed angle, the shape is cut with `clip-path`. The two liveries are cut on a fixed 36-pixel seam so the diagonal between them stays parallel at any height; by day a second, slightly larger cut in Graphite Ink sits behind each one as the keyline. The slash mark is cut as a percentage polygon.
 
-The winner flood is a single layer skewed the same 12 degrees and stretched 60% past each side of the screen, so its slanted ends are never seen.
+The winner flood and the flood of a champion screen are a single layer skewed the same 12 degrees and stretched 60% past each side of the screen, so its slanted ends are never seen.
 
-The triple-slash mark is three of the same parallelograms side by side, each 0.62 of its height wide with a gap of 0.05 of its height. It appears above sheet content (18 tall; in the sheet's accent at night and in Text colour by day, where acid yellow would vanish on the pale ground), in the empty state (22, Line colour) and above the winner heading (40, Graphite Ink). On a short screen the sheets and the winner screen leave it out.
+The triple-slash mark is three of the same parallelograms side by side, each 0.62 of its height wide with a gap of 0.05 of its height. It appears above sheet content (18 tall; in the sheet's accent at night and in Text colour by day, where acid yellow would vanish on the pale ground), in the empty state of the board and of the history (22, Line colour), beside the word "Torneo" in a tournament entry of the history (14, Text colour) and above the winner heading (40, Graphite Ink). On a short screen the sheets and the winner screen leave it out.
 
-Two kinds of surface are rectangular by design: text fields, because a caret and a selection need a straight box, and the sheet panel, which is the ground the slabs sit on.
+Three kinds of surface are rectangular by design: text fields, because a caret and a selection need a straight box or a straight line, and the sheet panel and the full screen, which are the ground the slabs sit on.
 
 ### Named Rules
 **The Lean Rule.** Every filled shape is the 12-degree parallelogram. Skew the layer behind the content, or cut it; never skew, rotate or round the element that holds the text.
@@ -362,31 +493,34 @@ Two kinds of surface are rectangular by design: text fields, because a caret and
 
 ### Buttons
 Slab buttons are blunt and physical: a leaning block that shoves sideways when pressed.
-- **Shape:** the leaning layer, minimum height 56, 24 horizontal padding (12 when paired in a row), label centred on one line and shrunk to fit. On a short screen the slabs of the quick bar and the winner screen are 48 tall.
-- **Outlined (default):** Ground interior, 2-pixel Line outline, Text label. "Cancelar", "Solo las manos", "Instalar", the quick-points slab.
-- **Compact:** minimum height 48, 16 horizontal padding, Compact type. The target slab, the quick-points slab, the three options under a selected hand, "Instalar", the reset sheet's "Cancelar", the winner screen's correction slab.
-- **Team:** team colour fill, Graphite Ink label, Team Edge keyline. "Anotar" in the quick bar and on the points sheet.
-- **Neutral filled:** Text colour fill, Ground colour label. "Guardar" and "Terminar ronda" on the settings sheet; compact "Corregir" under a selected hand.
-- **Ink:** Graphite Ink fill, On Ink label. "Nueva ronda" on the winner screen.
-- **Danger:** Danger fill, On Danger label, no outline. "Eliminar" and "Todo".
+- **Shape:** the leaning layer, minimum height 56, 24 horizontal padding (12 when paired in a row), label centred on one line and shrunk to fit. On a short screen the slabs of the quick bar and the winner screen are 48 tall. The two entries of the menu set their label at the left.
+- **Outlined (default):** Ground interior, 2-pixel Line outline, Text label. "Cancelar", "Cerrar", "Solo las manos", "Instalar", "Añadir equipo", "Tabla", "Volver atrás", "Seguir jugando", the entries of the menu, the quick-points slab.
+- **Compact:** minimum height 48, 16 horizontal padding, Compact type. The target slab, the header's "Tabla", the quick-points slab, the three options under a selected hand, the choice slabs, the team slabs and the closing row of the menu, "Instalar", "Añadir equipo", the reset sheet's and the picker's "Cancelar", the secondary actions in a screen's footer, the winner screen's correction slab. A compact slab that stands alone in a body or a sheet sits at the left and is as wide as its label.
+- **Team:** team colour fill, Graphite Ink label, Team Edge keyline. "Anotar" in the quick bar and on the points sheet, the two team slabs of the menu, and the confirm of the team sheet when it edits a team at the board.
+- **Neutral filled:** Text colour fill, Ground colour label. "Guardar" and "Terminar partida" on the settings sheet; the confirm of the team sheet for a team with no side; "Empezar torneo", "Empezar partida", "Jugar desempate" and "Guardar y salir"; compact "Corregir" under a selected hand.
+- **Ink:** Graphite Ink fill, On Ink label. The closing slab on the winner screen ("Nueva partida"; in a tournament "Siguiente partida" or "Ver resultado") and "Guardar y salir" on a flooded champion screen.
+- **Danger:** Danger fill, On Danger label, no outline. "Eliminar", "Todo", and the confirming slab of the end-of-tournament sheet ("Terminar torneo", "Terminar sin campeón", "Cancelar torneo").
+- **Danger outlined:** compact, Ground interior, 2-pixel Danger outline, Danger label. "Borrar" in the menu (with a 20-pixel bin icon in the same colour), "Quitar equipo", "Borrar historial", "Terminar torneo" in the footer of the standings.
+- **On a flood:** an outlined slab takes a transparent interior with a Graphite Ink outline and label ("Volver atrás" on a flooded champion screen), or the flood colour with the same outline (the winner screen's correction slab).
 - **Disabled:** Raised Surface fill, Muted Text label, no outline, default cursor, regardless of variant. It does not respond to hover or press.
 - **Hover** (pointer devices only): the layer brightens by 12%.
 - **Pressed:** the layer drops to 70% opacity (`--pressed`) and the whole button shifts 3 pixels right over 90 ms. The shift is skipped under reduced motion; the opacity stays.
-- **Focus-visible:** a 3-pixel outline, 3 pixels off the element, in Text colour. Surfaces that are not the ground set their own ring colour: Graphite Ink on the liveries and the winner screen, Ground colour on the undo bar. After a touch the ring is not drawn on anything but a text field, while focus itself stays where it is; Tab or an arrow key brings the ring back.
+- **Focus-visible:** a 3-pixel outline, 3 pixels off the element, in Text colour. Surfaces that are not the ground set their own ring colour: Graphite Ink on the liveries, the seat slabs, the winner screen and a flooded screen, Ground colour on the undo bar. After a touch the ring is not drawn on anything but a text field, while focus itself stays where it is; Tab or an arrow key brings the ring back.
 - **Text action:** where a second, lighter action sits beside a message, it is a 48-tall target with no shape: Body size, 800 italic capitals, underlined 0.2em below the baseline, pressed at 70% opacity. "Deshacer" and "Actualizar" on the undo bar (in Ground colour), "Ahora no" on the install hint (in Text colour).
 - **Long press:** holding a quick-points slab for 500 ms without moving more than 10 pixels opens the settings sheet on the quick-points field; the click that follows is swallowed.
 
-### Target Slab
-A compact outlined slab in the header holding the "Meta" label (Body size, 600 italic, Muted Text), the target value (Title, Text) and a 16-pixel pencil icon. It opens the settings sheet ("Ajustes") on the target field. States are those of any slab.
+### Header Slabs
+The target slab is a compact outlined slab in the header holding the "Meta" label (Body size, 600 italic, Muted Text, shrunk to fit), the target value (Title, Text) and a 16-pixel pencil icon. It opens the settings sheet ("Ajustes") on the target field, and gives way first when the header runs out of width. While a tournament is being played a second compact outlined slab, "Tabla" (lean inset 5), sits beside the menu control and opens the standings. States are those of any slab.
 
 ### Liveries
-The two panels of the lockup. Each is a full-height team-colour cut holding, top to bottom: team name (Button), total (Hull), points remaining (Meta) and the rounds chip. All text is Graphite Ink. The whole panel is one button that opens the points sheet.
+The two panels of the lockup. Each is a full-height team-colour cut holding, top to bottom: team name (Button) with the players line under it when the team has players (Label, "ANA · LUIS"), total (Hull), points remaining (Meta) and the rounds chip. All text is Graphite Ink. The whole panel is one button that opens the points sheet.
 - **Hover:** fill brightens by 6%. **Pressed:** fill at 70% opacity. **Focus-visible:** Graphite Ink ring drawn 8 pixels inside the panel.
 - **Total pop:** when a total changes it scales from 1.14 back to 1 over 220 ms, anchored at its left edge.
 
 ### Chips
-- **Rounds chip:** Graphite Ink leaning layer, 12 horizontal and 2 vertical padding, label in the panel's own team colour (Meta). With no rounds won it is invisible but keeps its space, so both totals stay level.
-- **Points chip:** team-colour leaning layer inside a score row, minimum width 64, 12 horizontal and 4 vertical padding, points in Graphite Ink (Button), Team Edge keyline.
+- **Rounds chip:** Graphite Ink leaning layer, 12 horizontal and 2 vertical padding, label in the panel's own team colour (Meta). It counts the matches won: "1 victoria", "2 victorias". With none won it is invisible but keeps its space, so both totals stay level. The wins chip on a seat slab and the "Ganador" chip on the side of a finished match are the same chip; "Ganador" keeps its space on the losing side.
+- **Points chip:** team-colour leaning layer inside a score row, minimum width 64, 12 horizontal and 4 vertical padding, points in Graphite Ink (Button), Team Edge keyline. The winner's total in a match entry is the same chip.
+- **Champion chip:** in a tournament entry of the history, the champion's name (Button) on a leaning layer with 16 horizontal and 4 vertical padding: the colour of the side it last won on with Graphite Ink and the Team Edge keyline, or Text colour with a Ground label when there is none.
 
 ### Score Rows
 - **Shape:** leaning layer, minimum height 52, Surface fill. The newest row uses Raised Surface and prints its hand number in Text colour at weight 800.
@@ -403,49 +537,91 @@ With no hands the list shows the triple-slash mark (22, Line colour), a Title he
 
 ### Inputs / Fields
 - **Number field:** rectangular, Surface fill, 2-pixel Line border, minimum height 76, 8 by 16 padding, Field type. Label 4 above in Label type, Muted Text. There is no placeholder; an empty field is empty. The numeric keypad is requested. What is typed is left as typed: a sign, a decimal or a letter is reported as an error, never removed silently. Focusing selects the whole value. On a short screen the minimum height is 56 and the text is Title size.
-- **Name field:** no box; a 2-pixel Line underline, minimum height 48, Title type, uppercase. At its right the pencil icon (20) sits in a 48-pixel square that is the field's own label, so touching it starts the rename.
-- **Focus:** the number field takes the 3-pixel Text ring flush against its border. The name field takes the same ring 2 pixels off. Fields keep their ring after a touch.
+- **Name field:** on the points sheet. No box; a 2-pixel Line underline, minimum height 48, Title type, uppercase. At its right the pencil icon (20) sits in a 48-pixel square that is the field's own label, so touching it starts the rename.
+- **Text field:** one line of text written on an underline, used for a team's name and its two players. Label above in Label type, Muted Text. No box; a 2-pixel Line underline, minimum height 48, 4 vertical padding, Title type (Button for the two players), uppercase. The name that will be used if the field is left empty shows as a placeholder in Muted Text. Focusing selects the whole value.
+- **Focus:** the number field takes the 3-pixel Text ring flush against its border. The name field and the text field take the same ring 2 pixels off, and the text field's underline turns to Text colour. Fields keep their ring after a touch.
 - **Caret and selection:** selection is Line colour with Text colour type. The caret is Text colour, except in the points field of the points sheet at night, where it is the team colour.
-- **Error:** the border switches to Danger and a Danger sentence (Body, upright) appears beneath. The confirm slab is disabled while any value is invalid.
+- **Error:** the border, or the underline of a text field, switches to Danger and a Danger sentence (Body, upright) appears beneath. The confirm slab is disabled while any value is invalid.
 - **Notice:** a Text colour sentence in the same place, stating a consequence of saving without blocking it.
 - **Enter:** moves to the next field, or confirms from the last one.
 
 ### Sheets
-A rectangular Ground-colour panel on a native `<dialog>`, rising from the bottom over a Scrim. It opens with the triple-slash mark in the sheet's accent, then its title or fields, then its actions. The first field takes focus as the sheet opens, so the keyboard arrives with it.
+A rectangular Ground-colour panel on a native `<dialog>`, rising from the bottom over a Scrim. It opens with the triple-slash mark in the sheet's accent, then its title or fields, then its actions. The first field takes focus as the sheet opens, so the keyboard arrives with it. A sheet may open over a full screen.
+- **Menu sheet** (accent: Text colour): title "Menú"; two outlined slabs stacked 12 apart, "Torneo nuevo" (or "Tabla del torneo" while one is being played) and "Historial"; under the label "Equipos y jugadores", one compact team slab per team, side by side, 8 apart, each in the colour of its side and opening the team sheet; the appearance choice; then a row with compact outlined "Cerrar" and danger-outlined "Borrar", which opens the reset sheet. Each entry closes the menu and opens its own surface in the same tap.
 - **Points sheet** (accent: the team colour): name field, points field, then "Cancelar" and the team's "Anotar". With a new name and no points the confirm reads "Guardar nombre". The same sheet corrects a hand: a Title heading ("Corregir mano 2 de Equipo B") takes the place of the name field, the points field opens with the hand's points selected, and the confirm reads "Guardar".
-- **Settings sheet** (accent: Text colour): title "Ajustes", the appearance choice, the fields "Meta: puntos para ganar" and "Puntos rápidos: el botón +", then "Cancelar" and neutral "Guardar".
-- **Reset sheet** (accent: Danger): title, then two choices, each a full-width slab with its explanation 8 beneath it in Muted Text, tied to the button as its description: outlined "Solo las manos" and Danger "Todo". Below them one sentence in Text colour says that both can be undone, then a compact outlined "Cancelar". Blocks are 16 apart.
+- **Settings sheet** (accent: Text colour): title "Ajustes", the fields "Meta: puntos para ganar" and "Puntos rápidos: el botón +", then "Cancelar" and neutral "Guardar".
+- **Team sheet** (accent: the colour of the team's side, or Text colour for a team with no side yet): title ("Equipo" or "Equipo nuevo"), the name field, then the two player fields side by side, 16 apart, stacking once each has less than 8rem. One sentence is always present beneath them: in Muted Text it says that the players are optional, both or neither; in Danger it names the error (one player missing, or a name another team already has). Where the team can be removed, a danger-outlined "Quitar equipo" follows. Then "Cancelar" and the confirm ("Guardar" or "Añadir"), a team slab or a neutral one to match the accent.
+- **Team picker** (accent: the colour of the seat being filled): a Title question naming the team to be replaced, then the teams that are waiting, longest wait first, as leaning Surface rows 8 apart (minimum height 60, 24 horizontal and 8 vertical padding): name (Button) and players (Label, Muted Text) at the left, wins (Label, Muted Text) at the right. Then a compact outlined "Cancelar".
+- **End-of-tournament sheet** (accent: Danger): a Title question, then what ending now would mean in Muted Text (capped at 65ch, line-height 1.35), with "Se puede deshacer." in Text colour. Actions are stacked 12 apart: with a tie at the top, neutral "Jugar desempate" and Danger "Terminar sin campeón"; with no match played, Danger "Cancelar torneo"; otherwise Danger "Terminar torneo". Below them a compact outlined "Seguir jugando".
+- **Reset sheet** (accent: Danger): title, then two choices, each a full-width slab with its explanation 8 beneath it in Muted Text, tied to the button as its description: outlined "Solo las manos" and Danger "Todo". Below them one sentence in Text colour says that both can be undone, then a compact outlined "Cancelar". Blocks are 16 apart. During a tournament only "Solo las manos" is offered, and a Muted sentence says that the tournament is ended from its table.
 - **Closing:** Escape, the system Back gesture, a tap on the scrim and "Cancelar" all close the sheet and discard; nothing is saved without its button.
 - **Motion:** the panel slides up from below over 200 ms while the scrim fades in, and reverses on close.
 
 ### Winner Screen
-A full-screen `<dialog>`. The winning team's colour floods the screen, sweeping in from that team's side over 220 ms; the content fades in 60 ms behind it. The content keeps to the 480 column. On the flood, in Graphite Ink: the triple-slash mark (40), the heading (Display), the winner sentence (Title) and the rounds line (Body size, 600 italic). The scores group is centred in the flexible middle of the screen with a 12 gap between its two slabs. Heading and scores scroll together when they do not fit, with a thin Graphite Ink scrollbar; the actions are pinned 16 below that region and never leave the screen.
-- **Winner's slab:** a large Graphite Ink leaning layer with the team name (Button) stacked above the total (Winner, shrinks to fit), both printed in the winning team colour. Padding 40 horizontal, 24 top, 12 bottom.
-- **Other team's slab:** the flood colour with a 2-pixel Graphite Ink outline, name at the left (Button) and total at the right (Display), both in Graphite Ink. Padding 32 horizontal, 8 vertical.
-- **Actions:** stacked with a 12 gap. A compact slab in the flood colour with an ink outline takes back what ended the round; its label names the cause ("Corregir última mano", "Deshacer la corrección", "Volver a meta 200", "Cambiar la meta"). Below it, the Ink slab "Nueva ronda" counts the win and clears the board.
+A full-screen `<dialog>`. The winning side's colour floods the screen, sweeping in from that side over 220 ms; the content fades in 60 ms behind it. The content keeps to the 480 column. On the flood, in Graphite Ink: the triple-slash mark (40), the heading (Display), the winner sentence (Title) and the wins line (Body size, 600 italic). The scores group is centred in the flexible middle of the screen with a 12 gap between its two slabs. Heading and scores scroll together when they do not fit, with a thin Graphite Ink scrollbar; the actions are pinned 16 below that region and never leave the screen.
+- **Winner's slab:** a large Graphite Ink leaning layer with the team name (Button) and its players line (Label) stacked above the total (Winner, shrinks to fit), all printed in the winning team colour. Padding 40 horizontal, 24 top, 12 bottom.
+- **Other team's slab:** the flood colour with a 2-pixel Graphite Ink outline, name and players line at the left (Button, Label) and total at the right (Display), all in Graphite Ink. Padding 32 horizontal, 8 vertical.
+- **Actions:** stacked with a 12 gap. A compact slab in the flood colour with an ink outline takes back what ended the match; its label names the cause ("Corregir última mano", "Deshacer la corrección", "Volver a meta 200", "Cambiar la meta"). Below it, the Ink slab counts the win and clears the board; its label says what follows: "Nueva partida", or in a tournament "Siguiente partida" or "Ver resultado".
 - **Compact (short screens):** the mark is left out, the heading drops to Title size and the winner sentence to Button size. The scores sit at the top of their region with 12 vertical padding. The winner's slab becomes a single line, name at the left and total at the right in Display size, padding 32 horizontal and 8 vertical, lean inset 12; the other team's total drops to Title size. Actions are 48 tall with an 8 gap, and at 30em wide they sit side by side, each taking half, with a 12 gap.
-- **Closing:** Escape and the system Back do the same as the correction slab. The winner screen waits until any open sheet has closed.
+- **Closing:** Escape and the system Back do the same as the correction slab. The winner screen waits until any open sheet or full screen has closed.
+
+### Full Screens
+A full-screen `<dialog>` above the board for what takes more than a moment. Ground colour, Text colour type, the three bands described under Layout. The back control is a 48-pixel square with a 24-pixel chevron in the colour of the text; pressed, it drops to 70% opacity.
+- **Closing:** the back control, Escape and the system Back return to where the reader came from. A locked screen shows a step that has to be answered: it has no back control, Escape does nothing, and if the system Back closes it, it opens again.
+- **Flood:** a screen given a side is flooded with that side's colour, the same layer as the winner flood, and carries Graphite Ink: type, focus ring, footer hairline and scrollbar.
+- **Motion:** the screen slides in from 24% to the right while fading in over 220 ms, and leaves the same way.
+- **History** ("Historial"): a choice group "Mostrar" (Todo, Partidas, Torneos), then the entries, newest first, 8 apart; a match played in a tournament is listed inside its tournament. At the end a danger-outlined "Borrar historial". With nothing to show, the empty state of the board with its own heading and sentence, and no filter while the history itself is empty.
+- **Match** ("Partida"): the facts line (Label, Muted Text, 16 between facts, wrapping): date, target, hands, and whether it belonged to a tournament. Then the two sides, then every hand in order as score rows that cannot be pressed. Footer: compact Danger "Eliminar", only for a match outside a tournament.
+- **Tournament record** ("Torneo"): the facts line, the champion slab or "Sin campeón" (Title), then "Clasificación" with the ranking list and "Partidas" with the match entries, each under a Button heading with an 8 gap. Footer: compact Danger "Eliminar".
+- **Tournament setup** ("Torneo nuevo"): under the label "Equipos", the team rows and a compact outlined "Añadir equipo" with a 20-pixel plus icon, replaced by a sentence once the limit is reached; then the choice group "Final del torneo" (Primero a, Mejor de, Libre) with its number field, whose notice says how many wins are needed, or a sentence for "Libre". A last sentence warns that the board will be cleared when there is something on it. Footer: neutral "Empezar torneo", disabled until the rule is valid. Nothing is kept until it starts.
+- **Team row:** a leaning Surface row that is a button, minimum height 60, padding 8 vertical, 16 left, 24 right: position number (Title size, Muted Text), name (Button) above the players line or "Sin jugadores" (Label, Muted Text), and a 20-pixel pencil. It opens the team sheet.
+- **Next match** (locked; "Primera partida", "Siguiente partida" or "Desempate"): a lead sentence in Muted Text, the two seat slabs 12 apart, and under the label "Esperan turno" the names of the waiting teams in one wrapping line (Button, line-height 1.4). Footer: a row of compact outlined "Volver atrás", when there is a step to take back, and "Tabla"; below it neutral "Empezar partida".
+- **Standings** ("Tabla"): the facts line (rule and matches played), a sentence naming the teams in a tie-break, and the ranking list. Footer: danger-outlined "Terminar torneo", which opens the end-of-tournament sheet.
+- **Champion** (locked; "Campeón del torneo", or "Torneo terminado" with no champion): flooded with the colour of the side the champion last won on. The champion slab in its ink form, or a sentence naming the tied teams, then "Clasificación" with the ranking list. Footer: compact "Volver atrás", when there is a step to take back, and "Guardar y salir".
+
+### Seat Slabs
+The two sides of the next match, stacked: left seat above in Safety Orange, right seat below in Acid Yellow. Each is a leaning team-colour layer (lean inset 18, Team Edge keyline), minimum height 120, padding 16 vertical and 40 horizontal, holding the team name (Title), its players line (Meta) and the wins chip 8 below; all text is Graphite Ink.
+- **The slab is a button** that opens the team picker for that seat, and shows a 28-pixel mark of two passing arrows at its right in Graphite Ink. With no team waiting it is disabled, the arrows are left out and it does not respond.
+- **Hover:** fill brightens by 6%. **Pressed:** fill at 70% opacity. **Focus-visible:** Graphite Ink ring drawn 8 pixels inside the slab.
+
+### Match Sides
+The score of a finished match: two leaning team-colour layers side by side (lean inset 18, Team Edge keyline, padding 12 vertical and 36 horizontal), left side and right side as they sat at the board. Each holds the team name (Button), players line (Label), total (Display, shrinks to fit) and the "Ganador" chip, in Graphite Ink.
+
+### List Entries
+- **Match entry:** a leaning Surface layer that is a button (lean inset 8, padding 12 vertical and 24 horizontal, 4 between lines). First the date (Label, Muted Text), with "Desempate" at its right in Text colour when it was one. Then one line per team, at least 36 tall: name (Button) and total at the right in a 64-wide column. The winner's line is Text colour with its total in a points chip of the side it played on; the other line is Muted Text with a plain total.
+- **Tournament entry:** the same entry on Raised Surface: date; a line with the triple-slash mark (14, Text colour), "Torneo" (Button) and the summary at the right ("4 equipos · 6 partidas", Label, Muted Text); a line with "Campeón" (Label, Muted Text) and the champion chip, or "Sin campeón".
+- **States:** hover brightens the layer by 12%; pressed drops it to 70% opacity.
+
+### Ranking List
+A tournament's teams in order, most matches won first. Column heads in Label type, Muted Text (Graphite Ink on a flood): "Equipo", "G", "P". Rows are leaning Surface layers 8 apart (lean inset 8, minimum height 60, padding 8 vertical, 16 left, 24 right, 8 between columns): position number in a 2.25rem column (Muted Text), team name (Button) above its players line (Label, Muted Text), then matches won (800, Text colour) and lost (600, Muted Text), each centred in a 2.5rem column, all tabular. The rows that share the most wins, once there is at least one, sit on Raised Surface with a 2-pixel Text colour keyline and print their position in Text colour. Rows are not buttons.
+
+### Champion Slab
+The team that won a tournament, on a large leaning layer (lean inset 22, padding 16 vertical and 48 horizontal): the name (Display, shrinks to fit), its players line (Body size, 600 italic) and the wins line (Meta) 4 below. On a tournament record the role "Campeón" (Meta) is printed above the name; on the champion screen the title already says it.
+- **On the ground:** the colour of the side the champion last won on, Graphite Ink type, Team Edge keyline. With no side, Text colour fill with Ground colour type and no keyline.
+- **On its own flood:** Graphite Ink fill with type in the flood's colour, as the winner's slab.
 
 ### Navigation
-None. The header carries two utility controls: the target slab and the reset control, a 24-pixel bin icon in a 48-pixel square that opens the reset sheet. Hover turns the icon from Muted Text to Text colour; pressed drops it to 70% opacity.
+There is no navigation bar. The header's menu control, a 24-pixel mark of three leaning bars in a 48-pixel square, opens the menu sheet, which leads to the tournament, the history, the two teams, the appearance and the reset sheet. Hover turns the icon from Muted Text to Text colour; pressed drops it to 70% opacity. Full screens open one over another (history, then a tournament, then one of its matches) and each returns through its own back control. The two steps of a tournament that must be answered, the next match and the champion, open by themselves and are locked.
 
-### Appearance Choice
-Three compact outlined slabs in one row under the label "Apariencia" (Label size, Muted Text): "Sistema", "Claro", "Oscuro", 8 apart, lean inset 5. The chosen one takes the neutral fill (Text colour, Ground label, no edge). It is a radio group: arrow keys move the choice and wrap around. It applies on touch and is announced; "Guardar" and "Cancelar" belong to the two numbers only. The header control is the one-tap form of the same choice: it switches to the opposite of what is showing, whatever decided it, and its name says where it leads ("Cambiar a modo claro" / "Cambiar a modo oscuro").
+### Choice Group
+One choice out of a few: compact outlined slabs in one row under a label (Label size, Muted Text), sharing the width equally, 8 apart, lean inset 5, 8 horizontal padding. The chosen one takes the neutral fill (Text colour, Ground label, no edge). Labels shrink to fit, down to 0.4. It is a radio group: arrow keys move the choice and wrap around. It applies on touch. Three are in use: "Apariencia" in the menu sheet (Sistema, Claro, Oscuro), which is announced as it changes; "Mostrar" in the history; "Final del torneo" in the tournament setup.
 
 ### Icons
-Line icons drawn inline as SVG on a 24 grid with a 2-pixel round-capped stroke, always Muted Text colour: a pencil (16 in the target slab, 20 in the 48-pixel label beside the name field), a bin (24), and the appearance mark (24), which shows what is on now: a moon by night, a sun by day. They mark utilities, are hidden from assistive technology, and never carry a team colour.
+Line icons drawn inline as SVG on a 24 grid with a round-capped stroke, 2 pixels wide, and 2.5 for the two marks of direction (the back chevron and the swap arrows). Utility icons are Muted Text: a pencil (16 in the target slab, 20 in a team row and in the 48-pixel label beside the name field) and the menu mark (24). An icon inside a slab or a bar takes the colour of its label: the plus of "Añadir equipo" (20), the bin of "Borrar" (20, Danger), the back chevron (24), and the swap arrows on a seat slab (28, Graphite Ink). They are hidden from assistive technology, and never carry a team colour.
 
 ### Undo Bar
-The board's one transient bar: a leaning layer in inverse colours (Text colour fill, Ground colour type) floating over the bottom of the list, 8 above the quick bar with 16 side margins, minimum height 52, padding 24 left, 8 right and 4 above and below. The message is Body type, upright, line-height 1.25; it wraps onto as many lines as it needs and the bar grows with it. The action is a text action that keeps its width; its focus ring is Ground colour, drawn 5 pixels inside the target so the whole ring sits on the bar's own fill. It rises 12 pixels while fading in over 200 ms.
+The board's one transient bar: a leaning layer in inverse colours (Text colour fill, Ground colour type) floating over the bottom of the list, 8 above the quick bar with 16 side margins, minimum height 52, padding 24 left, 8 right and 4 above and below. The message is Body type, upright, line-height 1.25; it wraps onto as many lines as it needs and the bar grows with it. The action is a text action that keeps its width; once the message would have less than 9rem beside it, the action moves under the message, at the right. Its focus ring is Ground colour, drawn 5 pixels inside the target so the whole ring sits on the bar's own fill. It rises 12 pixels while fading in over 200 ms.
 - **One hand:** a deleted hand, a corrected hand and a hand added with the quick-points slab each offer an undo for 8 seconds. Only that hand is reversed, so hands scored in the meantime stay.
-- **The whole board:** a closed round, cleared hands and a full reset offer an undo with no time limit. The offer survives closing and reopening the app, and ends when the board next changes.
-- **Update notice:** with nothing to undo and no hands on the board, the same bar says that a new version is waiting ("Hay una versión nueva") with the action "Actualizar". It never interrupts a round.
+- **The whole board:** a closed match, cleared hands, a full reset and every step of a tournament (started, tie-break started, ended, cancelled, saved) offer an undo with no time limit. The offer survives closing and reopening the app, and ends when the board next changes. On the two locked screens the same step back is the footer's "Volver atrás".
+- **The history:** a deleted match or tournament offers an undo for 8 seconds; a cleared history offers it with no time limit. On a full screen the bar floats over the end of the body, 8 above the footer, and offers back only what was removed from the history; while it shows, the body gains 88 of bottom padding so its last entry stays visible.
+- **Update notice:** with nothing to undo and no hands on the board, the same bar says that a new version is waiting ("Hay una versión nueva") with the action "Actualizar". It never interrupts a match, and it is shown on the board only.
 
 ### Motion
 Every authored movement is brief and uses one curve, an exponential ease-out (`--ease-out`).
 - **Row enter:** 200 ms, 56 pixels sideways from the scoring team's side.
 - **Total pop:** 220 ms, scale 1.14 to 1.
 - **Sheet slide:** 200 ms, up from below the bottom edge, with the scrim fading over the same time.
+- **Screen slide:** 220 ms, from 24% to the right with a fade; a flooded screen's colour sweeps in as the winner flood does.
 - **Winner flood:** 220 ms, from 1.6 screen widths on the winner's side; content fades in over 220 ms after a 60 ms delay.
 - **Undo bar rise:** 200 ms, 12 pixels up with a fade.
 - **Press shift:** 90 ms, 3 pixels right.
@@ -453,12 +629,12 @@ Every authored movement is brief and uses one curve, an exponential ease-out (`-
 All of it is declared only when the reader has not asked for reduced motion. Under `prefers-reduced-motion` every surface appears in its final state, the press keeps its opacity change but not its shift, and the list jumps to the end instead of scrolling smoothly. Where the browser supports it, a new hand gives a 15 ms vibration and a win gives a short pattern; iOS stays silent. The screen is kept awake while the scoreboard is visible.
 
 ### Accessibility Behaviour
-- **Announcements.** One visually hidden live region (`role="status"`) speaks each change: the scoring team's name and new total after a hand, the winner sentence when a round is won, the undo message followed by "Deshacer" when an undo is offered, and "Deshecho" once it is taken. A repeated message is altered invisibly so it is spoken again. Field errors and notices sit in their own always-present status element tied to the field, so they are heard as they arrive.
-- **Labels.** Every control carries a Spanish label that states its result: a livery reads its name, total, points remaining and rounds won; a row reads its hand, team and points and says that it opens options; a selected hand is a group named the same way, and "Corregir" and "Eliminar" name the hand they act on. The points sheet is named for what it does: "Anotar para" the team, or the hand being corrected.
-- **Dialogs.** Sheets and the winner screen are modal `<dialog>` elements named by their title. Escape and system Back close them. Focus returns to the control that opened the sheet, for every kind of input; after a touch only the ring is withheld, so a screen reader continues from the same place.
+- **Announcements.** One visually hidden live region (`role="status"`) speaks each change: the scoring team's name and new total after a hand, the winner sentence when a match is won, the champion when a tournament is won, the appearance when it is chosen, the undo message followed by "Deshacer" when an undo is offered, and "Deshecho" once it is taken. A repeated message is altered invisibly so it is spoken again. Every full screen carries its own copy of the region, because the board's is out of reach while a dialog is open. Field errors and notices sit in their own always-present status element tied to the field, so they are heard as they arrive.
+- **Labels.** Every control carries a Spanish label that states its result: a livery reads its name, players, total, points remaining and matches won; a row reads its hand, team and points and says that it opens options; a selected hand is a group named the same way, and "Corregir" and "Eliminar" name the hand they act on. A history entry reads its date, result and what opening it shows; a ranking row reads its position, team, and matches won and lost, and the column heads "G" and "P" are spelled out once for screen readers; a seat reads its team, players and wins, and says that it can be changed. The points sheet is named for what it does: "Anotar para" the team, or the hand being corrected.
+- **Dialogs.** Sheets, full screens and the winner screen are modal `<dialog>` elements named by their title. Escape and system Back close them, except a locked screen, which stays until its own action is taken. Focus returns to the control that opened the surface, for every kind of input; after a touch only the ring is withheld, so a screen reader continues from the same place. The menu closes before the surface it leads to opens, so focus comes back to the menu control.
 - **Undo bar.** The 8-second timer of a single hand pauses while the pointer is over the bar or focus is inside it, and starts again when it leaves. Once an undo is taken the bar is gone, so focus moves to the hand that came back or changed, or to the board itself, which shows no ring.
 - **Long press.** Long press has no keyboard or screen-reader equivalent, so it is only a shortcut: the header's target slab opens the same settings sheet, where the quick-points value is the second field.
-- **Text size.** Layout survives the reader's font size up to the caps: paired actions stack, labels shrink to fit, the undo message wraps, sheets and the winner's scores scroll inside themselves, and the short-screen layout arrives sooner because its thresholds are in em.
+- **Text size.** Layout survives the reader's font size up to the caps: paired actions stack, labels shrink to fit, the undo message wraps and its action moves under it, the two player fields stack, sheets, screens and the winner's scores scroll inside themselves, and the short-screen layout arrives sooner because its thresholds are in em.
 - **Page.** The document language is Spanish and the page has one visually hidden heading with the app's name.
 
 ## Do's and Don'ts
@@ -468,6 +644,7 @@ All of it is declared only when the reader has not asked for reduced motion. Und
 - **Do** inset the leaning layer by half its lean so the slanted ends stay inside the element's box.
 - **Do** put Graphite Ink on Safety Orange and Acid Yellow in both appearances.
 - **Do** give every team-colour fill on the ground or a surface the 2-pixel Graphite Ink keyline by day.
+- **Do** give a team the colour of the side it sits on in a tournament, and a champion the colour of the side it last won on, or Text colour when there is none.
 - **Do** set names, numbers and commands in Kanit italic capitals, and keep upright sentence case for full sentences.
 - **Do** use tabular numerals for any number that updates.
 - **Do** size type in rem with a pixel cap: 1.6 times for text, 1.2 times for numerals and the winner heading. Let one-line text shrink to fit.
@@ -475,8 +652,9 @@ All of it is declared only when the reader has not asked for reduced motion. Und
 - **Do** mark state by stepping a neutral tone (Surface to Raised Surface), by adding a Text colour keyline, or by swapping fill and outline.
 - **Do** give every interactive element the 3-pixel focus ring, in a colour that contrasts with the surface it sits on and drawn wholly on that surface. After a touch, withhold the ring but leave focus where it is; text fields always keep theirs.
 - **Do** bring things in from the side or edge that owns them, in 200 to 220 ms with the exponential ease-out, and declare the movement only when reduced motion is not requested.
-- **Do** keep text fields and the sheet panel rectangular.
-- **Do** keep sheets above the on-screen keyboard and inside the 480 column.
+- **Do** keep text fields, the sheet panel and the full screen rectangular.
+- **Do** keep sheets above the on-screen keyboard and inside the 480 column, and full screens inside the same column.
+- **Do** pin a screen's actions in its footer and let only its body scroll.
 - **Do** tighten the same parts when the viewport is 36em tall or less, with thresholds in em, and keep the actions of every overlay on screen.
 - **Do** keep what is about to change in view while its options are showing, and put each explanation directly under the action it explains.
 - **Do** give any gesture-only shortcut a visible control that reaches the same value.
@@ -491,4 +669,4 @@ All of it is declared only when the reader has not asked for reduced motion. Und
 - **Don't** add a second ornament alongside the triple-slash mark.
 - **Don't** give a utility icon a team colour.
 - **Don't** save anything when a sheet is dismissed; only its button commits.
-- **Don't** let the page scroll; the list is the only scrolling region on the board.
+- **Don't** let the page scroll; the list is the only scrolling region on the board, and the body the only one on a full screen.

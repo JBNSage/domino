@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-29T04:02:23Z",
+  "generatedAt": "2026-09-29T06:07:30Z",
   "title": "Design System: Dominó",
   "extensions": {
     "colorMeta": {
@@ -396,7 +396,7 @@
       },
       "display": {
         "displayName": "Display",
-        "purpose": "Winner heading and the other team's total on the winner screen; the winner's total in the compact winner screen.",
+        "purpose": "Winner heading and the other team's total on the winner screen; the totals of a finished match; the name on the champion slab; the winner's total in the compact winner screen.",
         "fontStyle": "italic",
         "cssVariable": "--t-display",
         "scalingCap": "1.2x",
@@ -411,7 +411,7 @@
       },
       "title": {
         "displayName": "Title",
-        "purpose": "Target value, team name field, sheet titles, empty-state heading, winner sentence. On a short screen also number-field text, the winner heading and the other team's total.",
+        "purpose": "Target value, team name field and text field, sheet and screen titles, empty-state headings, winner sentence, team name on a seat slab, figures of a ranking. On a short screen also number-field text, the winner heading, the other team's total and the name on the champion slab.",
         "fontStyle": "italic",
         "cssVariable": "--t-title",
         "scalingCap": "1.6x",
@@ -419,7 +419,7 @@
       },
       "button": {
         "displayName": "Button",
-        "purpose": "Slab labels, team names, points in row chips; the winner sentence on a short screen.",
+        "purpose": "Slab labels, team names, points in row chips, the two player fields, section headings of a screen, names waiting their turn; the winner sentence on a short screen.",
         "fontStyle": "italic",
         "cssVariable": "--t-button",
         "scalingCap": "1.6x",
@@ -427,7 +427,7 @@
       },
       "compact": {
         "displayName": "Compact",
-        "purpose": "Label of a compact slab.",
+        "purpose": "Label of a compact slab. The header's Tabla slab holds it to 5.5vw.",
         "fontStyle": "italic",
         "cssVariable": "--t-compact",
         "scalingCap": "1.6x",
@@ -435,14 +435,14 @@
       },
       "body": {
         "displayName": "Body",
-        "purpose": "Full sentences only: explanations, field messages, undo message. Upright. Text actions use this size in 800 italic capitals, underlined.",
+        "purpose": "Full sentences only: explanations, field messages, undo message. Upright. Text actions use this size in 800 italic capitals, underlined; the players line on the champion slab uses it in 600 italic capitals.",
         "fontStyle": "normal",
         "cssVariable": "--t-body",
         "scalingCap": "1.6x"
       },
       "meta": {
         "displayName": "Meta",
-        "purpose": "Points remaining and rounds chip inside a livery; the team name on a livery on a short screen.",
+        "purpose": "Points remaining and rounds chip inside a livery; wins chip and players line on a seat slab; the Ganador chip; role and wins lines on the champion slab; the team name on a livery on a short screen.",
         "fontStyle": "italic",
         "cssVariable": "--t-meta",
         "scalingCap": "1.6x",
@@ -450,7 +450,7 @@
       },
       "label": {
         "displayName": "Label",
-        "purpose": "Field labels and hand numbers; weight 800 on the newest and the selected row.",
+        "purpose": "Field labels, group labels, column heads and hand numbers; the players line under a team name; dates, summaries and the facts line of a screen. Weight 800 on the hand number of the newest and the selected row.",
         "fontStyle": "italic",
         "cssVariable": "--t-label",
         "scalingCap": "1.6x",
@@ -466,7 +466,7 @@
       },
       {
         "name": "row-enter",
-        "value": "200ms translateX from -56px (team A) or 56px (team B)",
+        "value": "200ms translateX from -56px (left side) or 56px (right side)",
         "purpose": "A new hand streaks in from its team's side."
       },
       {
@@ -480,8 +480,18 @@
         "purpose": "A sheet rises from the bottom edge and leaves the same way."
       },
       {
+        "name": "screen-slide",
+        "value": "220ms translateX from 24% with opacity from 0 (opacity ease-out)",
+        "purpose": "A full screen arrives from the right and leaves the same way."
+      },
+      {
+        "name": "screen-flood",
+        "value": "220ms translateX from -160vw (left side) or 160vw (right side)",
+        "purpose": "The colour of the champion's side floods a toned screen, as the winner flood does."
+      },
+      {
         "name": "winner-flood",
-        "value": "220ms translateX from -160vw (team A) or 160vw (team B); content opacity 220ms ease-out after 60ms",
+        "value": "220ms translateX from -160vw (left side) or 160vw (right side); content opacity 220ms ease-out after 60ms",
         "purpose": "The winning colour floods the screen."
       },
       {
@@ -496,7 +506,7 @@
       },
       {
         "name": "hover",
-        "value": "filter brightness(1.12) on slabs and rows, brightness(1.06) on liveries; only under (hover: hover)",
+        "value": "filter brightness(1.12) on slabs, rows and list entries, brightness(1.06) on liveries and seat slabs; only under (hover: hover)",
         "purpose": "Pointer hover."
       },
       {
@@ -514,12 +524,17 @@
       {
         "name": "short",
         "value": "(max-height: 36em)",
-        "purpose": "Compact layout for a phone on its side or large text on a small phone: strip lockup, 48-pixel slabs, 56-pixel number fields, no triple-slash mark in overlays, compact winner screen."
+        "purpose": "Compact layout for a phone on its side or large text on a small phone: strip lockup, 48-pixel slabs, 56-pixel number fields, no triple-slash mark in overlays, compact winner screen, tighter screen bar and footer, seat slabs without a minimum height, champion name in Title size."
       },
       {
         "name": "short-wide",
         "value": "(max-height: 36em) and (min-width: 30em)",
-        "purpose": "On a short screen with room across: quick-points beside Anotar, points remaining beside the total, winner actions side by side."
+        "purpose": "On a short screen with room across: quick-points beside Anotar, points remaining beside the total, winner actions, screen footer actions, menu entries and seat slabs side by side."
+      },
+      {
+        "name": "narrow",
+        "value": "(max-width: 24em)",
+        "purpose": "While a tournament is being played the header hides the Meta label, so the target slab, the Tabla slab and the menu control fit."
       }
     ],
     "mediaFeatures": [
@@ -538,6 +553,10 @@
       {
         "name": "max-height: 36em",
         "purpose": "The short-screen layout; em-based, so it follows the reader's font size."
+      },
+      {
+        "name": "max-width: 24em",
+        "purpose": "The header's one narrow-width rule; em-based."
       }
     ],
     "shape": {
@@ -549,9 +568,14 @@
       "leanInset": {
         "default": "6px",
         "chip": "3px",
-        "winnerOtherSlab": "8px",
-        "winnerSlab": "24px",
+        "sharedRowSlab": "5px",
         "selectedRowOption": "5px",
+        "listEntry": "8px",
+        "winnerOtherSlab": "8px",
+        "seatSlab": "18px",
+        "matchSide": "18px",
+        "championSlab": "22px",
+        "winnerSlab": "24px",
         "winnerSlabCompact": "12px"
       },
       "teamEdgeWidth": {
@@ -572,6 +596,19 @@
       "column": "480px",
       "sheetMaxHeight": "calc(92dvh - var(--keyboard-inset))",
       "pressedOpacity": 0.7,
+      "rankingRowMinHeight": "60px",
+      "teamRowMinHeight": "60px",
+      "pickerOptionMinHeight": "60px",
+      "seatSlabMinHeight": "120px",
+      "entryLineMinHeight": "36px",
+      "textFieldMinHeight": "48px",
+      "menuButton": "48px",
+      "backButton": "48px",
+      "screenBarPadding": "12px 24px 12px 8px",
+      "screenBodyPadding": "8px 16px 24px",
+      "screenBodyGap": "24px",
+      "screenFooterPadding": "12px 32px calc(max(env(safe-area-inset-bottom), 12px) + 4px)",
+      "screenBodyPaddingWithUndo": "88px",
       "shortScreen": {
         "slabMinHeight": "48px",
         "numberFieldMinHeight": "56px",
@@ -579,15 +616,23 @@
         "headerPaddingBlock": "4px",
         "quickBarPaddingBlock": "8px",
         "sheetGap": "12px",
-        "sheetPaddingTop": "16px"
+        "sheetPaddingTop": "16px",
+        "screenBarPaddingBlock": "4px",
+        "screenBodyGap": "16px",
+        "screenFooterPaddingTop": "8px",
+        "seatSlabMinHeight": "0",
+        "seatSlabPaddingBlock": "8px",
+        "championSlabPaddingBlock": "8px"
       }
     },
     "layout": {
       "viewport": "100dvh column, max-width 480px, centred; body does not scroll",
-      "safeArea": "top inset above the header; bottom inset under the quick bar, sheet panels and winner screen",
+      "safeArea": "top inset above the header and above a screen bar; bottom inset under the quick bar, sheet panels, screen footers and winner screen",
       "keyboard": "--keyboard-inset is set on the root element from window.visualViewport; sheets anchor their bottom edge to it",
-      "shortScreens": "at max-height 36em the same parts tighten; at min-width 30em as well, stacked pairs sit side by side. The column stays 480px.",
-      "list": "follows a new hand to the end; other changes leave the scroll position, unless the undo bar arrives within 80px of the end"
+      "shortScreens": "at max-height 36em the same parts tighten; at min-width 30em as well, stacked pairs sit side by side. The column stays 480px. Below max-width 24em the header hides the Meta label during a tournament.",
+      "list": "follows a new hand to the end; other changes leave the scroll position, unless the undo bar arrives within 80px of the end",
+      "screens": "full-screen dialog in three bands inside the 480px column: bar (back control and title), scrolling body, pinned footer under a 1px hairline. A locked screen has no back control.",
+      "header": "target slab at the left; Tabla slab (tournament only) and one 48px menu control at the right"
     },
     "focus": {
       "ring": "3px solid var(--focus, var(--c-text)), outline-offset 3px",
@@ -598,20 +643,25 @@
         "undoBar": "ground, offset -5px on the action",
         "numberField": "offset 0",
         "nameField": "offset 2px",
-        "main": "no ring; it only receives focus from script after an undo"
+        "main": "no ring; it only receives focus from script after an undo",
+        "seatSlabs": "ink, offset -8px",
+        "floodedScreen": "ink",
+        "textField": "offset 2px; underline turns to text colour"
       }
     },
     "timing": {
       "undoSingleHand": "8000ms for a deleted, corrected or quick-added hand; paused while hovered or focused",
-      "undoBoard": "no time limit for a closed round, cleared hands or a full reset; persisted across a restart; ends when the board changes",
-      "longPress": "500ms hold, 10px slop"
+      "undoBoard": "no time limit for a closed match, cleared hands, a full reset and every step of a tournament; persisted across a restart; ends when the board changes",
+      "longPress": "500ms hold, 10px slop",
+      "undoHistory": "8000ms for a deleted match or tournament; no time limit for a cleared history. Full screens offer only these."
     },
     "fitText": {
       "minScale": 0.5,
       "winnerTotalMinScale": 0.4,
       "slack": 0.96,
       "clip": "overflow-x: clip; overflow-y: visible",
-      "endPadding": "0.12em"
+      "endPadding": "0.12em",
+      "choiceLabelMinScale": 0.4
     }
   },
   "components": [
@@ -651,7 +701,7 @@
       "name": "Slab Button, Neutral",
       "kind": "button",
       "refersTo": "slab-button-neutral",
-      "description": "Filled confirm in inverse neutrals: Guardar on the settings sheet, compact Corregir under a selected hand.",
+      "description": "Filled confirm in inverse neutrals: Guardar on the settings sheet, Empezar torneo, Empezar partida, Guardar y salir, compact Corregir under a selected hand.",
       "html": "<button class=\"ds-slab-neutral\">Guardar</button>",
       "css": ".ds-slab-neutral { position: relative; isolation: isolate; } .ds-slab-neutral::before { content: ''; position: absolute; inset: 0 6px; z-index: -1; background: var(--c-text, #fff); border: 2px solid transparent; transform: skewX(-12deg); } .ds-slab-neutral { display: inline-flex; align-items: center; justify-content: center; min-width: 160px; min-height: 56px; padding: 0 24px; border: 0; background: none; color: var(--c-ground, #0e1114); font-family: var(--font, 'Kanit', sans-serif); font-style: italic; font-weight: 800; font-size: var(--t-button, 1.25rem); line-height: 1.1; letter-spacing: 0.5px; text-transform: uppercase; white-space: nowrap; cursor: pointer; transition: transform 90ms cubic-bezier(0.16, 1, 0.3, 1); } .ds-slab-neutral:not(:disabled):hover::before { filter: brightness(1.12); } .ds-slab-neutral:not(:disabled):active { transform: translateX(3px); } .ds-slab-neutral:not(:disabled):active::before { opacity: 0.7; } .ds-slab-neutral:focus-visible { outline: 3px solid var(--c-text, #fff); outline-offset: 3px; } .ds-slab-neutral:disabled { color: var(--c-muted, #b6bcc4); cursor: default; } .ds-slab-neutral:disabled::before { background: var(--c-raised, #2a2f36); border-color: transparent; }"
     },
@@ -659,9 +709,17 @@
       "name": "Slab Button, Danger",
       "kind": "button",
       "refersTo": "slab-button-danger",
-      "description": "An action that deletes: Eliminar under a selected hand, Todo on the reset sheet.",
+      "description": "An action that deletes or ends: Eliminar under a selected hand and in the history, Todo on the reset sheet, the confirming slab of the end-of-tournament sheet.",
       "html": "<button class=\"ds-slab-danger\">Eliminar</button>",
       "css": ".ds-slab-danger { position: relative; isolation: isolate; } .ds-slab-danger::before { content: ''; position: absolute; inset: 0 6px; z-index: -1; background: var(--c-danger, #ff6b5c); border: 2px solid transparent; transform: skewX(-12deg); } .ds-slab-danger { display: inline-flex; align-items: center; justify-content: center; min-width: 160px; min-height: 56px; padding: 0 24px; border: 0; background: none; color: var(--c-on-danger, #0e1114); font-family: var(--font, 'Kanit', sans-serif); font-style: italic; font-weight: 800; font-size: var(--t-button, 1.25rem); line-height: 1.1; letter-spacing: 0.5px; text-transform: uppercase; white-space: nowrap; cursor: pointer; transition: transform 90ms cubic-bezier(0.16, 1, 0.3, 1); } .ds-slab-danger:not(:disabled):hover::before { filter: brightness(1.12); } .ds-slab-danger:not(:disabled):active { transform: translateX(3px); } .ds-slab-danger:not(:disabled):active::before { opacity: 0.7; } .ds-slab-danger:focus-visible { outline: 3px solid var(--c-text, #fff); outline-offset: 3px; } .ds-slab-danger:disabled { color: var(--c-muted, #b6bcc4); cursor: default; } .ds-slab-danger:disabled::before { background: var(--c-raised, #2a2f36); border-color: transparent; }"
+    },
+    {
+      "name": "Slab Button, Danger Outlined",
+      "kind": "button",
+      "refersTo": "slab-button-danger-outlined",
+      "description": "Compact outlined slab in the danger colour: Borrar in the menu (with its bin icon), Quitar equipo, Borrar historial, Terminar torneo.",
+      "html": "<button class=\"ds-slab-danger-outline\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M4 7h16\"/><path d=\"M9 7V4h6v3\"/><path d=\"M6 7l1 13h10l1-13\"/><path d=\"M10 11v6M14 11v6\"/></svg>Borrar</button>",
+      "css": ".ds-slab-danger-outline { position: relative; isolation: isolate; } .ds-slab-danger-outline::before { content: ''; position: absolute; inset: 0 6px; z-index: -1; background: var(--c-ground, #0e1114); border: 2px solid var(--c-danger, #ff6b5c); transform: skewX(-12deg); } .ds-slab-danger-outline { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 0 16px; border: 0; background: none; font-family: var(--font, 'Kanit', sans-serif); font-style: italic; font-weight: 800; font-size: var(--t-compact, 1.125rem); line-height: 1.1; letter-spacing: 0.5px; text-transform: uppercase; white-space: nowrap; cursor: pointer; transition: transform 90ms cubic-bezier(0.16, 1, 0.3, 1); min-width: 160px; color: var(--c-danger, #ff6b5c); } .ds-slab-danger-outline svg { flex: none; width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; } .ds-slab-danger-outline:hover::before { filter: brightness(1.12); } .ds-slab-danger-outline:active { transform: translateX(3px); } .ds-slab-danger-outline:active::before { opacity: 0.7; } .ds-slab-danger-outline:focus-visible { outline: 3px solid var(--c-text, #fff); outline-offset: 3px; }"
     },
     {
       "name": "Slab Button, Disabled",
@@ -675,17 +733,25 @@
       "name": "Target Slab",
       "kind": "custom",
       "refersTo": "target-slab",
-      "description": "Compact outlined header slab showing the score that wins the round; opens the settings sheet.",
+      "description": "Compact outlined header slab showing the score that wins the match; opens the settings sheet.",
       "html": "<button class=\"ds-target\"><span class=\"ds-target-label\">Meta</span><span class=\"ds-target-value\">200</span><svg class=\"ds-target-pencil\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M4 20l1-4.5L16.5 4 20 7.5 8.5 19z\"/><path d=\"M14 6.5l3.5 3.5\"/></svg></button>",
       "css": ".ds-target { position: relative; isolation: isolate; } .ds-target::before { content: ''; position: absolute; inset: 0 6px; z-index: -1; background: var(--c-ground, #0e1114); border: 2px solid var(--c-line, #6b7480); transform: skewX(-12deg); } .ds-target { display: inline-flex; align-items: center; gap: 8px; min-height: 48px; padding: 0 16px; border: 0; background: none; color: var(--c-text, #fff); font-family: var(--font, 'Kanit', sans-serif); font-style: italic; font-weight: 800; text-transform: uppercase; white-space: nowrap; cursor: pointer; transition: transform 90ms cubic-bezier(0.16, 1, 0.3, 1); } .ds-target-label { color: var(--c-muted, #b6bcc4); font-weight: 600; font-size: var(--t-body, 1rem); line-height: 1.2; } .ds-target-value { font-size: var(--t-title, 1.75rem); font-variant-numeric: tabular-nums; } .ds-target-pencil { width: 16px; height: 16px; fill: none; stroke: var(--c-muted, #b6bcc4); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; } .ds-target:hover::before { filter: brightness(1.12); } .ds-target:active { transform: translateX(3px); } .ds-target:active::before { opacity: 0.7; } .ds-target:focus-visible { outline: 3px solid var(--c-text, #fff); outline-offset: 3px; }"
+    },
+    {
+      "name": "Header Tools",
+      "kind": "nav",
+      "refersTo": "menu-button",
+      "description": "The right side of the header: the compact Tabla slab, shown only while a tournament is being played, and the one menu control, three leaning bars in a 48-pixel square.",
+      "html": "<div class=\"ds-tools\"><button class=\"ds-table\">Tabla</button><button class=\"ds-menu\" aria-label=\"Menú\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M6.5 6.5h14M5 12h14M3.5 17.5h14\"/></svg></button></div>",
+      "css": ".ds-tools { display: inline-flex; align-items: center; gap: 4px; } .ds-table { position: relative; isolation: isolate; } .ds-table::before { content: ''; position: absolute; inset: 0 5px; z-index: -1; background: var(--c-ground, #0e1114); border: 2px solid var(--c-line, #6b7480); transform: skewX(-12deg); } .ds-table { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 0 16px; border: 0; background: none; font-family: var(--font, 'Kanit', sans-serif); font-style: italic; font-weight: 800; font-size: var(--t-compact, 1.125rem); line-height: 1.1; letter-spacing: 0.5px; text-transform: uppercase; white-space: nowrap; cursor: pointer; transition: transform 90ms cubic-bezier(0.16, 1, 0.3, 1); color: var(--c-text, #fff); } .ds-table:hover::before { filter: brightness(1.12); } .ds-table:active { transform: translateX(3px); } .ds-table:active::before { opacity: 0.7; } .ds-table:focus-visible { outline: 3px solid var(--c-text, #fff); outline-offset: 3px; } .ds-menu { display: grid; place-items: center; width: 48px; height: 48px; padding: 0; border: 0; background: none; cursor: pointer; } .ds-menu svg { width: 24px; height: 24px; fill: none; stroke: var(--c-muted, #b6bcc4); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; } .ds-menu:hover svg { stroke: var(--c-text, #fff); } .ds-menu:active { opacity: 0.7; } .ds-menu:focus-visible { outline: 3px solid var(--c-text, #fff); outline-offset: 3px; }"
     },
     {
       "name": "Livery Lockup",
       "kind": "custom",
       "refersTo": "livery-panel-team-a",
-      "description": "Both team panels cut on a fixed 36-pixel seam; each panel is a button that opens the points sheet.",
-      "html": "<div class=\"ds-lockup\"><button class=\"ds-livery ds-livery-a\"><span class=\"ds-livery-name\">Equipo A</span><span class=\"ds-livery-total\">75</span><span class=\"ds-livery-meta\"><span>Faltan 125</span><span class=\"ds-rounds\">1 ronda</span></span></button><button class=\"ds-livery ds-livery-b\"><span class=\"ds-livery-name\">Equipo B</span><span class=\"ds-livery-total\">42</span><span class=\"ds-livery-meta\"><span>Faltan 158</span><span class=\"ds-rounds\">3 rondas</span></span></button></div>",
-      "css": ".ds-lockup { --seam-lean: 36px; --edge-x: calc(var(--team-edge-width, 0px) * 1.1); display: flex; width: 390px; overflow: hidden; background: var(--c-ground, #0e1114); } .ds-livery { position: relative; isolation: isolate; flex: 1; min-width: 0; min-height: 172px; display: flex; flex-direction: column; justify-content: space-between; gap: 4px; padding: 16px; border: 0; background: none; color: var(--c-ink, #0e1114); text-align: left; font-family: var(--font, 'Kanit', sans-serif); font-style: italic; font-weight: 800; text-transform: uppercase; cursor: pointer; } .ds-livery-a { --team: var(--c-team-a, #ff5a00); padding-right: 24px; } .ds-livery-b { --team: var(--c-team-b, #dfff00); padding-left: 32px; } .ds-livery::before, .ds-livery::after { content: ''; position: absolute; top: 0; bottom: 0; z-index: -1; } .ds-livery-a::before, .ds-livery-a::after { left: -48px; right: -15px; } .ds-livery-b::before, .ds-livery-b::after { left: -15px; right: -48px; } .ds-livery::before { background: var(--c-team-edge, transparent); clip-path: polygon(var(--seam-lean) 0, 100% 0, calc(100% - var(--seam-lean)) 100%, 0 100%); } .ds-livery::after { background: var(--team); clip-path: polygon(calc(var(--seam-lean) + var(--edge-x)) var(--team-edge-width, 0px), calc(100% - var(--edge-x)) var(--team-edge-width, 0px), calc(100% - var(--seam-lean) - var(--edge-x)) calc(100% - var(--team-edge-width, 0px)), var(--edge-x) calc(100% - var(--team-edge-width, 0px))); } .ds-livery:hover::after { filter: brightness(1.06); } .ds-livery:active::after { opacity: 0.7; } .ds-livery:focus-visible { outline: 3px solid var(--c-ink, #0e1114); outline-offset: -8px; } .ds-livery-name { font-size: var(--t-button, 1.25rem); line-height: 1.15; } .ds-livery-total { font-size: var(--t-hull, 4.75rem); line-height: 1.05; font-variant-numeric: tabular-nums; } .ds-livery-meta { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; font-weight: 600; font-size: var(--t-meta, 0.9375rem); line-height: 1.3; letter-spacing: 0.4px; font-variant-numeric: tabular-nums; } .ds-rounds { position: relative; isolation: isolate; padding: 2px 12px; color: var(--team); } .ds-rounds::before { content: ''; position: absolute; inset: 0 3px; z-index: -1; background: var(--c-ink, #0e1114); transform: skewX(-12deg); }"
+      "description": "Both team panels cut on a fixed 36-pixel seam; each panel is a button that opens the points sheet. The players line sits under the team name when the team has players.",
+      "html": "<div class=\"ds-lockup\"><button class=\"ds-livery ds-livery-a\"><span class=\"ds-livery-who\"><span class=\"ds-livery-name\">Equipo A</span><span class=\"ds-livery-players\">Ana · Luis</span></span><span class=\"ds-livery-total\">75</span><span class=\"ds-livery-meta\"><span>Faltan 125</span><span class=\"ds-rounds\">1 victoria</span></span></button><button class=\"ds-livery ds-livery-b\"><span class=\"ds-livery-who\"><span class=\"ds-livery-name\">Equipo B</span><span class=\"ds-livery-players\">Marta · Iván</span></span><span class=\"ds-livery-total\">42</span><span class=\"ds-livery-meta\"><span>Faltan 158</span><span class=\"ds-rounds\">3 victorias</span></span></button></div>",
+      "css": ".ds-lockup { --seam-lean: 36px; --edge-x: calc(var(--team-edge-width, 0px) * 1.1); display: flex; width: 390px; overflow: hidden; background: var(--c-ground, #0e1114); } .ds-livery { position: relative; isolation: isolate; flex: 1; min-width: 0; min-height: 172px; display: flex; flex-direction: column; justify-content: space-between; gap: 4px; padding: 16px; border: 0; background: none; color: var(--c-ink, #0e1114); text-align: left; font-family: var(--font, 'Kanit', sans-serif); font-style: italic; font-weight: 800; text-transform: uppercase; cursor: pointer; } .ds-livery-a { --team: var(--c-team-a, #ff5a00); padding-right: 24px; } .ds-livery-b { --team: var(--c-team-b, #dfff00); padding-left: 32px; } .ds-livery::before, .ds-livery::after { content: ''; position: absolute; top: 0; bottom: 0; z-index: -1; } .ds-livery-a::before, .ds-livery-a::after { left: -48px; right: -15px; } .ds-livery-b::before, .ds-livery-b::after { left: -15px; right: -48px; } .ds-livery::before { background: var(--c-team-edge, transparent); clip-path: polygon(var(--seam-lean) 0, 100% 0, calc(100% - var(--seam-lean)) 100%, 0 100%); } .ds-livery::after { background: var(--team); clip-path: polygon(calc(var(--seam-lean) + var(--edge-x)) var(--team-edge-width, 0px), calc(100% - var(--edge-x)) var(--team-edge-width, 0px), calc(100% - var(--seam-lean) - var(--edge-x)) calc(100% - var(--team-edge-width, 0px)), var(--edge-x) calc(100% - var(--team-edge-width, 0px))); } .ds-livery:hover::after { filter: brightness(1.06); } .ds-livery:active::after { opacity: 0.7; } .ds-livery:focus-visible { outline: 3px solid var(--c-ink, #0e1114); outline-offset: -8px; } .ds-livery-name { font-size: var(--t-button, 1.25rem); line-height: 1.15; } .ds-livery-who { display: flex; flex-direction: column; min-width: 0; } .ds-livery-players { font-weight: 600; font-size: var(--t-label, 0.8125rem); line-height: 1.3; } .ds-livery-total { font-size: var(--t-hull, 4.75rem); line-height: 1.05; font-variant-numeric: tabular-nums; } .ds-livery-meta { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; font-weight: 600; font-size: var(--t-meta, 0.9375rem); line-height: 1.3; letter-spacing: 0.4px; font-variant-numeric: tabular-nums; } .ds-rounds { position: relative; isolation: isolate; padding: 2px 12px; color: var(--team); } .ds-rounds::before { content: ''; position: absolute; inset: 0 3px; z-index: -1; background: var(--c-ink, #0e1114); transform: skewX(-12deg); }"
     },
     {
       "name": "Score Row",
@@ -704,6 +770,22 @@
       "css": ".ds-field { display: flex; flex-direction: column; width: 342px; } .ds-field-label { margin-bottom: 4px; color: var(--c-muted, #b6bcc4); font-family: var(--font, 'Kanit', sans-serif); font-style: italic; font-weight: 600; font-size: var(--t-label, 0.8125rem); line-height: 1.3; text-transform: uppercase; } .ds-field-input { width: 100%; min-height: 76px; padding: 8px 16px; border: 2px solid var(--c-line, #6b7480); border-radius: 0; background: var(--c-surface, #1a1e23); color: var(--c-text, #fff); caret-color: var(--c-text, #fff); font-family: var(--font, 'Kanit', sans-serif); font-style: italic; font-weight: 800; font-size: var(--t-field, 2.75rem); line-height: 1.2; font-variant-numeric: tabular-nums; appearance: none; } .ds-field-input:focus-visible { outline: 3px solid var(--c-text, #fff); outline-offset: 0; } .ds-field-input:invalid { border-color: var(--c-danger, #ff6b5c); } .ds-field-message { display: none; margin: 0; color: var(--c-danger, #ff6b5c); font-family: var(--font, 'Kanit', sans-serif); font-weight: 500; font-size: var(--t-body, 1rem); line-height: 1.35; } .ds-field-input:invalid + .ds-field-message { display: block; }"
     },
     {
+      "name": "Text Field",
+      "kind": "input",
+      "refersTo": "text-field",
+      "description": "One line of text, such as a name, written on an underline. The underline turns to the text colour in focus and to the danger colour when the value is invalid. The placeholder is the name used when the field is left empty.",
+      "html": "<div class=\"ds-text-field\"><label class=\"ds-text-label\" for=\"ds-text-input\">Nombre del equipo</label><input id=\"ds-text-input\" class=\"ds-text-input\" type=\"text\" autocomplete=\"off\" autocapitalize=\"characters\" spellcheck=\"false\" placeholder=\"Equipo 3\" /></div>",
+      "css": ".ds-text-field { display: flex; flex-direction: column; width: 342px; } .ds-text-label { color: var(--c-muted, #b6bcc4); font-family: var(--font, 'Kanit', sans-serif); font-style: italic; font-weight: 600; font-size: var(--t-label, 0.8125rem); line-height: 1.3; text-transform: uppercase; } .ds-text-input { width: 100%; min-height: 48px; padding: 4px 0; border: 0; border-bottom: 2px solid var(--c-line, #6b7480); border-radius: 0; background: none; color: var(--c-text, #fff); caret-color: var(--c-text, #fff); font-family: var(--font, 'Kanit', sans-serif); font-style: italic; font-weight: 800; font-size: var(--t-title, 1.75rem); line-height: 1.2; text-transform: uppercase; } .ds-text-input::placeholder { color: var(--c-muted, #b6bcc4); opacity: 1; } .ds-text-input:focus { border-bottom-color: var(--c-text, #fff); } .ds-text-input:focus-visible { outline: 3px solid var(--c-text, #fff); outline-offset: 2px; } .ds-text-input[aria-invalid=\"true\"] { border-bottom-color: var(--c-danger, #ff6b5c); }"
+    },
+    {
+      "name": "Choice Group",
+      "kind": "custom",
+      "refersTo": "choice-slab-on",
+      "description": "One choice out of a few, as a radio group of compact slabs sharing a row. The chosen slab takes the neutral fill. It applies on touch; arrow keys move the choice.",
+      "html": "<div class=\"ds-choice-group\"><span class=\"ds-choice-label\" id=\"ds-choice-label\">Apariencia</span><div class=\"ds-choices\" role=\"radiogroup\" aria-labelledby=\"ds-choice-label\"><button class=\"ds-choice\" role=\"radio\" aria-checked=\"false\" tabindex=\"-1\">Sistema</button><button class=\"ds-choice ds-choice-on\" role=\"radio\" aria-checked=\"true\">Claro</button><button class=\"ds-choice\" role=\"radio\" aria-checked=\"false\" tabindex=\"-1\">Oscuro</button></div></div>",
+      "css": ".ds-choice-group { display: flex; flex-direction: column; gap: 4px; width: 342px; } .ds-choice-label { color: var(--c-muted, #b6bcc4); font-family: var(--font, 'Kanit', sans-serif); font-style: italic; font-weight: 600; font-size: var(--t-label, 0.8125rem); line-height: 1.3; text-transform: uppercase; } .ds-choices { display: flex; gap: 8px; } .ds-choice { position: relative; isolation: isolate; } .ds-choice::before { content: ''; position: absolute; inset: 0 5px; z-index: -1; background: var(--c-ground, #0e1114); border: 2px solid var(--c-line, #6b7480); transform: skewX(-12deg); } .ds-choice { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 0 16px; border: 0; background: none; font-family: var(--font, 'Kanit', sans-serif); font-style: italic; font-weight: 800; font-size: var(--t-compact, 1.125rem); line-height: 1.1; letter-spacing: 0.5px; text-transform: uppercase; white-space: nowrap; cursor: pointer; transition: transform 90ms cubic-bezier(0.16, 1, 0.3, 1); flex: 1 1 0; min-width: 0; padding: 0 8px; color: var(--c-text, #fff); } .ds-choice-on { color: var(--c-ground, #0e1114); } .ds-choice-on::before { background: var(--c-text, #fff); border-color: transparent; } .ds-choice:hover::before { filter: brightness(1.12); } .ds-choice:active { transform: translateX(3px); } .ds-choice:active::before { opacity: 0.7; } .ds-choice:focus-visible { outline: 3px solid var(--c-text, #fff); outline-offset: 3px; }"
+    },
+    {
       "name": "Winner Scores",
       "kind": "custom",
       "refersTo": "winner-slab",
@@ -712,24 +794,56 @@
       "css": ".ds-winner-slab { position: relative; isolation: isolate; } .ds-winner-slab::before { content: ''; position: absolute; inset: 0 24px; z-index: -1; background: var(--c-ink, #0e1114); border: 2px solid transparent; transform: skewX(-12deg); } .ds-winner-other { position: relative; isolation: isolate; } .ds-winner-other::before { content: ''; position: absolute; inset: 0 8px; z-index: -1; background: var(--c-team-a, #ff5a00); border: 2px solid var(--c-ink, #0e1114); transform: skewX(-12deg); } .ds-winner { display: flex; flex-direction: column; gap: 12px; width: 342px; padding: 24px 8px; background: var(--c-team-a, #ff5a00); color: var(--c-ink, #0e1114); font-family: var(--font, 'Kanit', sans-serif); font-style: italic; font-weight: 800; text-transform: uppercase; font-variant-numeric: tabular-nums; } .ds-winner p { margin: 0; } .ds-winner-slab { display: flex; flex-direction: column; padding: 24px 40px 12px; color: var(--c-team-a, #ff5a00); } .ds-winner-name { font-size: var(--t-button, 1.25rem); line-height: 1.2; } .ds-winner-total { font-size: var(--t-winner, 8.25rem); line-height: 1.06; } .ds-winner-other { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 8px 32px; } .ds-winner-other-total { font-size: var(--t-display, 3.5rem); line-height: 1.1; }"
     },
     {
+      "name": "Seat Slab",
+      "kind": "custom",
+      "refersTo": "seat-slab-team-a",
+      "description": "One side of the next match in a tournament, in the colour of the side and not of the team. A button that opens the team picker; the swap arrows show only while another team is waiting.",
+      "html": "<button class=\"ds-seat\"><span class=\"ds-seat-who\"><span class=\"ds-seat-name\">Los Primos</span><span class=\"ds-seat-players\">Ana · Luis</span><span class=\"ds-seat-wins\">2 victorias</span></span><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M4 8h14l-3.5-3.5M20 16H6l3.5 3.5\"/></svg></button>",
+      "css": ".ds-seat { position: relative; isolation: isolate; } .ds-seat::before { content: ''; position: absolute; inset: 0 18px; z-index: -1; background: var(--c-team-a, #ff5a00); border: 2px solid var(--c-team-edge, transparent); transform: skewX(-12deg); } .ds-seat { width: 358px; min-height: 120px; display: flex; align-items: center; gap: 12px; padding: 16px 40px; border: 0; background: none; color: var(--c-ink, #0e1114); text-align: left; cursor: pointer; } .ds-seat:hover::before { filter: brightness(1.06); } .ds-seat:active::before { opacity: 0.7; } .ds-seat:focus-visible { outline: 3px solid var(--c-ink, #0e1114); outline-offset: -8px; } .ds-seat-who { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; } .ds-seat-name { font-family: var(--font, 'Kanit', sans-serif); font-style: italic; font-weight: 800; font-size: var(--t-title, 1.75rem); line-height: 1.15; text-transform: uppercase; } .ds-seat-players { font-family: var(--font, 'Kanit', sans-serif); font-style: italic; font-weight: 600; font-size: var(--t-meta, 0.9375rem); line-height: 1.3; text-transform: uppercase; } .ds-seat-wins { position: relative; isolation: isolate; } .ds-seat-wins::before { content: ''; position: absolute; inset: 0 3px; z-index: -1; background: var(--c-ink, #0e1114); border: 2px solid transparent; transform: skewX(-12deg); } .ds-seat-wins { margin-top: 8px; padding: 2px 12px; color: var(--c-team-a, #ff5a00); font-family: var(--font, 'Kanit', sans-serif); font-style: italic; font-weight: 600; font-size: var(--t-meta, 0.9375rem); line-height: 1.3; letter-spacing: 0.4px; text-transform: uppercase; font-variant-numeric: tabular-nums; } .ds-seat svg { flex: none; width: 28px; height: 28px; fill: none; stroke: var(--c-ink, #0e1114); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }"
+    },
+    {
+      "name": "Champion Slab",
+      "kind": "custom",
+      "refersTo": "champion-slab-team-a",
+      "description": "The team that won a tournament, in the colour of the side it last won on; in the text colour when there is none, and in ink with team-colour type on its own flood.",
+      "html": "<div class=\"ds-champion\"><span class=\"ds-champion-name\">Los Primos</span><span class=\"ds-champion-players\">Ana · Luis</span><span class=\"ds-champion-wins\">3 victorias</span></div>",
+      "css": ".ds-champion { position: relative; isolation: isolate; } .ds-champion::before { content: ''; position: absolute; inset: 0 22px; z-index: -1; background: var(--c-team-a, #ff5a00); border: 2px solid var(--c-team-edge, transparent); transform: skewX(-12deg); } .ds-champion { width: 358px; display: flex; flex-direction: column; padding: 16px 48px; color: var(--c-ink, #0e1114); font-family: var(--font, 'Kanit', sans-serif); font-style: italic; text-transform: uppercase; } .ds-champion-name { font-weight: 800; font-size: var(--t-display, 3.5rem); line-height: 1.15; } .ds-champion-players { font-weight: 600; font-size: var(--t-body, 1rem); line-height: 1.3; } .ds-champion-wins { margin-top: 4px; font-weight: 600; font-size: var(--t-meta, 0.9375rem); line-height: 1.3; letter-spacing: 0.4px; font-variant-numeric: tabular-nums; }"
+    },
+    {
+      "name": "Ranking List",
+      "kind": "custom",
+      "refersTo": "ranking-row",
+      "description": "A tournament's teams in order, most matches won first. The rows that share the most wins sit on the raised surface with a text-colour keyline.",
+      "html": "<div class=\"ds-ranking\"><div class=\"ds-rank-head\" aria-hidden=\"true\"><span class=\"ds-rank-head-team\">Equipo</span><span class=\"ds-rank-count\">G</span><span class=\"ds-rank-count\">P</span></div><ol class=\"ds-rank-rows\"><li class=\"ds-rank-row ds-rank-first\"><span class=\"ds-rank-position\">1</span><span class=\"ds-rank-who\"><span class=\"ds-rank-name\">Los Primos</span><span class=\"ds-rank-players\">Ana · Luis</span></span><span class=\"ds-rank-count ds-rank-won\">3</span><span class=\"ds-rank-count ds-rank-lost\">1</span></li><li class=\"ds-rank-row\"><span class=\"ds-rank-position\">2</span><span class=\"ds-rank-who\"><span class=\"ds-rank-name\">Equipo 2</span></span><span class=\"ds-rank-count ds-rank-won\">1</span><span class=\"ds-rank-count ds-rank-lost\">2</span></li></ol></div>",
+      "css": ".ds-ranking { display: flex; flex-direction: column; gap: 4px; width: 358px; color: var(--c-text, #fff); font-variant-numeric: tabular-nums; } .ds-rank-head, .ds-rank-row { display: flex; align-items: center; gap: 8px; padding: 0 24px 0 16px; } .ds-rank-head { color: var(--c-muted, #b6bcc4); font-family: var(--font, 'Kanit', sans-serif); font-style: italic; font-weight: 600; font-size: var(--t-label, 0.8125rem); line-height: 1.3; text-transform: uppercase; } .ds-rank-head-team { flex: 1; padding-left: calc(2.25rem + 8px); } .ds-rank-rows { display: flex; flex-direction: column; gap: 8px; margin: 0; padding: 0; list-style: none; } .ds-rank-row { position: relative; isolation: isolate; } .ds-rank-row::before { content: ''; position: absolute; inset: 0 8px; z-index: -1; background: var(--c-surface, #1a1e23); border: 2px solid transparent; transform: skewX(-12deg); } .ds-rank-row { min-height: 60px; padding-block: 8px; } .ds-rank-first::before { background: var(--c-raised, #2a2f36); border-color: var(--c-text, #fff); } .ds-rank-position { flex: none; width: 2.25rem; color: var(--c-muted, #b6bcc4); font-family: var(--font, 'Kanit', sans-serif); font-style: italic; font-weight: 800; font-size: var(--t-title, 1.75rem); line-height: 1; text-align: center; } .ds-rank-first .ds-rank-position { color: var(--c-text, #fff); } .ds-rank-who { flex: 1; min-width: 0; display: flex; flex-direction: column; } .ds-rank-name { font-family: var(--font, 'Kanit', sans-serif); font-style: italic; font-weight: 800; font-size: var(--t-button, 1.25rem); line-height: 1.2; text-transform: uppercase; } .ds-rank-players { color: var(--c-muted, #b6bcc4); font-family: var(--font, 'Kanit', sans-serif); font-style: italic; font-weight: 600; font-size: var(--t-label, 0.8125rem); line-height: 1.3; text-transform: uppercase; } .ds-rank-count { flex: none; width: 2.5rem; text-align: center; } .ds-rank-won, .ds-rank-lost { font-family: var(--font, 'Kanit', sans-serif); font-style: italic; font-weight: 800; font-size: var(--t-title, 1.75rem); line-height: 1; } .ds-rank-lost { color: var(--c-muted, #b6bcc4); font-weight: 600; }"
+    },
+    {
+      "name": "Match Entry",
+      "kind": "custom",
+      "refersTo": "match-entry",
+      "description": "One finished match in a list: the date, then one line per team. The winner's total sits in a points chip of the side it played on; the other team is muted.",
+      "html": "<button class=\"ds-entry\"><span class=\"ds-entry-when\">sáb, 26 sept 2026, 21:40</span><span class=\"ds-entry-line ds-entry-won\"><span class=\"ds-entry-name\">Equipo A</span><span class=\"ds-entry-total ds-entry-chip\">205</span></span><span class=\"ds-entry-line\"><span class=\"ds-entry-name\">Equipo B</span><span class=\"ds-entry-total\">140</span></span></button>",
+      "css": ".ds-entry { position: relative; isolation: isolate; } .ds-entry::before { content: ''; position: absolute; inset: 0 8px; z-index: -1; background: var(--c-surface, #1a1e23); border: 2px solid transparent; transform: skewX(-12deg); } .ds-entry { width: 358px; display: flex; flex-direction: column; gap: 4px; padding: 12px 24px; border: 0; background: none; color: var(--c-text, #fff); text-align: left; cursor: pointer; font-variant-numeric: tabular-nums; } .ds-entry:hover::before { filter: brightness(1.12); } .ds-entry:active::before { opacity: 0.7; } .ds-entry:focus-visible { outline: 3px solid var(--c-text, #fff); outline-offset: 3px; } .ds-entry-when { color: var(--c-muted, #b6bcc4); font-family: var(--font, 'Kanit', sans-serif); font-style: italic; font-weight: 600; font-size: var(--t-label, 0.8125rem); line-height: 1.3; text-transform: uppercase; } .ds-entry-line { display: flex; align-items: center; gap: 12px; min-height: 36px; color: var(--c-muted, #b6bcc4); } .ds-entry-won { color: var(--c-text, #fff); } .ds-entry-name { flex: 1; min-width: 0; font-family: var(--font, 'Kanit', sans-serif); font-style: italic; font-weight: 800; font-size: var(--t-button, 1.25rem); line-height: 1.2; text-transform: uppercase; } .ds-entry-total { flex: none; min-width: 64px; padding: 4px 12px; font-family: var(--font, 'Kanit', sans-serif); font-style: italic; font-weight: 600; font-size: var(--t-button, 1.25rem); line-height: 1.3; text-align: center; } .ds-entry-chip { position: relative; isolation: isolate; } .ds-entry-chip::before { content: ''; position: absolute; inset: 0 3px; z-index: -1; background: var(--c-team-a, #ff5a00); border: 2px solid var(--c-team-edge, transparent); transform: skewX(-12deg); } .ds-entry-chip { color: var(--c-ink, #0e1114); font-weight: 800; }"
+    },
+    {
       "name": "Undo Bar",
       "kind": "custom",
       "refersTo": "undo-snackbar",
-      "description": "The board's one transient bar, in inverse colours. Undo for one hand lasts 8 seconds and pauses while hovered or focused; undo for a reset or a closed round has no time limit. With nothing to undo and an empty board it announces a waiting update.",
+      "description": "The board's one transient bar, in inverse colours. Undo for one hand lasts 8 seconds and pauses while hovered or focused; undo for a reset, a closed match or a step of a tournament has no time limit. With large text the action moves under the message. On a full screen it only offers back what was removed from the history. With nothing to undo and an empty board it announces a waiting update.",
       "html": "<div class=\"ds-undo\"><span class=\"ds-undo-message\">Mano 2 eliminada</span><button class=\"ds-undo-action\">Deshacer</button></div>",
-      "css": ".ds-undo { position: relative; isolation: isolate; } .ds-undo::before { content: ''; position: absolute; inset: 0 6px; z-index: -1; background: var(--c-text, #fff); border: 2px solid transparent; transform: skewX(-12deg); } .ds-undo { display: flex; align-items: center; width: 358px; min-height: 52px; padding: 4px 8px 4px 24px; color: var(--c-ground, #0e1114); font-family: var(--font, 'Kanit', sans-serif); font-weight: 500; font-size: var(--t-body, 1rem); } .ds-undo-message { flex: 1; min-width: 0; line-height: 1.25; overflow-wrap: anywhere; } .ds-undo-action { flex: none; min-height: 48px; padding: 0 16px; border: 0; background: none; color: inherit; font-family: var(--font, 'Kanit', sans-serif); font-style: italic; font-weight: 800; font-size: var(--t-body, 1rem); line-height: 1.2; text-transform: uppercase; text-decoration: underline; text-underline-offset: 0.2em; cursor: pointer; } .ds-undo-action:active { opacity: 0.7; } .ds-undo-action:focus-visible { outline: 3px solid var(--c-ground, #0e1114); outline-offset: -5px; }"
+      "css": ".ds-undo { position: relative; isolation: isolate; } .ds-undo::before { content: ''; position: absolute; inset: 0 6px; z-index: -1; background: var(--c-text, #fff); border: 2px solid transparent; transform: skewX(-12deg); } .ds-undo { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; width: 358px; min-height: 52px; padding: 4px 8px 4px 24px; color: var(--c-ground, #0e1114); font-family: var(--font, 'Kanit', sans-serif); font-weight: 500; font-size: var(--t-body, 1rem); } .ds-undo-message { flex: 1 1 9rem; min-width: 0; line-height: 1.25; overflow-wrap: anywhere; } .ds-undo-action { flex: none; min-height: 48px; padding: 0 16px; border: 0; background: none; color: inherit; font-family: var(--font, 'Kanit', sans-serif); font-style: italic; font-weight: 800; font-size: var(--t-body, 1rem); line-height: 1.2; text-transform: uppercase; text-decoration: underline; text-underline-offset: 0.2em; cursor: pointer; } .ds-undo-action:active { opacity: 0.7; } .ds-undo-action:focus-visible { outline: 3px solid var(--c-ground, #0e1114); outline-offset: -5px; }"
     },
     {
       "name": "Triple-Slash Mark",
       "kind": "custom",
-      "description": "The only ornament: three leaning bars, 18 to 40 pixels tall, hidden from assistive technology. On sheets it takes the accent at night and the text colour by day; short screens leave it out of overlays.",
+      "description": "The only ornament: three leaning bars, 14 to 40 pixels tall, hidden from assistive technology. On sheets it takes the accent at night and the text colour by day; short screens leave it out of overlays.",
       "html": "<span class=\"ds-slashes\" aria-hidden=\"true\"><i></i><i></i><i></i></span>",
       "css": ".ds-slashes { --size: 18px; display: inline-flex; gap: calc(var(--size) * 0.05); color: var(--c-line, #6b7480); } .ds-slashes i { width: calc(var(--size) * 0.62); height: var(--size); background: currentColor; clip-path: polygon(21.26% 0, 100% 0, 78.74% 100%, 0 100%); }"
     }
   ],
   "narrative": {
     "northStar": "Liga de Carreras",
-    "overview": "The scoreboard is painted like two rival race cars parked nose to nose. Each team owns a flood of one loud colour with its total set in numerals large enough to read from the far seat at the table, and every other surface steps back to graphite at night or pit silver by day. There is one screen, and its four overlays (points sheet, settings sheet, reset sheet, winner screen) are built from the same parts.\n\nThe system has one shape and one typeface. The shape is a parallelogram that leans 12 degrees forward, used for buttons, rows, chips, the two liveries, the undo bar and the full-screen winner flood. The typeface is Kanit, set in heavy italic capitals for everything that is a name, a number or a command, and in upright medium only for full sentences. The only ornament is a mark of three small leaning bars cut from the same shape.\n\nDensity is low and the targets are large: the smallest control is 48 pixels, slab buttons are 56 pixels tall (48 on a short screen), and the screen carries no navigation, no cards and no icons beyond two small utility symbols. On a wide screen the same phone column sits centred on the ground, 480 pixels wide.",
+    "overview": "The scoreboard is painted like two rival race cars parked nose to nose. Each team owns a flood of one loud colour with its total set in numerals large enough to read from the far seat at the table, and every other surface steps back to graphite at night or pit silver by day. There is one board. Above it sit seven bottom sheets (menu, points, settings, reset, team, team picker, end of tournament), seven full screens (history, match, tournament record, tournament setup, next match, standings, champion) and the winner screen, all built from the same parts.\n\nThe system has one shape and one typeface. The shape is a parallelogram that leans 12 degrees forward, used for buttons, rows, list entries, chips, the two liveries, the seat and champion slabs, the undo bar and the full-screen floods. The typeface is Kanit, set in heavy italic capitals for everything that is a name, a number or a command, and in upright medium only for full sentences. The only ornament is a mark of three small leaning bars cut from the same shape.\n\nDensity is low and the targets are large: the smallest control is 48 pixels and slab buttons are 56 pixels tall (48 on a short screen). The board has no navigation bar and no tabs: one menu button in the header opens a sheet that leads to everything that is not scoring, and a full screen returns through its back control. There are no cards, and the icons are a few small line symbols. On a wide screen the same phone column sits centred on the ground, 480 pixels wide.",
     "keyCharacteristics": [
       "Two saturated team colours used as fills, always carrying graphite ink.",
       "One forward-leaning parallelogram as the shape of every filled element; zero corner radius anywhere.",
@@ -745,8 +859,13 @@
         "section": "colors"
       },
       {
+        "name": "The Seat Rule",
+        "body": "In a tournament a team colour belongs to a side of the board, not to a team: the left seat is Safety Orange and the right seat is Acid Yellow, and a team wears the colour of the seat it takes. A champion is shown in the colour of the side it last won on, and in Text colour when there is none.",
+        "section": "colors"
+      },
+      {
         "name": "The Graphite Exception Rule",
-        "body": "A team colour prints as text only on a Graphite Ink fill: the rounds chip inside each livery and the winner's slab on the winner screen.",
+        "body": "A team colour prints as text only on a Graphite Ink fill: the rounds chip inside each livery, the wins chip on a seat slab, the \"Ganador\" chip on the side of a finished match, the winner's slab on the winner screen and the champion slab on its own flood.",
         "section": "colors"
       },
       {
@@ -756,12 +875,12 @@
       },
       {
         "name": "The Day Keyline Rule",
-        "body": "By day every team-colour fill on the ground or a surface wears a 2-pixel Graphite Ink keyline: liveries, points chips and team slabs. At night the keyline has no width. The winner flood never wears one.",
+        "body": "By day every team-colour fill on the ground or a surface wears a 2-pixel Graphite Ink keyline: liveries, points chips, team slabs, seat slabs, the sides of a finished match, and the champion slab and chip. At night the keyline has no width. The winner flood and the flood of a screen never wear one.",
         "section": "colors"
       },
       {
         "name": "The Danger Rule",
-        "body": "Danger means an invalid value or an action that deletes. It is never decoration and never a team.",
+        "body": "Danger means an invalid value or an action that deletes or ends what was being kept. It is never decoration and never a team.",
         "section": "colors"
       },
       {
@@ -781,12 +900,12 @@
       },
       {
         "name": "The One Line Rule",
-        "body": "Totals, team names, slab labels and the winner heading shrink to fit their box on one line rather than wrap or truncate. They never shrink below 0.5 of their designed size; the winner's total may go to 0.4. The fit leaves 4% of slack, because letter-spacing does not shrink with the type, and only the width is clipped, so tall glyphs such as an opening exclamation mark stay whole.",
+        "body": "Totals, team names, players lines, slab labels, screen titles and the winner heading shrink to fit their box on one line rather than wrap or truncate. They never shrink below 0.5 of their designed size; the winner's total and the labels of a choice group may go to 0.4. The fit leaves 4% of slack, because letter-spacing does not shrink with the type, and only the width is clipped, so tall glyphs such as an opening exclamation mark stay whole.",
         "section": "typography"
       },
       {
         "name": "The Tonal Step Rule",
-        "body": "A surface is distinguished from what is beneath it by stepping one neutral tone, never by a shadow or a gradient. The newest row is marked by moving from Surface to Raised Surface. A selected row takes the same step and adds a 2-pixel Text colour keyline.",
+        "body": "A surface is distinguished from what is beneath it by stepping one neutral tone, never by a shadow or a gradient. The newest row is marked by moving from Surface to Raised Surface. A selected row takes the same step and adds a 2-pixel Text colour keyline, and so do the rows that lead a ranking. In the history a tournament sits on Raised Surface among matches on Surface.",
         "section": "elevation"
       },
       {
@@ -805,6 +924,7 @@
       "Do inset the leaning layer by half its lean so the slanted ends stay inside the element's box.",
       "Do put Graphite Ink on Safety Orange and Acid Yellow in both appearances.",
       "Do give every team-colour fill on the ground or a surface the 2-pixel Graphite Ink keyline by day.",
+      "Do give a team the colour of the side it sits on in a tournament, and a champion the colour of the side it last won on, or Text colour when there is none.",
       "Do set names, numbers and commands in Kanit italic capitals, and keep upright sentence case for full sentences.",
       "Do use tabular numerals for any number that updates.",
       "Do size type in rem with a pixel cap: 1.6 times for text, 1.2 times for numerals and the winner heading. Let one-line text shrink to fit.",
@@ -812,8 +932,9 @@
       "Do mark state by stepping a neutral tone (Surface to Raised Surface), by adding a Text colour keyline, or by swapping fill and outline.",
       "Do give every interactive element the 3-pixel focus ring, in a colour that contrasts with the surface it sits on and drawn wholly on that surface. After a touch, withhold the ring but leave focus where it is; text fields always keep theirs.",
       "Do bring things in from the side or edge that owns them, in 200 to 220 ms with the exponential ease-out, and declare the movement only when reduced motion is not requested.",
-      "Do keep text fields and the sheet panel rectangular.",
-      "Do keep sheets above the on-screen keyboard and inside the 480 column.",
+      "Do keep text fields, the sheet panel and the full screen rectangular.",
+      "Do keep sheets above the on-screen keyboard and inside the 480 column, and full screens inside the same column.",
+      "Do pin a screen's actions in its footer and let only its body scroll.",
       "Do tighten the same parts when the viewport is 36em tall or less, with thresholds in em, and keep the actions of every overlay on screen.",
       "Do keep what is about to change in view while its options are showing, and put each explanation directly under the action it explains.",
       "Do give any gesture-only shortcut a visible control that reaches the same value."
@@ -828,7 +949,7 @@
       "Don't add a second ornament alongside the triple-slash mark.",
       "Don't give a utility icon a team colour.",
       "Don't save anything when a sheet is dismissed; only its button commits.",
-      "Don't let the page scroll; the list is the only scrolling region on the board."
+      "Don't let the page scroll; the list is the only scrolling region on the board, and the body the only one on a full screen."
     ]
   }
 }
