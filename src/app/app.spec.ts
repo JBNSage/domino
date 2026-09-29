@@ -29,6 +29,7 @@ describe('App', () => {
     expect(page.querySelector('app-target-header [aria-label="Menú"]')).not.toBeNull();
     expect(menu?.textContent).toContain(copy.menu.tournament);
     expect(menu?.textContent).toContain(copy.menu.history);
+    expect(menu?.textContent).toContain(copy.menu.stats);
     expect(menu?.textContent).toContain(copy.appearance.label);
     expect(menu?.querySelectorAll('.team')).toHaveLength(2);
   });

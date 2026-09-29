@@ -356,6 +356,7 @@ export class GameStore {
         tournament: tournament?.id ?? null,
         tieBreak: tournament !== null && tournament.tieBreak !== null,
         table: table?.name ?? null,
+        tableId: table?.id ?? null,
       });
       // At a mesa, the next two teams are chosen first; a tournament has its own step.
       const pause = table !== null && tournament === null;

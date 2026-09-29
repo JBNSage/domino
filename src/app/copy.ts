@@ -17,6 +17,13 @@ export function joinNames(names: string[]): string {
   return new Intl.ListFormat('es', { type: 'conjunction' }).format(names);
 }
 
+const percentFormat = new Intl.NumberFormat('es', { style: 'percent', maximumFractionDigits: 0 });
+const dayFormat = new Intl.DateTimeFormat('es', {
+  day: 'numeric',
+  month: 'short',
+  year: 'numeric',
+});
+
 const matches = (count: number) => (count === 1 ? '1 partida' : `${count} partidas`);
 const wins = (count: number) => (count === 1 ? '1 victoria' : `${count} victorias`);
 const players = (count: number) => (count === 1 ? '1 jugador' : `${count} jugadores`);
@@ -141,6 +148,7 @@ export const copy = {
     tournament: 'Torneo nuevo',
     table: 'Tabla del torneo',
     history: 'Historial',
+    stats: 'Estadísticas',
     mesa: (name: string | null) => (name === null ? 'Mesa: ninguna' : `Mesa: ${name}`),
     mesaA11y: (name: string | null) =>
       name === null ? 'Mesa: ninguna. Elegir una mesa' : `Mesa: ${name}. Cambiar de mesa`,
@@ -410,6 +418,63 @@ export const copy = {
     keepOn: 'Queda en los equipos de la mesa, con sus victorias.',
     keepOff: 'Solo para esta partida.',
     keepFull: `La mesa ya guarda ${MAX_SAVED_TEAMS} equipos.`,
+  },
+  stats: {
+    title: 'Estadísticas',
+    view: 'Ver',
+    players: 'Jugadores',
+    couples: 'Parejas',
+    percent: (rate: number) => percentFormat.format(rate),
+    table: (name: string) => `Mesa: ${name}`,
+    tableA11y: (name: string) => `Mesa: ${name}. Cambiar`,
+    dates: (label: string) => `Fechas: ${label}`,
+    datesA11y: (label: string) => `Fechas: ${label}. Cambiar`,
+    allTables: 'Todas',
+    noTable: 'Sin mesa',
+    tableTitle: 'Mesa',
+    datesTitle: 'Fechas',
+    all: 'Todo',
+    today: 'Hoy',
+    week: '7 días',
+    month: '30 días',
+    custom: 'Fechas…',
+    range: (from: number | null, to: number | null) => {
+      if (from === null && to === null) return 'Todo';
+      if (from === null) return `hasta ${dayFormat.format(to as number)}`;
+      if (to === null) return `desde ${dayFormat.format(from)}`;
+      const one = dayFormat.format(from);
+      const other = dayFormat.format(to);
+      return one === other ? one : `${one} – ${other}`;
+    },
+    from: 'Desde',
+    to: 'Hasta',
+    rangeHelp: 'Deja una fecha en blanco para no poner límite por ese lado.',
+    rangeError: 'La fecha «Hasta» es anterior a «Desde».',
+    apply: 'Aplicar',
+    facts: (played: number, count: number, kind: 'players' | 'couples') =>
+      `${matches(played)} · ${
+        kind === 'players' ? players(count) : count === 1 ? '1 pareja' : `${count} parejas`
+      }`,
+    record: (won: number, played: number) => `${won} de ${played} ganadas`,
+    detail: (won: number, lost: number, played: number) =>
+      `${won === 1 ? '1 ganada' : `${won} ganadas`} · ${
+        lost === 1 ? '1 perdida' : `${lost} perdidas`
+      } · ${played === 1 ? '1 jugada' : `${played} jugadas`}`,
+    partners: 'Con cada pareja',
+    rowA11y: (place: number, name: string, rate: number, won: number, played: number) =>
+      `Puesto ${place}: ${name}, ${percentFormat.format(rate)}, ${won} de ${played} ganadas`,
+    playerA11y: (place: number, name: string, rate: number, won: number, played: number) =>
+      `Puesto ${place}: ${name}, ${percentFormat.format(rate)}, ${won} de ${played} ganadas. Ver sus parejas`,
+    emptyTitle: 'Sin partidas terminadas',
+    emptyBody:
+      'Las estadísticas salen del historial. Cuando termines una partida con jugadores, aparecen aquí.',
+    noPlayersTitle: 'Sin jugadores en las partidas',
+    noPlayersBody:
+      'Las estadísticas cuentan a los jugadores de cada equipo. Añádelos en el menú, en «Equipos y jugadores», o juega en una mesa.',
+    nothingTitle: 'Nada con estos filtros',
+    nothingBody: 'No hay partidas con jugadores en esa mesa y esas fechas.',
+    clear: 'Quitar filtros',
+    filtered: (table: string, dates: string) => `Mesa: ${table} · Fechas: ${dates}`,
   },
   seat: {
     changePlayers: 'Cambiar jugadores',

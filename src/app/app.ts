@@ -20,7 +20,9 @@ import { SettingsSheet } from './components/settings-sheet';
 import { StandingsScreen } from './components/standings-screen';
 import { TargetHeader } from './components/target-header';
 import { TeamLockup } from './components/team-lockup';
+import { PlayerStatsScreen } from './components/player-stats-screen';
 import { SeatSheet } from './components/seat-sheet';
+import { StatsScreen } from './components/stats-screen';
 import { TableScreen } from './components/table-screen';
 import { TablesScreen } from './components/tables-screen';
 import { TeamEdits } from './components/team-edits';
@@ -53,6 +55,8 @@ import { keepAwake } from './platform/wake-lock';
     HistoryScreen,
     TablesScreen,
     TableScreen,
+    StatsScreen,
+    PlayerStatsScreen,
     MatchScreen,
     TournamentRecordScreen,
     TournamentSetupScreen,

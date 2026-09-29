@@ -19,6 +19,7 @@
   #menu
   (tournament)="store.tournament() === null ? setup.open() : standings.open()"
   (history)="history.open()"
+  (stats)="stats.open()"
   (tables)="tables.open()"
   (editTeam)="editSide($event)"
   (reset)="reset.open()"
@@ -34,6 +35,9 @@
 />
 <app-tournament-record-screen #record (openMatch)="match.open($event)" />
 <app-match-screen #match />
+
+<app-stats-screen #stats (openPlayer)="playerStats.open($event)" />
+<app-player-stats-screen #playerStats />
 
 <app-tables-screen #tables (edit)="mesa.open($event)" />
 <app-table-screen #mesa (editTeam)="team.open($event)" />

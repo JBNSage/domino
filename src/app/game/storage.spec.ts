@@ -92,6 +92,7 @@ describe('storage', () => {
       tournament: null,
       tieBreak: false,
       table: null,
+      tableId: null,
     };
     saveHistory({ matches: [match], tournaments: [] });
     expect(loadHistory().matches).toEqual([match]);

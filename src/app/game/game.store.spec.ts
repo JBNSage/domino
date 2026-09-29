@@ -582,6 +582,7 @@ describe('GameStore at a mesa', () => {
     store.closeRound();
     expect(store.state().between).toBe('next');
     expect(TestBed.inject(HistoryStore).history().matches[0].table).toBe('Casa');
+    expect(TestBed.inject(HistoryStore).history().matches[0].tableId).toBe('m1');
 
     store.startMatch();
     expect(store.state().between).toBeNull();

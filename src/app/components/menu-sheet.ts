@@ -36,6 +36,9 @@ import { Sheet } from './sheet';
         <button type="button" class="slab lean entry" (click)="go(history)">
           <span class="slab__label" [appFitText]="copy.menu.history">{{ copy.menu.history }}</span>
         </button>
+        <button type="button" class="slab lean entry" (click)="go(stats)">
+          <span class="slab__label" [appFitText]="copy.menu.stats">{{ copy.menu.stats }}</span>
+        </button>
         <button
           type="button"
           class="slab lean entry"
@@ -166,6 +169,7 @@ export class MenuSheet {
   /** A new tournament, or the table of the one being played. */
   readonly tournament = output<void>();
   readonly history = output<void>();
+  readonly stats = output<void>();
   /** The mesas, to choose where the match is played. */
   readonly tables = output<void>();
   readonly editTeam = output<TeamId>();
