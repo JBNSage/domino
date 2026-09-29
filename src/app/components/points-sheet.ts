@@ -112,6 +112,12 @@ import { Sheet } from './sheet';
       outline: none;
     }
 
+    @media (prefers-color-scheme: light) {
+      .name {
+        caret-color: var(--c-text);
+      }
+    }
+
     .pencil {
       flex: none;
       width: 20px;

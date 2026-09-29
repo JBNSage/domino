@@ -206,6 +206,12 @@ button {
   cursor: default;
 }
 
+/* A fill set inline, such as a team colour, must not survive being disabled. */
+.slab:disabled::before {
+  background: var(--c-raised);
+  border-color: transparent;
+}
+
 .slab__label {
   display: block;
   min-width: 0;

@@ -169,7 +169,7 @@ import { Slashes } from './slashes';
 
     .winner-slab {
       --fill: var(--c-ink);
-      --lean-inset: 20px;
+      --lean-inset: 24px;
 
       padding: var(--s-xl) calc(var(--s-xxl) + var(--s-sm)) var(--s-md);
       color: var(--team);

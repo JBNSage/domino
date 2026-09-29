@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-29T00:58:09Z",
+  "generatedAt": "2026-09-29T02:48:34Z",
   "title": "Design System: Dominó",
   "extensions": {
     "colorMeta": {
@@ -17,7 +17,8 @@
           "oklch(73% 0.214 40)",
           "oklch(84% 0.214 40)",
           "oklch(95% 0.214 40)"
-        ]
+        ],
+        "cssVariable": "--c-team-a"
       },
       "team-b": {
         "role": "secondary",
@@ -32,7 +33,8 @@
           "oklch(73% 0.221 119)",
           "oklch(84% 0.221 119)",
           "oklch(95% 0.221 119)"
-        ]
+        ],
+        "cssVariable": "--c-team-b"
       },
       "ink": {
         "role": "neutral",
@@ -47,7 +49,8 @@
           "oklch(73% 0.008 248)",
           "oklch(84% 0.008 248)",
           "oklch(95% 0.008 248)"
-        ]
+        ],
+        "cssVariable": "--c-ink"
       },
       "ground-night": {
         "role": "neutral",
@@ -62,7 +65,9 @@
           "oklch(73% 0.008 248)",
           "oklch(84% 0.008 248)",
           "oklch(95% 0.008 248)"
-        ]
+        ],
+        "cssVariable": "--c-ground",
+        "appearance": "dark"
       },
       "surface-night": {
         "role": "neutral",
@@ -77,7 +82,9 @@
           "oklch(73% 0.011 254)",
           "oklch(84% 0.011 254)",
           "oklch(95% 0.011 254)"
-        ]
+        ],
+        "cssVariable": "--c-surface",
+        "appearance": "dark"
       },
       "surface-raised-night": {
         "role": "neutral",
@@ -92,7 +99,9 @@
           "oklch(73% 0.014 257)",
           "oklch(84% 0.014 257)",
           "oklch(95% 0.014 257)"
-        ]
+        ],
+        "cssVariable": "--c-raised",
+        "appearance": "dark"
       },
       "line-night": {
         "role": "neutral",
@@ -107,7 +116,9 @@
           "oklch(73% 0.022 256)",
           "oklch(84% 0.022 256)",
           "oklch(95% 0.022 256)"
-        ]
+        ],
+        "cssVariable": "--c-line",
+        "appearance": "dark"
       },
       "text-night": {
         "role": "neutral",
@@ -122,7 +133,9 @@
           "oklch(73% 0.000 90)",
           "oklch(84% 0.000 90)",
           "oklch(95% 0.000 90)"
-        ]
+        ],
+        "cssVariable": "--c-text",
+        "appearance": "dark"
       },
       "text-muted-night": {
         "role": "neutral",
@@ -137,7 +150,9 @@
           "oklch(73% 0.013 256)",
           "oklch(84% 0.013 256)",
           "oklch(95% 0.013 256)"
-        ]
+        ],
+        "cssVariable": "--c-muted",
+        "appearance": "dark"
       },
       "danger-night": {
         "role": "error",
@@ -152,7 +167,9 @@
           "oklch(73% 0.184 28)",
           "oklch(84% 0.184 28)",
           "oklch(95% 0.184 28)"
-        ]
+        ],
+        "cssVariable": "--c-danger",
+        "appearance": "dark"
       },
       "ground-day": {
         "role": "neutral",
@@ -167,7 +184,9 @@
           "oklch(73% 0.003 265)",
           "oklch(84% 0.003 265)",
           "oklch(95% 0.003 265)"
-        ]
+        ],
+        "cssVariable": "--c-ground",
+        "appearance": "light"
       },
       "surface-day": {
         "role": "neutral",
@@ -182,7 +201,9 @@
           "oklch(73% 0.000 90)",
           "oklch(84% 0.000 90)",
           "oklch(95% 0.000 90)"
-        ]
+        ],
+        "cssVariable": "--c-surface",
+        "appearance": "light"
       },
       "surface-raised-day": {
         "role": "neutral",
@@ -197,7 +218,9 @@
           "oklch(73% 0.006 255)",
           "oklch(84% 0.006 255)",
           "oklch(95% 0.006 255)"
-        ]
+        ],
+        "cssVariable": "--c-raised",
+        "appearance": "light"
       },
       "line-day": {
         "role": "neutral",
@@ -212,7 +235,9 @@
           "oklch(73% 0.018 254)",
           "oklch(84% 0.018 254)",
           "oklch(95% 0.018 254)"
-        ]
+        ],
+        "cssVariable": "--c-line",
+        "appearance": "light"
       },
       "text-day": {
         "role": "neutral",
@@ -227,7 +252,9 @@
           "oklch(73% 0.008 248)",
           "oklch(84% 0.008 248)",
           "oklch(95% 0.008 248)"
-        ]
+        ],
+        "cssVariable": "--c-text",
+        "appearance": "light"
       },
       "text-muted-day": {
         "role": "neutral",
@@ -242,7 +269,9 @@
           "oklch(73% 0.018 251)",
           "oklch(84% 0.018 251)",
           "oklch(95% 0.018 251)"
-        ]
+        ],
+        "cssVariable": "--c-muted",
+        "appearance": "light"
       },
       "danger-day": {
         "role": "error",
@@ -257,197 +286,419 @@
           "oklch(73% 0.178 29)",
           "oklch(84% 0.178 29)",
           "oklch(95% 0.178 29)"
-        ]
+        ],
+        "cssVariable": "--c-danger",
+        "appearance": "light"
       },
       "scrim-night": {
         "role": "neutral",
         "displayName": "Scrim (night)",
-        "canonical": "rgba(0, 0, 0, 0.72)"
+        "canonical": "rgb(0 0 0 / 0.72)",
+        "cssVariable": "--c-scrim",
+        "appearance": "dark"
       },
       "scrim-day": {
         "role": "neutral",
         "displayName": "Scrim (day)",
-        "canonical": "rgba(14, 17, 20, 0.6)"
+        "canonical": "rgb(14 17 20 / 0.6)",
+        "cssVariable": "--c-scrim",
+        "appearance": "light"
+      },
+      "on-ink": {
+        "role": "neutral",
+        "displayName": "On Ink",
+        "canonical": "#FFFFFF",
+        "tonalRamp": [
+          "oklch(15% 0.000 90)",
+          "oklch(27% 0.000 90)",
+          "oklch(38% 0.000 90)",
+          "oklch(50% 0.000 90)",
+          "oklch(61% 0.000 90)",
+          "oklch(73% 0.000 90)",
+          "oklch(84% 0.000 90)",
+          "oklch(95% 0.000 90)"
+        ],
+        "cssVariable": "--c-on-ink"
+      },
+      "on-danger-night": {
+        "role": "neutral",
+        "displayName": "On Danger (night)",
+        "canonical": "#0E1114",
+        "tonalRamp": [
+          "oklch(15% 0.008 248)",
+          "oklch(27% 0.008 248)",
+          "oklch(38% 0.008 248)",
+          "oklch(50% 0.008 248)",
+          "oklch(61% 0.008 248)",
+          "oklch(73% 0.008 248)",
+          "oklch(84% 0.008 248)",
+          "oklch(95% 0.008 248)"
+        ],
+        "cssVariable": "--c-on-danger",
+        "appearance": "dark"
+      },
+      "on-danger-day": {
+        "role": "neutral",
+        "displayName": "On Danger (day)",
+        "canonical": "#FFFFFF",
+        "tonalRamp": [
+          "oklch(15% 0.000 90)",
+          "oklch(27% 0.000 90)",
+          "oklch(38% 0.000 90)",
+          "oklch(50% 0.000 90)",
+          "oklch(61% 0.000 90)",
+          "oklch(73% 0.000 90)",
+          "oklch(84% 0.000 90)",
+          "oklch(95% 0.000 90)"
+        ],
+        "cssVariable": "--c-on-danger",
+        "appearance": "light"
+      },
+      "team-edge-night": {
+        "role": "neutral",
+        "displayName": "Team Edge (night)",
+        "canonical": "transparent",
+        "cssVariable": "--c-team-edge",
+        "appearance": "dark"
+      },
+      "team-edge-day": {
+        "role": "neutral",
+        "displayName": "Team Edge (day)",
+        "canonical": "#0E1114",
+        "tonalRamp": [
+          "oklch(15% 0.008 248)",
+          "oklch(27% 0.008 248)",
+          "oklch(38% 0.008 248)",
+          "oklch(50% 0.008 248)",
+          "oklch(61% 0.008 248)",
+          "oklch(73% 0.008 248)",
+          "oklch(84% 0.008 248)",
+          "oklch(95% 0.008 248)"
+        ],
+        "cssVariable": "--c-team-edge",
+        "appearance": "light"
       }
     },
     "typographyMeta": {
+      "winner": {
+        "displayName": "Winner",
+        "purpose": "The winner's total on the winner screen. Tabular; shrinks to fit, down to 0.4.",
+        "fontStyle": "italic",
+        "cssVariable": "--t-winner",
+        "scalingCap": "1.2x"
+      },
       "hull": {
         "displayName": "Hull",
-        "purpose": "Team totals in the lockup. Kanit_800ExtraBold_Italic, tabular numerals, capped at 1.2x dynamic type and shrunk to fit.",
-        "fontStyle": "italic"
+        "purpose": "Team totals in the lockup. Tabular; shrinks to fit; both drop to Display size past four digits.",
+        "fontStyle": "italic",
+        "cssVariable": "--t-hull",
+        "scalingCap": "1.2x"
+      },
+      "display": {
+        "displayName": "Display",
+        "purpose": "Winner heading and the other team's total on the winner screen.",
+        "fontStyle": "italic",
+        "cssVariable": "--t-display",
+        "scalingCap": "1.2x",
+        "textTransform": "uppercase"
+      },
+      "field": {
+        "displayName": "Field",
+        "purpose": "Text typed into a number field. Tabular.",
+        "fontStyle": "italic",
+        "cssVariable": "--t-field",
+        "scalingCap": "1.2x"
       },
       "title": {
         "displayName": "Title",
-        "purpose": "Target value, team name field, sheet titles, empty-state heading, winner sentence. Kanit_800ExtraBold_Italic, uppercase.",
+        "purpose": "Target value, team name field, sheet titles, empty-state heading, winner sentence.",
         "fontStyle": "italic",
+        "cssVariable": "--t-title",
+        "scalingCap": "1.6x",
         "textTransform": "uppercase"
       },
       "button": {
         "displayName": "Button",
-        "purpose": "Slab button labels, team names on liveries, points in row chips. Kanit_800ExtraBold_Italic, uppercase.",
+        "purpose": "Slab labels, team names, points in row chips.",
         "fontStyle": "italic",
+        "cssVariable": "--t-button",
+        "scalingCap": "1.6x",
+        "textTransform": "uppercase"
+      },
+      "compact": {
+        "displayName": "Compact",
+        "purpose": "Label of a compact slab.",
+        "fontStyle": "italic",
+        "cssVariable": "--t-compact",
+        "scalingCap": "1.6x",
         "textTransform": "uppercase"
       },
       "body": {
         "displayName": "Body",
-        "purpose": "Full sentences only: explanations, errors, snackbar message. Kanit_500Medium, upright.",
-        "fontStyle": "normal"
+        "purpose": "Full sentences only: explanations, field messages, undo message. Upright.",
+        "fontStyle": "normal",
+        "cssVariable": "--t-body",
+        "scalingCap": "1.6x"
+      },
+      "meta": {
+        "displayName": "Meta",
+        "purpose": "Points remaining and rounds chip inside a livery; hand number of a selected row.",
+        "fontStyle": "italic",
+        "cssVariable": "--t-meta",
+        "scalingCap": "1.6x",
+        "textTransform": "uppercase"
       },
       "label": {
         "displayName": "Label",
-        "purpose": "Field labels, points remaining, rounds chip, hand numbers. Kanit_600SemiBold_Italic, uppercase, tabular numerals.",
+        "purpose": "Field labels and hand numbers.",
         "fontStyle": "italic",
+        "cssVariable": "--t-label",
+        "scalingCap": "1.6x",
         "textTransform": "uppercase"
       }
     },
     "shadows": [],
     "motion": [
       {
-        "name": "ease-out-exp",
+        "name": "ease-out",
         "value": "cubic-bezier(0.16, 1, 0.3, 1)",
-        "purpose": "CSS equivalent of Easing.out(Easing.exp), the easing of every authored animation."
+        "purpose": "--ease-out. The curve of every authored movement."
       },
       {
         "name": "row-enter",
-        "value": "200ms translateX from -56 (team A) or 56 (team B) to 0",
+        "value": "200ms translateX from -56px (team A) or 56px (team B)",
         "purpose": "A new hand streaks in from its team's side."
       },
       {
         "name": "total-pop",
-        "value": "220ms scale 1.14 to 1",
+        "value": "220ms scale 1.14 to 1, origin left center",
         "purpose": "A team total snaps when it changes."
       },
       {
+        "name": "sheet-slide",
+        "value": "200ms translateY from 100%; backdrop opacity 200ms ease-out",
+        "purpose": "A sheet rises from the bottom edge and leaves the same way."
+      },
+      {
         "name": "winner-flood",
-        "value": "220ms translateX from 1.6 screen widths on the winner's side to 0",
+        "value": "220ms translateX from -160vw (team A) or 160vw (team B); content opacity 220ms ease-out after 60ms",
         "purpose": "The winning colour floods the screen."
       },
       {
+        "name": "undo-rise",
+        "value": "200ms translateY from 12px with opacity from 0",
+        "purpose": "The undo bar arrives over the list."
+      },
+      {
         "name": "press-shift",
-        "value": "translateX 3, shape opacity 0.78",
-        "purpose": "Pressed state of slab buttons and the target slab (target slab opacity 0.6)."
+        "value": "90ms translateX 3px; layer opacity 0.7 (--pressed)",
+        "purpose": "Pressed state of slab buttons."
       },
       {
-        "name": "reduce-motion",
-        "value": "instant",
-        "purpose": "Row entrance, total pop, winner flood and list scrolling cut to their end state; the sheet slide and winner-screen fade are skipped."
+        "name": "hover",
+        "value": "filter brightness(1.12) on slabs and rows, brightness(1.06) on liveries; only under (hover: hover)",
+        "purpose": "Pointer hover."
       },
       {
-        "name": "modal-transitions",
-        "value": "platform slide (sheets), platform fade (winner screen)",
-        "purpose": "System modal transitions, set to none under Reduce Motion."
+        "name": "reduced-motion",
+        "value": "none",
+        "purpose": "All movement is declared inside prefers-reduced-motion: no-preference. Under reduced motion surfaces appear in their final state and the list jumps instead of scrolling smoothly."
+      },
+      {
+        "name": "haptics",
+        "value": "vibrate 15ms on a hand; [30, 60, 30, 60, 80] on a win",
+        "purpose": "Where the browser supports vibration; silent on iOS."
       }
     ],
     "breakpoints": [],
+    "mediaFeatures": [
+      {
+        "name": "prefers-color-scheme: light",
+        "purpose": "Swaps the neutral, danger, scrim and team-edge tokens to the day appearance."
+      },
+      {
+        "name": "prefers-reduced-motion: no-preference",
+        "purpose": "The only context in which animations and transitions are declared."
+      },
+      {
+        "name": "hover: hover",
+        "purpose": "Hover brightening is limited to devices with a real pointer."
+      }
+    ],
     "shape": {
       "leanDegrees": 12,
       "leanRatio": 0.2126,
-      "lockupLean": 36,
-      "outlineStroke": 2,
+      "lockupLean": "36px",
+      "outlineStroke": "2px",
       "cornerRadius": 0,
-      "renderer": "react-native-svg path; skew transforms are not used because Android does not render them"
+      "leanInset": {
+        "default": "6px",
+        "chip": "3px",
+        "winnerOtherSlab": "8px",
+        "winnerSlab": "20px"
+      },
+      "teamEdgeWidth": {
+        "dark": "0px",
+        "light": "2px"
+      },
+      "renderer": "CSS. A ::before layer behind the content with transform: skewX(-12deg), filled by --fill and bordered by --edge (.lean in src/styles.css); clip-path polygons for the liveries and the slash mark. Content is never skewed."
     },
     "sizing": {
-      "minTouchTarget": 48,
-      "slabButtonMinHeight": 56,
-      "rowMinHeight": 52,
-      "lockupMinHeight": 172,
-      "lockupSeam": 6,
-      "winnerTotal": 132,
-      "winnerOtherTotal": 56
+      "minTarget": "48px",
+      "slabMinHeight": "56px",
+      "slabCompactMinHeight": "48px",
+      "rowMinHeight": "52px",
+      "undoBarMinHeight": "52px",
+      "numberFieldMinHeight": "76px",
+      "lockupMinHeight": "172px",
+      "lockupSeam": "about 6px",
+      "column": "480px",
+      "sheetMaxHeight": "calc(90dvh - var(--keyboard-inset))",
+      "pressedOpacity": 0.7
+    },
+    "layout": {
+      "viewport": "100dvh column, max-width 480px, centred; body does not scroll",
+      "safeArea": "top inset above the header; bottom inset under the quick bar, sheet panels and winner screen",
+      "keyboard": "--keyboard-inset is set on the root element from window.visualViewport; sheets anchor their bottom edge to it"
+    },
+    "focus": {
+      "ring": "3px solid var(--focus, var(--c-text)), outline-offset 3px",
+      "overrides": {
+        "liveries": "ink, offset -8px",
+        "winnerScreen": "ink",
+        "undoBar": "ground",
+        "numberField": "offset 0",
+        "nameField": "underline turns from line to text colour"
+      }
+    },
+    "timing": {
+      "undoBar": "8000ms, paused while hovered or focused",
+      "longPress": "500ms hold, 10px slop"
     }
   },
   "components": [
     {
+      "name": "Slab Button, Outlined",
+      "kind": "button",
+      "refersTo": "slab-button-outlined",
+      "description": "The default slab: ground interior inside a 2-pixel line outline. Cancel and keep actions.",
+      "html": "<button class=\"ds-slab-outline\">Cancelar</button>",
+      "css": ".ds-slab-outline { position: relative; isolation: isolate; } .ds-slab-outline::before { content: ''; position: absolute; inset: 0 6px; z-index: -1; background: var(--c-ground, #0e1114); border: 2px solid var(--c-line, #6b7480); transform: skewX(-12deg); } .ds-slab-outline { display: inline-flex; align-items: center; justify-content: center; min-width: 160px; min-height: 56px; padding: 0 24px; border: 0; background: none; color: var(--c-text, #fff); font-family: var(--font, 'Kanit', sans-serif); font-style: italic; font-weight: 800; font-size: var(--t-button, 1.25rem); line-height: 1.1; letter-spacing: 0.5px; text-transform: uppercase; white-space: nowrap; cursor: pointer; transition: transform 90ms cubic-bezier(0.16, 1, 0.3, 1); } .ds-slab-outline:not(:disabled):hover::before { filter: brightness(1.12); } .ds-slab-outline:not(:disabled):active { transform: translateX(3px); } .ds-slab-outline:not(:disabled):active::before { opacity: 0.7; } .ds-slab-outline:focus-visible { outline: 3px solid var(--c-text, #fff); outline-offset: 3px; } .ds-slab-outline:disabled { color: var(--c-muted, #b6bcc4); cursor: default; } .ds-slab-outline:disabled::before { background: var(--c-raised, #2a2f36); border-color: transparent; }"
+    },
+    {
+      "name": "Slab Button, Compact",
+      "kind": "button",
+      "refersTo": "slab-button-compact",
+      "description": "48-pixel outlined slab for the occasional action; the quick-points bonus above each team's Anotar.",
+      "html": "<button class=\"ds-slab-compact\">+30</button>",
+      "css": ".ds-slab-compact { position: relative; isolation: isolate; } .ds-slab-compact::before { content: ''; position: absolute; inset: 0 6px; z-index: -1; background: var(--c-ground, #0e1114); border: 2px solid var(--c-line, #6b7480); transform: skewX(-12deg); } .ds-slab-compact { display: inline-flex; align-items: center; justify-content: center; min-width: 160px; min-height: 48px; padding: 0 16px; border: 0; background: none; color: var(--c-text, #fff); font-family: var(--font, 'Kanit', sans-serif); font-style: italic; font-weight: 800; font-size: var(--t-compact, 1.125rem); line-height: 1.1; letter-spacing: 0.5px; text-transform: uppercase; white-space: nowrap; cursor: pointer; transition: transform 90ms cubic-bezier(0.16, 1, 0.3, 1); } .ds-slab-compact:not(:disabled):hover::before { filter: brightness(1.12); } .ds-slab-compact:not(:disabled):active { transform: translateX(3px); } .ds-slab-compact:not(:disabled):active::before { opacity: 0.7; } .ds-slab-compact:focus-visible { outline: 3px solid var(--c-text, #fff); outline-offset: 3px; } .ds-slab-compact:disabled { color: var(--c-muted, #b6bcc4); cursor: default; } .ds-slab-compact:disabled::before { background: var(--c-raised, #2a2f36); border-color: transparent; }"
+    },
+    {
       "name": "Slab Button, Team A",
       "kind": "button",
       "refersTo": "slab-button-team-a",
-      "description": "Filled team slab for quick points and confirming a hand. Shifts 3 points right when pressed.",
-      "html": "<button class=\"ds-slab-a\">+30</button>",
-      "css": ".ds-slab-a { font-family: 'Kanit', sans-serif; font-weight: 800; font-style: italic; text-transform: uppercase; font-size: 20px; letter-spacing: 0.5px; min-height: 56px; padding: 0 24px; border: none; border-radius: 0; background: #FF5A00; color: #0E1114; clip-path: polygon(12px 0, 100% 0, calc(100% - 12px) 100%, 0 100%); transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1), opacity 200ms; } .ds-slab-a:hover { opacity: 0.9; } .ds-slab-a:active { transform: translateX(3px); opacity: 0.78; } .ds-slab-a:focus-visible { outline: none; opacity: 0.9; transform: translateX(3px); } .ds-slab-a:disabled { background: #2A2F36; color: #B6BCC4; transform: none; opacity: 1; }"
+      "description": "Filled team slab that opens or confirms a hand. Wears the ink keyline by day.",
+      "html": "<button class=\"ds-slab-a\">Anotar</button>",
+      "css": ".ds-slab-a { position: relative; isolation: isolate; } .ds-slab-a::before { content: ''; position: absolute; inset: 0 6px; z-index: -1; background: var(--c-team-a, #ff5a00); border: 2px solid var(--c-team-edge, transparent); transform: skewX(-12deg); } .ds-slab-a { display: inline-flex; align-items: center; justify-content: center; min-width: 160px; min-height: 56px; padding: 0 24px; border: 0; background: none; color: var(--c-ink, #0e1114); font-family: var(--font, 'Kanit', sans-serif); font-style: italic; font-weight: 800; font-size: var(--t-button, 1.25rem); line-height: 1.1; letter-spacing: 0.5px; text-transform: uppercase; white-space: nowrap; cursor: pointer; transition: transform 90ms cubic-bezier(0.16, 1, 0.3, 1); } .ds-slab-a:not(:disabled):hover::before { filter: brightness(1.12); } .ds-slab-a:not(:disabled):active { transform: translateX(3px); } .ds-slab-a:not(:disabled):active::before { opacity: 0.7; } .ds-slab-a:focus-visible { outline: 3px solid var(--c-text, #fff); outline-offset: 3px; } .ds-slab-a:disabled { color: var(--c-muted, #b6bcc4); cursor: default; } .ds-slab-a:disabled::before { background: var(--c-raised, #2a2f36); border-color: transparent; }"
     },
     {
       "name": "Slab Button, Team B",
       "kind": "button",
       "refersTo": "slab-button-team-b",
       "description": "The same slab in team B's colour.",
-      "html": "<button class=\"ds-slab-b\">+30</button>",
-      "css": ".ds-slab-b { font-family: 'Kanit', sans-serif; font-weight: 800; font-style: italic; text-transform: uppercase; font-size: 20px; letter-spacing: 0.5px; min-height: 56px; padding: 0 24px; border: none; border-radius: 0; background: #DFFF00; color: #0E1114; clip-path: polygon(12px 0, 100% 0, calc(100% - 12px) 100%, 0 100%); transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1), opacity 200ms; } .ds-slab-b:hover { opacity: 0.9; } .ds-slab-b:active { transform: translateX(3px); opacity: 0.78; } .ds-slab-b:focus-visible { outline: none; opacity: 0.9; transform: translateX(3px); } .ds-slab-b:disabled { background: #2A2F36; color: #B6BCC4; transform: none; opacity: 1; }"
+      "html": "<button class=\"ds-slab-b\">Anotar</button>",
+      "css": ".ds-slab-b { position: relative; isolation: isolate; } .ds-slab-b::before { content: ''; position: absolute; inset: 0 6px; z-index: -1; background: var(--c-team-b, #dfff00); border: 2px solid var(--c-team-edge, transparent); transform: skewX(-12deg); } .ds-slab-b { display: inline-flex; align-items: center; justify-content: center; min-width: 160px; min-height: 56px; padding: 0 24px; border: 0; background: none; color: var(--c-ink, #0e1114); font-family: var(--font, 'Kanit', sans-serif); font-style: italic; font-weight: 800; font-size: var(--t-button, 1.25rem); line-height: 1.1; letter-spacing: 0.5px; text-transform: uppercase; white-space: nowrap; cursor: pointer; transition: transform 90ms cubic-bezier(0.16, 1, 0.3, 1); } .ds-slab-b:not(:disabled):hover::before { filter: brightness(1.12); } .ds-slab-b:not(:disabled):active { transform: translateX(3px); } .ds-slab-b:not(:disabled):active::before { opacity: 0.7; } .ds-slab-b:focus-visible { outline: 3px solid var(--c-text, #fff); outline-offset: 3px; } .ds-slab-b:disabled { color: var(--c-muted, #b6bcc4); cursor: default; } .ds-slab-b:disabled::before { background: var(--c-raised, #2a2f36); border-color: transparent; }"
     },
     {
-      "name": "Slab Button, Outlined",
+      "name": "Slab Button, Neutral",
       "kind": "button",
-      "refersTo": "slab-button-outlined",
-      "description": "Cancel action: ground interior inside a 2-point line outline.",
-      "html": "<button class=\"ds-slab-outline\"><span>Cancelar</span></button>",
-      "css": ".ds-slab-outline { position: relative; font-family: 'Kanit', sans-serif; font-weight: 800; font-style: italic; text-transform: uppercase; font-size: 20px; letter-spacing: 0.5px; min-height: 56px; padding: 0 24px; border: none; border-radius: 0; background: #6B7480; color: #FFFFFF; clip-path: polygon(12px 0, 100% 0, calc(100% - 12px) 100%, 0 100%); transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1), opacity 200ms; } .ds-slab-outline::before { content: ''; position: absolute; inset: 2px 2.2px; background: #0E1114; clip-path: polygon(11.5px 0, 100% 0, calc(100% - 11.5px) 100%, 0 100%); } .ds-slab-outline span { position: relative; } .ds-slab-outline:hover { opacity: 0.9; } .ds-slab-outline:active, .ds-slab-outline:focus-visible { outline: none; transform: translateX(3px); opacity: 0.78; }"
+      "refersTo": "slab-button-neutral",
+      "description": "Filled confirm on the settings sheet, in inverse neutrals.",
+      "html": "<button class=\"ds-slab-neutral\">Guardar</button>",
+      "css": ".ds-slab-neutral { position: relative; isolation: isolate; } .ds-slab-neutral::before { content: ''; position: absolute; inset: 0 6px; z-index: -1; background: var(--c-text, #fff); border: 2px solid transparent; transform: skewX(-12deg); } .ds-slab-neutral { display: inline-flex; align-items: center; justify-content: center; min-width: 160px; min-height: 56px; padding: 0 24px; border: 0; background: none; color: var(--c-ground, #0e1114); font-family: var(--font, 'Kanit', sans-serif); font-style: italic; font-weight: 800; font-size: var(--t-button, 1.25rem); line-height: 1.1; letter-spacing: 0.5px; text-transform: uppercase; white-space: nowrap; cursor: pointer; transition: transform 90ms cubic-bezier(0.16, 1, 0.3, 1); } .ds-slab-neutral:not(:disabled):hover::before { filter: brightness(1.12); } .ds-slab-neutral:not(:disabled):active { transform: translateX(3px); } .ds-slab-neutral:not(:disabled):active::before { opacity: 0.7; } .ds-slab-neutral:focus-visible { outline: 3px solid var(--c-text, #fff); outline-offset: 3px; } .ds-slab-neutral:disabled { color: var(--c-muted, #b6bcc4); cursor: default; } .ds-slab-neutral:disabled::before { background: var(--c-raised, #2a2f36); border-color: transparent; }"
     },
     {
-      "name": "Livery Lockup",
-      "kind": "custom",
-      "refersTo": "livery-panel-team-a",
-      "description": "Both team panels meeting on a diagonal seam; each panel is a button that opens the points sheet.",
-      "html": "<div class=\"ds-lockup\"><button class=\"ds-livery ds-livery-a\"><span class=\"ds-livery-name\">Equipo A</span><span class=\"ds-livery-total\">75</span><span class=\"ds-livery-left\">Faltan 25</span><span class=\"ds-rounds ds-rounds-a\">0 rondas</span></button><button class=\"ds-livery ds-livery-b\"><span class=\"ds-livery-name\">Equipo B</span><span class=\"ds-livery-total\">60</span><span class=\"ds-livery-left\">Faltan 40</span><span class=\"ds-rounds ds-rounds-b\">3 rondas</span></button></div>",
-      "css": ".ds-lockup { display: flex; gap: 6px; width: 360px; background: #0E1114; overflow: hidden; } .ds-livery { flex: 1; min-height: 172px; display: flex; flex-direction: column; align-items: flex-start; justify-content: space-between; gap: 4px; border: none; border-radius: 0; color: #0E1114; text-align: left; font-family: 'Kanit', sans-serif; font-weight: 800; font-style: italic; text-transform: uppercase; transition: opacity 200ms; } .ds-livery-a { background: #FF5A00; padding: 16px 40px 16px 16px; margin-right: -18px; clip-path: polygon(0 0, 100% 0, calc(100% - 36px) 100%, 0 100%); } .ds-livery-b { background: #DFFF00; padding: 16px 16px 16px 48px; margin-left: -18px; clip-path: polygon(36px 0, 100% 0, 100% 100%, 0 100%); } .ds-livery:hover, .ds-livery:focus-visible { outline: none; opacity: 0.9; } .ds-livery:active { opacity: 0.8; } .ds-livery-name { font-size: 20px; line-height: 1.15; } .ds-livery-total { font-size: 76px; line-height: 1.05; font-variant-numeric: tabular-nums; } .ds-livery-left { font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; } .ds-rounds { font-size: 13px; font-weight: 600; padding: 2px 12px; background: #0E1114; clip-path: polygon(5px 0, 100% 0, calc(100% - 5px) 100%, 0 100%); } .ds-rounds-a { color: #FF5A00; } .ds-rounds-b { color: #DFFF00; }"
+      "name": "Slab Button, Danger",
+      "kind": "button",
+      "refersTo": "slab-button-danger",
+      "description": "An action that deletes: Eliminar on a selected hand, Todo on the reset sheet.",
+      "html": "<button class=\"ds-slab-danger\">Eliminar</button>",
+      "css": ".ds-slab-danger { position: relative; isolation: isolate; } .ds-slab-danger::before { content: ''; position: absolute; inset: 0 6px; z-index: -1; background: var(--c-danger, #ff6b5c); border: 2px solid transparent; transform: skewX(-12deg); } .ds-slab-danger { display: inline-flex; align-items: center; justify-content: center; min-width: 160px; min-height: 56px; padding: 0 24px; border: 0; background: none; color: var(--c-on-danger, #0e1114); font-family: var(--font, 'Kanit', sans-serif); font-style: italic; font-weight: 800; font-size: var(--t-button, 1.25rem); line-height: 1.1; letter-spacing: 0.5px; text-transform: uppercase; white-space: nowrap; cursor: pointer; transition: transform 90ms cubic-bezier(0.16, 1, 0.3, 1); } .ds-slab-danger:not(:disabled):hover::before { filter: brightness(1.12); } .ds-slab-danger:not(:disabled):active { transform: translateX(3px); } .ds-slab-danger:not(:disabled):active::before { opacity: 0.7; } .ds-slab-danger:focus-visible { outline: 3px solid var(--c-text, #fff); outline-offset: 3px; } .ds-slab-danger:disabled { color: var(--c-muted, #b6bcc4); cursor: default; } .ds-slab-danger:disabled::before { background: var(--c-raised, #2a2f36); border-color: transparent; }"
     },
     {
-      "name": "Score Row",
-      "kind": "custom",
-      "refersTo": "score-row",
-      "description": "One hand: points chip under the scoring team, hand number between the columns, delete floating at the right edge.",
-      "html": "<div class=\"ds-row\"><span class=\"ds-row-cell\"><span class=\"ds-points\">45</span></span><span class=\"ds-row-hand\">01</span><span class=\"ds-row-cell ds-row-zero\">0</span><button class=\"ds-row-delete\" aria-label=\"Eliminar mano 1\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 512 512\"><path fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"32\" d=\"M368 368L144 144M368 144L144 368\"/></svg></button></div>",
-      "css": ".ds-row { position: relative; display: flex; align-items: center; width: 328px; min-height: 52px; background: #1A1E23; clip-path: polygon(11px 0, 100% 0, calc(100% - 11px) 100%, 0 100%); } .ds-row-cell { flex: 1; display: flex; justify-content: center; } .ds-points { font-family: 'Kanit', sans-serif; font-weight: 800; font-style: italic; text-transform: uppercase; font-size: 20px; font-variant-numeric: tabular-nums; min-width: 40px; text-align: center; padding: 4px 12px; background: #FF5A00; color: #0E1114; clip-path: polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%); } .ds-row-zero { font-family: 'Kanit', sans-serif; font-weight: 600; font-style: italic; text-transform: uppercase; font-size: 20px; color: #B6BCC4; } .ds-row-hand { font-family: 'Kanit', sans-serif; font-weight: 600; font-style: italic; text-transform: uppercase; font-size: 13px; width: 44px; text-align: center; color: #B6BCC4; font-variant-numeric: tabular-nums; } .ds-row-delete { position: absolute; right: 0; top: 0; bottom: 0; width: 48px; display: flex; align-items: center; justify-content: center; background: none; border: none; color: #B6BCC4; } .ds-row-delete:hover, .ds-row-delete:focus-visible { outline: none; color: #FFFFFF; } .ds-row-delete:active { opacity: 0.5; }"
-    },
-    {
-      "name": "Number Field",
-      "kind": "input",
-      "refersTo": "number-field",
-      "description": "Rectangular numeric field with its label above; the border turns to the danger colour when the value is invalid.",
-      "html": "<label class=\"ds-field\"><span class=\"ds-field-label\">Puntos de la mano</span><input class=\"ds-field-input\" inputmode=\"numeric\" placeholder=\"0\" /></label>",
-      "css": ".ds-field { display: flex; flex-direction: column; gap: 4px; width: 312px; } .ds-field-label { font-family: 'Kanit', sans-serif; font-weight: 600; font-style: italic; text-transform: uppercase; font-size: 13px; color: #B6BCC4; } .ds-field-input { font-family: 'Kanit', sans-serif; font-weight: 800; font-style: italic; font-size: 44px; font-variant-numeric: tabular-nums; min-height: 76px; padding: 8px 16px; background: #1A1E23; color: #FFFFFF; border: 2px solid #6B7480; border-radius: 0; caret-color: #FF5A00; outline: none; } .ds-field-input::placeholder { color: #B6BCC4; } .ds-field-input:hover, .ds-field-input:focus-visible { border-color: #B6BCC4; } .ds-field-input:invalid { border-color: #FF6B5C; }"
+      "name": "Slab Button, Disabled",
+      "kind": "button",
+      "refersTo": "slab-button-disabled",
+      "description": "Any slab while its value is invalid: raised surface fill, muted label, no outline.",
+      "html": "<button class=\"ds-slab-disabled\" disabled>Guardar</button>",
+      "css": ".ds-slab-disabled { position: relative; isolation: isolate; } .ds-slab-disabled::before { content: ''; position: absolute; inset: 0 6px; z-index: -1; background: var(--c-text, #fff); border: 2px solid transparent; transform: skewX(-12deg); } .ds-slab-disabled { display: inline-flex; align-items: center; justify-content: center; min-width: 160px; min-height: 56px; padding: 0 24px; border: 0; background: none; color: var(--c-ground, #0e1114); font-family: var(--font, 'Kanit', sans-serif); font-style: italic; font-weight: 800; font-size: var(--t-button, 1.25rem); line-height: 1.1; letter-spacing: 0.5px; text-transform: uppercase; white-space: nowrap; cursor: pointer; transition: transform 90ms cubic-bezier(0.16, 1, 0.3, 1); } .ds-slab-disabled:not(:disabled):hover::before { filter: brightness(1.12); } .ds-slab-disabled:not(:disabled):active { transform: translateX(3px); } .ds-slab-disabled:not(:disabled):active::before { opacity: 0.7; } .ds-slab-disabled:focus-visible { outline: 3px solid var(--c-text, #fff); outline-offset: 3px; } .ds-slab-disabled:disabled { color: var(--c-muted, #b6bcc4); cursor: default; } .ds-slab-disabled:disabled::before { background: var(--c-raised, #2a2f36); border-color: transparent; }"
     },
     {
       "name": "Target Slab",
       "kind": "custom",
       "refersTo": "target-slab",
-      "description": "Outlined header slab showing the score that wins the match; tap to edit.",
-      "html": "<button class=\"ds-target\"><span class=\"ds-target-label\">Se gana con</span><span class=\"ds-target-value\">200</span></button>",
-      "css": ".ds-target { position: relative; display: inline-flex; align-items: center; gap: 8px; min-height: 48px; padding: 0 16px; border: none; border-radius: 0; background: #6B7480; clip-path: polygon(10px 0, 100% 0, calc(100% - 10px) 100%, 0 100%); transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1), opacity 200ms; } .ds-target::before { content: ''; position: absolute; inset: 2px 2.2px; background: #0E1114; clip-path: polygon(9.6px 0, 100% 0, calc(100% - 9.6px) 100%, 0 100%); } .ds-target span { position: relative; } .ds-target-label { font-family: 'Kanit', sans-serif; font-weight: 600; font-style: italic; text-transform: uppercase; font-size: 16px; color: #B6BCC4; } .ds-target-value { font-family: 'Kanit', sans-serif; font-weight: 800; font-style: italic; font-size: 28px; color: #FFFFFF; font-variant-numeric: tabular-nums; } .ds-target:hover { opacity: 0.9; } .ds-target:active, .ds-target:focus-visible { outline: none; transform: translateX(3px); opacity: 0.6; }"
+      "description": "Compact outlined header slab showing the score that wins the round; opens the settings sheet.",
+      "html": "<button class=\"ds-target\"><span class=\"ds-target-label\">Se gana con</span><span class=\"ds-target-value\">200</span><svg class=\"ds-target-pencil\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M4 20l1-4.5L16.5 4 20 7.5 8.5 19z\"/><path d=\"M14 6.5l3.5 3.5\"/></svg></button>",
+      "css": ".ds-target { position: relative; isolation: isolate; } .ds-target::before { content: ''; position: absolute; inset: 0 6px; z-index: -1; background: var(--c-ground, #0e1114); border: 2px solid var(--c-line, #6b7480); transform: skewX(-12deg); } .ds-target { display: inline-flex; align-items: center; gap: 8px; min-height: 48px; padding: 0 16px; border: 0; background: none; color: var(--c-text, #fff); font-family: var(--font, 'Kanit', sans-serif); font-style: italic; font-weight: 800; text-transform: uppercase; white-space: nowrap; cursor: pointer; transition: transform 90ms cubic-bezier(0.16, 1, 0.3, 1); } .ds-target-label { color: var(--c-muted, #b6bcc4); font-weight: 600; font-size: var(--t-body, 1rem); line-height: 1.2; } .ds-target-value { font-size: var(--t-title, 1.75rem); font-variant-numeric: tabular-nums; } .ds-target-pencil { width: 16px; height: 16px; fill: none; stroke: var(--c-muted, #b6bcc4); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; } .ds-target:hover::before { filter: brightness(1.12); } .ds-target:active { transform: translateX(3px); } .ds-target:active::before { opacity: 0.7; } .ds-target:focus-visible { outline: 3px solid var(--c-text, #fff); outline-offset: 3px; }"
+    },
+    {
+      "name": "Livery Lockup",
+      "kind": "custom",
+      "refersTo": "livery-panel-team-a",
+      "description": "Both team panels cut on a fixed 36-pixel seam; each panel is a button that opens the points sheet.",
+      "html": "<div class=\"ds-lockup\"><button class=\"ds-livery ds-livery-a\"><span class=\"ds-livery-name\">Equipo A</span><span class=\"ds-livery-total\">75</span><span class=\"ds-livery-meta\"><span>Faltan 125</span><span class=\"ds-rounds\">1 ronda</span></span></button><button class=\"ds-livery ds-livery-b\"><span class=\"ds-livery-name\">Equipo B</span><span class=\"ds-livery-total\">42</span><span class=\"ds-livery-meta\"><span>Faltan 158</span><span class=\"ds-rounds\">3 rondas</span></span></button></div>",
+      "css": ".ds-lockup { --seam-lean: 36px; --edge-x: calc(var(--team-edge-width, 0px) * 1.1); display: flex; width: 390px; overflow: hidden; background: var(--c-ground, #0e1114); } .ds-livery { position: relative; isolation: isolate; flex: 1; min-width: 0; min-height: 172px; display: flex; flex-direction: column; justify-content: space-between; gap: 4px; padding: 16px; border: 0; background: none; color: var(--c-ink, #0e1114); text-align: left; font-family: var(--font, 'Kanit', sans-serif); font-style: italic; font-weight: 800; text-transform: uppercase; cursor: pointer; } .ds-livery-a { --team: var(--c-team-a, #ff5a00); padding-right: 24px; } .ds-livery-b { --team: var(--c-team-b, #dfff00); padding-left: 32px; } .ds-livery::before, .ds-livery::after { content: ''; position: absolute; top: 0; bottom: 0; z-index: -1; } .ds-livery-a::before, .ds-livery-a::after { left: -48px; right: -15px; } .ds-livery-b::before, .ds-livery-b::after { left: -15px; right: -48px; } .ds-livery::before { background: var(--c-team-edge, transparent); clip-path: polygon(var(--seam-lean) 0, 100% 0, calc(100% - var(--seam-lean)) 100%, 0 100%); } .ds-livery::after { background: var(--team); clip-path: polygon(calc(var(--seam-lean) + var(--edge-x)) var(--team-edge-width, 0px), calc(100% - var(--edge-x)) var(--team-edge-width, 0px), calc(100% - var(--seam-lean) - var(--edge-x)) calc(100% - var(--team-edge-width, 0px)), var(--edge-x) calc(100% - var(--team-edge-width, 0px))); } .ds-livery:hover::after { filter: brightness(1.06); } .ds-livery:active::after { opacity: 0.7; } .ds-livery:focus-visible { outline: 3px solid var(--c-ink, #0e1114); outline-offset: -8px; } .ds-livery-name { font-size: var(--t-button, 1.25rem); line-height: 1.15; } .ds-livery-total { font-size: var(--t-hull, 4.75rem); line-height: 1.05; font-variant-numeric: tabular-nums; } .ds-livery-meta { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; font-weight: 600; font-size: var(--t-meta, 0.9375rem); line-height: 1.3; letter-spacing: 0.4px; font-variant-numeric: tabular-nums; } .ds-rounds { position: relative; isolation: isolate; padding: 2px 12px; color: var(--team); } .ds-rounds::before { content: ''; position: absolute; inset: 0 3px; z-index: -1; background: var(--c-ink, #0e1114); transform: skewX(-12deg); }"
+    },
+    {
+      "name": "Score Row",
+      "kind": "custom",
+      "refersTo": "score-row",
+      "description": "One hand: points chip under the scoring team, hand number between the columns. The row is a button; tapping it offers Dejar and Eliminar in its place.",
+      "html": "<button class=\"ds-row\"><span class=\"ds-row-cell\"><span class=\"ds-points\">45</span></span><span class=\"ds-row-hand\">01</span><span class=\"ds-row-cell\"><span class=\"ds-row-zero\">0</span></span></button>",
+      "css": ".ds-row { position: relative; isolation: isolate; } .ds-row::before { content: ''; position: absolute; inset: 0 6px; z-index: -1; background: var(--c-surface, #1a1e23); border: 2px solid transparent; transform: skewX(-12deg); } .ds-points { position: relative; isolation: isolate; } .ds-points::before { content: ''; position: absolute; inset: 0 3px; z-index: -1; background: var(--c-team-a, #ff5a00); border: 2px solid var(--c-team-edge, transparent); transform: skewX(-12deg); } .ds-row { width: 358px; min-height: 52px; display: flex; align-items: center; padding: 0; border: 0; background: none; cursor: pointer; font-variant-numeric: tabular-nums; } .ds-row:hover::before { filter: brightness(1.12); } .ds-row:active::before { opacity: 0.7; } .ds-row:focus-visible { outline: 3px solid var(--c-text, #fff); outline-offset: 3px; } .ds-row-cell { flex: 1; display: grid; place-items: center; } .ds-points { min-width: 64px; padding: 4px 12px; color: var(--c-ink, #0e1114); font-family: var(--font, 'Kanit', sans-serif); font-style: italic; font-weight: 800; font-size: var(--t-button, 1.25rem); line-height: 1.3; text-align: center; } .ds-row-zero { color: var(--c-muted, #b6bcc4); font-family: var(--font, 'Kanit', sans-serif); font-style: italic; font-weight: 600; font-size: var(--t-button, 1.25rem); line-height: 1.3; } .ds-row-hand { flex: none; width: 44px; text-align: center; color: var(--c-muted, #b6bcc4); font-family: var(--font, 'Kanit', sans-serif); font-style: italic; font-weight: 600; font-size: var(--t-label, 0.8125rem); line-height: 1.2; }"
+    },
+    {
+      "name": "Number Field",
+      "kind": "input",
+      "refersTo": "number-field",
+      "description": "Rectangular numeric field with its label above; the border and message turn to the danger colour when the value is invalid.",
+      "html": "<div class=\"ds-field\"><label class=\"ds-field-label\" for=\"ds-field-input\">Puntos de la mano</label><input id=\"ds-field-input\" class=\"ds-field-input\" type=\"text\" inputmode=\"numeric\" pattern=\"[0-9]*\" placeholder=\"—\" aria-describedby=\"ds-field-message\" /><p id=\"ds-field-message\" class=\"ds-field-message\" role=\"status\">Escribe un número entre 1 y 999.</p></div>",
+      "css": ".ds-field { display: flex; flex-direction: column; gap: 4px; width: 342px; } .ds-field-label { color: var(--c-muted, #b6bcc4); font-family: var(--font, 'Kanit', sans-serif); font-style: italic; font-weight: 600; font-size: var(--t-label, 0.8125rem); line-height: 1.3; text-transform: uppercase; } .ds-field-input { width: 100%; min-height: 76px; padding: 8px 16px; border: 2px solid var(--c-line, #6b7480); border-radius: 0; background: var(--c-surface, #1a1e23); color: var(--c-text, #fff); caret-color: var(--c-text, #fff); font-family: var(--font, 'Kanit', sans-serif); font-style: italic; font-weight: 800; font-size: var(--t-field, 2.75rem); line-height: 1.2; font-variant-numeric: tabular-nums; appearance: none; } .ds-field-input::placeholder { color: var(--c-muted, #b6bcc4); opacity: 1; } .ds-field-input:focus-visible { outline: 3px solid var(--c-text, #fff); outline-offset: 0; } .ds-field-input:invalid { border-color: var(--c-danger, #ff6b5c); } .ds-field-message { display: none; margin: 0; color: var(--c-danger, #ff6b5c); font-family: var(--font, 'Kanit', sans-serif); font-weight: 500; font-size: var(--t-body, 1rem); line-height: 1.35; } .ds-field-input:invalid + .ds-field-message { display: block; }"
     },
     {
       "name": "Winner Scores",
       "kind": "custom",
       "refersTo": "winner-slab",
-      "description": "On the winner flood: a large graphite slab with the winner's name above the total, and a smaller outlined slab for the other team.",
-      "html": "<div class=\"ds-winner\"><div class=\"ds-winner-slab\"><span class=\"ds-winner-name\">Equipo A</span><span class=\"ds-winner-total\">100</span></div><div class=\"ds-winner-other\"><span class=\"ds-winner-name\">Equipo B</span><span class=\"ds-winner-other-total\">60</span></div></div>",
-      "css": ".ds-winner { display: flex; flex-direction: column; gap: 12px; width: 344px; padding: 24px 8px; background: #FF5A00; font-family: 'Kanit', sans-serif; font-weight: 800; font-style: italic; text-transform: uppercase; } .ds-winner-slab { display: flex; flex-direction: column; padding: 24px 40px 12px; background: #0E1114; color: #FF5A00; clip-path: polygon(37px 0, 100% 0, calc(100% - 37px) 100%, 0 100%); } .ds-winner-name { font-size: 20px; } .ds-winner-total { font-size: 132px; line-height: 140px; font-variant-numeric: tabular-nums; } .ds-winner-other { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 8px 32px; background: #0E1114; color: #0E1114; clip-path: polygon(16px 0, 100% 0, calc(100% - 16px) 100%, 0 100%); } .ds-winner-other::before { content: ''; position: absolute; inset: 2px 2.2px; background: #FF5A00; clip-path: polygon(15.6px 0, 100% 0, calc(100% - 15.6px) 100%, 0 100%); } .ds-winner-other span { position: relative; } .ds-winner-other-total { font-size: 56px; line-height: 62px; font-variant-numeric: tabular-nums; }"
+      "description": "On the winner flood: a large graphite slab with the winner's name above the total, and a smaller ink-outlined slab for the other team.",
+      "html": "<div class=\"ds-winner\"><p class=\"ds-winner-slab\"><span class=\"ds-winner-name\">Equipo A</span><span class=\"ds-winner-total\">225</span></p><p class=\"ds-winner-other\"><span class=\"ds-winner-name\">Equipo B</span><span class=\"ds-winner-other-total\">30</span></p></div>",
+      "css": ".ds-winner-slab { position: relative; isolation: isolate; } .ds-winner-slab::before { content: ''; position: absolute; inset: 0 20px; z-index: -1; background: var(--c-ink, #0e1114); border: 2px solid transparent; transform: skewX(-12deg); } .ds-winner-other { position: relative; isolation: isolate; } .ds-winner-other::before { content: ''; position: absolute; inset: 0 8px; z-index: -1; background: var(--c-team-a, #ff5a00); border: 2px solid var(--c-ink, #0e1114); transform: skewX(-12deg); } .ds-winner { display: flex; flex-direction: column; gap: 12px; width: 342px; padding: 24px 8px; background: var(--c-team-a, #ff5a00); color: var(--c-ink, #0e1114); font-family: var(--font, 'Kanit', sans-serif); font-style: italic; font-weight: 800; text-transform: uppercase; font-variant-numeric: tabular-nums; } .ds-winner p { margin: 0; } .ds-winner-slab { display: flex; flex-direction: column; padding: 24px 40px 12px; color: var(--c-team-a, #ff5a00); } .ds-winner-name { font-size: var(--t-button, 1.25rem); line-height: 1.2; } .ds-winner-total { font-size: var(--t-winner, 8.25rem); line-height: 1.06; } .ds-winner-other { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 8px 32px; } .ds-winner-other-total { font-size: var(--t-display, 3.5rem); line-height: 1.1; }"
     },
     {
-      "name": "Undo Snackbar",
+      "name": "Undo Bar",
       "kind": "custom",
       "refersTo": "undo-snackbar",
-      "description": "Leaning inverse slab shown for 5 seconds after a hand is deleted; no shadow.",
-      "html": "<div class=\"ds-undo\"><span class=\"ds-undo-message\">Mano eliminada</span><button class=\"ds-undo-action\">Deshacer</button></div>",
-      "css": ".ds-undo { display: flex; align-items: center; width: 328px; min-height: 52px; padding: 0 8px 0 24px; background: #FFFFFF; color: #0E1114; clip-path: polygon(11px 0, 100% 0, calc(100% - 11px) 100%, 0 100%); } .ds-undo-message { flex: 1; font-family: 'Kanit', sans-serif; font-weight: 500; font-size: 16px; } .ds-undo-action { font-family: 'Kanit', sans-serif; font-weight: 800; font-style: italic; text-transform: uppercase; font-size: 16px; text-decoration: underline; min-height: 48px; padding: 0 16px; background: none; border: none; color: #0E1114; } .ds-undo-action:hover, .ds-undo-action:focus-visible { outline: none; opacity: 0.8; } .ds-undo-action:active { opacity: 0.6; }"
+      "description": "Leaning inverse slab shown for 8 seconds after a deletion, a closed round or a reset; the timer pauses while it is hovered or focused.",
+      "html": "<div class=\"ds-undo\"><span class=\"ds-undo-message\">Mano 2 eliminada</span><button class=\"ds-undo-action\">Deshacer</button></div>",
+      "css": ".ds-undo { position: relative; isolation: isolate; } .ds-undo::before { content: ''; position: absolute; inset: 0 6px; z-index: -1; background: var(--c-text, #fff); border: 2px solid transparent; transform: skewX(-12deg); } .ds-undo { display: flex; align-items: center; width: 358px; min-height: 52px; padding: 0 8px 0 24px; color: var(--c-ground, #0e1114); font-family: var(--font, 'Kanit', sans-serif); font-weight: 500; font-size: var(--t-body, 1rem); } .ds-undo-message { flex: 1; min-width: 0; line-height: 1.25; } .ds-undo-action { min-height: 48px; padding: 0 16px; border: 0; background: none; color: inherit; font-family: var(--font, 'Kanit', sans-serif); font-style: italic; font-weight: 800; font-size: var(--t-body, 1rem); line-height: 1.2; text-transform: uppercase; text-decoration: underline; text-underline-offset: 0.2em; cursor: pointer; } .ds-undo-action:active { opacity: 0.7; } .ds-undo-action:focus-visible { outline: 3px solid var(--c-ground, #0e1114); outline-offset: 3px; }"
     },
     {
       "name": "Triple-Slash Mark",
       "kind": "custom",
-      "description": "The only ornament: three leaning bars, 14 to 40 points tall.",
-      "html": "<span class=\"ds-slashes\"><i></i><i></i><i></i></span>",
-      "css": ".ds-slashes { display: inline-flex; gap: 1px; } .ds-slashes i { display: block; width: 11px; height: 18px; background: #FF5A00; clip-path: polygon(3.8px 0, 100% 0, calc(100% - 3.8px) 100%, 0 100%); }"
+      "description": "The only ornament: three leaning bars, 18 to 40 pixels tall, hidden from assistive technology.",
+      "html": "<span class=\"ds-slashes\" aria-hidden=\"true\"><i></i><i></i><i></i></span>",
+      "css": ".ds-slashes { --size: 18px; display: inline-flex; gap: calc(var(--size) * 0.05); color: var(--c-line, #6b7480); } .ds-slashes i { width: calc(var(--size) * 0.62); height: var(--size); background: currentColor; clip-path: polygon(21.26% 0, 100% 0, 78.74% 100%, 0 100%); }"
     }
   ],
   "narrative": {
     "northStar": "Liga de Carreras",
-    "overview": "The scoreboard is painted like two rival race cars parked nose to nose. Each team owns a flood of one loud colour with its total set in numerals large enough to read from the far seat at the table, and every other surface steps back to graphite at night or pit silver by day. There is one screen, and its three overlays (points sheet, value sheet, winner screen) are built from the same parts.\n\nThe system has one shape and one typeface. The shape is a parallelogram that leans 12 degrees forward, used for buttons, rows, chips, the two liveries and the full-screen winner flood. The typeface is Kanit, set in heavy italic capitals for everything that is a name, a number or a command, and in upright medium only for full sentences. The only ornament is a mark of three small leaning bars cut from the same shape.\n\nDensity is low and the targets are large: the smallest control is 48 points, slab buttons are 56 points tall, and the screen carries no navigation, no cards and no icons beyond three small utility symbols.",
+    "overview": "The scoreboard is painted like two rival race cars parked nose to nose. Each team owns a flood of one loud colour with its total set in numerals large enough to read from the far seat at the table, and every other surface steps back to graphite at night or pit silver by day. There is one screen, and its four overlays (points sheet, settings sheet, reset sheet, winner screen) are built from the same parts.\n\nThe system has one shape and one typeface. The shape is a parallelogram that leans 12 degrees forward, used for buttons, rows, chips, the two liveries, the undo bar and the full-screen winner flood. The typeface is Kanit, set in heavy italic capitals for everything that is a name, a number or a command, and in upright medium only for full sentences. The only ornament is a mark of three small leaning bars cut from the same shape.\n\nDensity is low and the targets are large: the smallest control is 48 pixels, slab buttons are 56 pixels tall, and the screen carries no navigation, no cards and no icons beyond two small utility symbols. On a wide screen the same phone column sits centred on the ground, 480 pixels wide.",
     "keyCharacteristics": [
       "Two saturated team colours used as fills, always carrying graphite ink.",
       "One forward-leaning parallelogram as the shape of every filled element; zero corner radius anywhere.",
-      "Kanit extra-bold italic capitals with tabular numerals; hull-sized totals at 76 points.",
+      "Kanit extra-bold italic capitals with tabular numerals; hull-sized totals at 4.75rem.",
       "Flat tonal layering on a single ground colour per appearance.",
-      "Horizontal motion only, 200 to 220 ms, exponential ease-out, removed under Reduce Motion.",
-      "Spanish interface copy throughout."
+      "Brief motion, 200 to 220 ms, exponential ease-out, entering from the side that owns it; all of it removed under reduced motion.",
+      "Spanish interface copy throughout, in the informal second person, with short imperative commands."
     ],
     "rules": [
       {
@@ -462,12 +713,22 @@
       },
       {
         "name": "The Same Ink Rule",
-        "body": "Ink on a team colour is #0E1114 in both appearances. It does not invert when the ground does.",
+        "body": "Ink on a team colour is Graphite Ink in both appearances. It does not invert when the ground does.",
+        "section": "colors"
+      },
+      {
+        "name": "The Day Keyline Rule",
+        "body": "By day every team-colour fill on the ground or a surface wears a 2-pixel Graphite Ink keyline: liveries, points chips and team slabs. At night the keyline has no width. The winner flood never wears one.",
+        "section": "colors"
+      },
+      {
+        "name": "The Danger Rule",
+        "body": "Danger means an invalid value or an action that deletes. It is never decoration and never a team.",
         "section": "colors"
       },
       {
         "name": "The Caps Italic Rule",
-        "body": "Names, numbers and commands are italic capitals. Upright sentence case is reserved for full sentences: explanations, hints, errors and the snackbar message.",
+        "body": "Names, numbers and commands are italic capitals. Upright sentence case is reserved for full sentences: explanations, errors, notices and the undo message.",
         "section": "typography"
       },
       {
@@ -477,7 +738,12 @@
       },
       {
         "name": "The Hull Cap Rule",
-        "body": "Text follows the system font size up to 1.6 times. Hull numerals, the winner heading, both winner-screen totals and the number field stop at 1.2 times, and hull numerals, the winner's total and button labels shrink to fit one line, so a total never truncates.",
+        "body": "Type is sized in rem and follows the reader's font size, up to a pixel cap written into each token as `min(rem, px)`. Text stops at 1.6 times its designed size (Title, Button, Compact, Body, Meta, Label). Numerals and the winner heading stop at 1.2 times (Winner, Hull, Display, Field), because they are already large and must stay on one line.",
+        "section": "typography"
+      },
+      {
+        "name": "The One Line Rule",
+        "body": "Totals, team names, slab labels and the winner heading shrink to fit their box on one line rather than wrap or truncate. They never shrink below 0.6 of their designed size; the winner's total may go to 0.4.",
         "section": "typography"
       },
       {
@@ -487,7 +753,7 @@
       },
       {
         "name": "The Lean Rule",
-        "body": "Every filled shape is the 12-degree parallelogram, drawn as a path. Do not reach for a skew transform, a rotated view or a rounded rectangle.",
+        "body": "Every filled shape is the 12-degree parallelogram. Skew the layer behind the content, or cut it; never skew, rotate or round the element that holds the text.",
         "section": "shapes"
       },
       {
@@ -497,26 +763,32 @@
       }
     ],
     "dos": [
-      "Do draw every filled shape as the 12-degree parallelogram path (offset = height × 0.2126), leaning the same way as the italic type.",
-      "Do put Graphite Ink (#0E1114) on Safety Orange and Acid Yellow in both appearances.",
+      "Do draw every filled shape as the 12-degree parallelogram (offset = height × 0.2126), leaning the same way as the italic type: a skewed layer behind the content, or a clip-path cut where the lean is a fixed distance.",
+      "Do inset the leaning layer by half its lean so the slanted ends stay inside the element's box.",
+      "Do put Graphite Ink on Safety Orange and Acid Yellow in both appearances.",
+      "Do give every team-colour fill on the ground or a surface the 2-pixel Graphite Ink keyline by day.",
       "Do set names, numbers and commands in Kanit italic capitals, and keep upright sentence case for full sentences.",
       "Do use tabular numerals for any number that updates.",
-      "Do cap dynamic type at 1.6 times for text and 1.2 times for hull-scale numerals, and let hull numerals shrink to fit.",
-      "Do keep every touch target at least 48 points and slab buttons at least 56 tall.",
+      "Do size type in rem with a pixel cap: 1.6 times for text, 1.2 times for numerals and the winner heading. Let one-line text shrink to fit.",
+      "Do keep every target at least 48 pixels and slab buttons at least 56 tall.",
       "Do mark state by stepping a neutral tone (Surface to Raised Surface) or by swapping fill and outline.",
-      "Do move things sideways, from the side of the team they belong to, in 200 to 220 ms with an exponential ease-out, and skip the movement under Reduce Motion.",
-      "Do keep text fields and the sheet panel rectangular."
+      "Do give every interactive element the 3-pixel focus ring, in a colour that contrasts with the surface it sits on.",
+      "Do bring things in from the side or edge that owns them, in 200 to 220 ms with the exponential ease-out, and declare the movement only when reduced motion is not requested.",
+      "Do keep text fields and the sheet panel rectangular.",
+      "Do keep sheets above the on-screen keyboard and inside the 480 column.",
+      "Do give any gesture-only shortcut a visible control that reaches the same value."
     ],
     "donts": [
       "Don't print a team colour as text on the ground or on a neutral surface; it is only legible as text on a Graphite Ink fill.",
       "Don't round a corner. No radius exists in this system.",
-      "Don't use a skew transform to lean a shape; Android will not render it.",
-      "Don't skew or rotate content inside a leaning shape. The shape leans; the italic does the rest.",
+      "Don't skew or rotate the element that holds text. The layer behind it leans; the italic does the rest.",
       "Don't add shadows, gradients or blur to slabs, rows, chips, liveries, fields or sheets.",
       "Don't invert the ink on team colours in the day appearance.",
-      "Don't use Danger for anything other than an invalid field and its message.",
+      "Don't use Danger for anything other than an invalid value or an action that deletes.",
       "Don't add a second ornament alongside the triple-slash mark.",
-      "Don't give a utility icon a team colour."
+      "Don't give a utility icon a team colour.",
+      "Don't save anything when a sheet is dismissed; only its button commits.",
+      "Don't let the page scroll; the list is the only scrolling region on the board."
     ]
   }
 }

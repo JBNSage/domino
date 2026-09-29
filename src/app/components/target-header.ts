@@ -14,7 +14,9 @@ import { FitText } from '../directives/fit-text';
       [attr.aria-label]="copy.target.edit(target())"
       (click)="editTarget.emit()"
     >
-      <span class="label" [appFitText]="copy.target.label">{{ copy.target.label }}</span>
+      <span class="label" [appFitText]="copy.target.label" [minScale]="0.5">{{
+        copy.target.label
+      }}</span>
       <span class="value numerals">{{ target() }}</span>
       <svg class="pencil" viewBox="0 0 24 24" aria-hidden="true">
         <path d="M4 20l1-4.5L16.5 4 20 7.5 8.5 19z" />
