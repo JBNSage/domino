@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-29T02:48:34Z",
+  "generatedAt": "2026-09-29T04:02:23Z",
   "title": "Design System: Dominó",
   "extensions": {
     "colorMeta": {
@@ -389,14 +389,14 @@
       },
       "hull": {
         "displayName": "Hull",
-        "purpose": "Team totals in the lockup. Tabular; shrinks to fit; both drop to Display size past four digits.",
+        "purpose": "Team totals in the lockup. Tabular; shrinks to fit; both drop to Display size past four digits, and to Field size on a short screen.",
         "fontStyle": "italic",
         "cssVariable": "--t-hull",
         "scalingCap": "1.2x"
       },
       "display": {
         "displayName": "Display",
-        "purpose": "Winner heading and the other team's total on the winner screen.",
+        "purpose": "Winner heading and the other team's total on the winner screen; the winner's total in the compact winner screen.",
         "fontStyle": "italic",
         "cssVariable": "--t-display",
         "scalingCap": "1.2x",
@@ -404,14 +404,14 @@
       },
       "field": {
         "displayName": "Field",
-        "purpose": "Text typed into a number field. Tabular.",
+        "purpose": "Text typed into a number field. Tabular. Team totals on a short screen.",
         "fontStyle": "italic",
         "cssVariable": "--t-field",
         "scalingCap": "1.2x"
       },
       "title": {
         "displayName": "Title",
-        "purpose": "Target value, team name field, sheet titles, empty-state heading, winner sentence.",
+        "purpose": "Target value, team name field, sheet titles, empty-state heading, winner sentence. On a short screen also number-field text, the winner heading and the other team's total.",
         "fontStyle": "italic",
         "cssVariable": "--t-title",
         "scalingCap": "1.6x",
@@ -419,7 +419,7 @@
       },
       "button": {
         "displayName": "Button",
-        "purpose": "Slab labels, team names, points in row chips.",
+        "purpose": "Slab labels, team names, points in row chips; the winner sentence on a short screen.",
         "fontStyle": "italic",
         "cssVariable": "--t-button",
         "scalingCap": "1.6x",
@@ -435,14 +435,14 @@
       },
       "body": {
         "displayName": "Body",
-        "purpose": "Full sentences only: explanations, field messages, undo message. Upright.",
+        "purpose": "Full sentences only: explanations, field messages, undo message. Upright. Text actions use this size in 800 italic capitals, underlined.",
         "fontStyle": "normal",
         "cssVariable": "--t-body",
         "scalingCap": "1.6x"
       },
       "meta": {
         "displayName": "Meta",
-        "purpose": "Points remaining and rounds chip inside a livery; hand number of a selected row.",
+        "purpose": "Points remaining and rounds chip inside a livery; the team name on a livery on a short screen.",
         "fontStyle": "italic",
         "cssVariable": "--t-meta",
         "scalingCap": "1.6x",
@@ -450,7 +450,7 @@
       },
       "label": {
         "displayName": "Label",
-        "purpose": "Field labels and hand numbers.",
+        "purpose": "Field labels and hand numbers; weight 800 on the newest and the selected row.",
         "fontStyle": "italic",
         "cssVariable": "--t-label",
         "scalingCap": "1.6x",
@@ -502,7 +502,7 @@
       {
         "name": "reduced-motion",
         "value": "none",
-        "purpose": "All movement is declared inside prefers-reduced-motion: no-preference. Under reduced motion surfaces appear in their final state and the list jumps instead of scrolling smoothly."
+        "purpose": "All movement is declared inside prefers-reduced-motion: no-preference. Under reduced motion surfaces appear in their final state and the list jumps to the end instead of scrolling smoothly."
       },
       {
         "name": "haptics",
@@ -510,11 +510,22 @@
         "purpose": "Where the browser supports vibration; silent on iOS."
       }
     ],
-    "breakpoints": [],
+    "breakpoints": [
+      {
+        "name": "short",
+        "value": "(max-height: 36em)",
+        "purpose": "Compact layout for a phone on its side or large text on a small phone: strip lockup, 48-pixel slabs, 56-pixel number fields, no triple-slash mark in overlays, compact winner screen."
+      },
+      {
+        "name": "short-wide",
+        "value": "(max-height: 36em) and (min-width: 30em)",
+        "purpose": "On a short screen with room across: quick-points beside Anotar, points remaining beside the total, winner actions side by side."
+      }
+    ],
     "mediaFeatures": [
       {
         "name": "prefers-color-scheme: light",
-        "purpose": "Swaps the neutral, danger, scrim and team-edge tokens to the day appearance."
+        "purpose": "Swaps the neutral, danger, scrim and team-edge tokens to the day appearance; turns the sheet's triple-slash mark to Text colour."
       },
       {
         "name": "prefers-reduced-motion: no-preference",
@@ -523,6 +534,10 @@
       {
         "name": "hover: hover",
         "purpose": "Hover brightening is limited to devices with a real pointer."
+      },
+      {
+        "name": "max-height: 36em",
+        "purpose": "The short-screen layout; em-based, so it follows the reader's font size."
       }
     ],
     "shape": {
@@ -535,7 +550,9 @@
         "default": "6px",
         "chip": "3px",
         "winnerOtherSlab": "8px",
-        "winnerSlab": "20px"
+        "winnerSlab": "24px",
+        "selectedRowOption": "5px",
+        "winnerSlabCompact": "12px"
       },
       "teamEdgeWidth": {
         "dark": "0px",
@@ -553,27 +570,48 @@
       "lockupMinHeight": "172px",
       "lockupSeam": "about 6px",
       "column": "480px",
-      "sheetMaxHeight": "calc(90dvh - var(--keyboard-inset))",
-      "pressedOpacity": 0.7
+      "sheetMaxHeight": "calc(92dvh - var(--keyboard-inset))",
+      "pressedOpacity": 0.7,
+      "shortScreen": {
+        "slabMinHeight": "48px",
+        "numberFieldMinHeight": "56px",
+        "lockupMinHeight": "0",
+        "headerPaddingBlock": "4px",
+        "quickBarPaddingBlock": "8px",
+        "sheetGap": "12px",
+        "sheetPaddingTop": "16px"
+      }
     },
     "layout": {
       "viewport": "100dvh column, max-width 480px, centred; body does not scroll",
       "safeArea": "top inset above the header; bottom inset under the quick bar, sheet panels and winner screen",
-      "keyboard": "--keyboard-inset is set on the root element from window.visualViewport; sheets anchor their bottom edge to it"
+      "keyboard": "--keyboard-inset is set on the root element from window.visualViewport; sheets anchor their bottom edge to it",
+      "shortScreens": "at max-height 36em the same parts tighten; at min-width 30em as well, stacked pairs sit side by side. The column stays 480px.",
+      "list": "follows a new hand to the end; other changes leave the scroll position, unless the undo bar arrives within 80px of the end"
     },
     "focus": {
       "ring": "3px solid var(--focus, var(--c-text)), outline-offset 3px",
+      "touch": ":root[data-input='touch'] hides the ring on everything except input; focus is not moved. Tab or an arrow key sets data-input='keyboard'.",
       "overrides": {
         "liveries": "ink, offset -8px",
         "winnerScreen": "ink",
-        "undoBar": "ground",
+        "undoBar": "ground, offset -5px on the action",
         "numberField": "offset 0",
-        "nameField": "underline turns from line to text colour"
+        "nameField": "offset 2px",
+        "main": "no ring; it only receives focus from script after an undo"
       }
     },
     "timing": {
-      "undoBar": "8000ms, paused while hovered or focused",
+      "undoSingleHand": "8000ms for a deleted, corrected or quick-added hand; paused while hovered or focused",
+      "undoBoard": "no time limit for a closed round, cleared hands or a full reset; persisted across a restart; ends when the board changes",
       "longPress": "500ms hold, 10px slop"
+    },
+    "fitText": {
+      "minScale": 0.5,
+      "winnerTotalMinScale": 0.4,
+      "slack": 0.96,
+      "clip": "overflow-x: clip; overflow-y: visible",
+      "endPadding": "0.12em"
     }
   },
   "components": [
@@ -581,7 +619,7 @@
       "name": "Slab Button, Outlined",
       "kind": "button",
       "refersTo": "slab-button-outlined",
-      "description": "The default slab: ground interior inside a 2-pixel line outline. Cancel and keep actions.",
+      "description": "The default slab: ground interior inside a 2-pixel line outline. Cancel actions and the less drastic of two choices.",
       "html": "<button class=\"ds-slab-outline\">Cancelar</button>",
       "css": ".ds-slab-outline { position: relative; isolation: isolate; } .ds-slab-outline::before { content: ''; position: absolute; inset: 0 6px; z-index: -1; background: var(--c-ground, #0e1114); border: 2px solid var(--c-line, #6b7480); transform: skewX(-12deg); } .ds-slab-outline { display: inline-flex; align-items: center; justify-content: center; min-width: 160px; min-height: 56px; padding: 0 24px; border: 0; background: none; color: var(--c-text, #fff); font-family: var(--font, 'Kanit', sans-serif); font-style: italic; font-weight: 800; font-size: var(--t-button, 1.25rem); line-height: 1.1; letter-spacing: 0.5px; text-transform: uppercase; white-space: nowrap; cursor: pointer; transition: transform 90ms cubic-bezier(0.16, 1, 0.3, 1); } .ds-slab-outline:not(:disabled):hover::before { filter: brightness(1.12); } .ds-slab-outline:not(:disabled):active { transform: translateX(3px); } .ds-slab-outline:not(:disabled):active::before { opacity: 0.7; } .ds-slab-outline:focus-visible { outline: 3px solid var(--c-text, #fff); outline-offset: 3px; } .ds-slab-outline:disabled { color: var(--c-muted, #b6bcc4); cursor: default; } .ds-slab-outline:disabled::before { background: var(--c-raised, #2a2f36); border-color: transparent; }"
     },
@@ -613,7 +651,7 @@
       "name": "Slab Button, Neutral",
       "kind": "button",
       "refersTo": "slab-button-neutral",
-      "description": "Filled confirm on the settings sheet, in inverse neutrals.",
+      "description": "Filled confirm in inverse neutrals: Guardar on the settings sheet, compact Corregir under a selected hand.",
       "html": "<button class=\"ds-slab-neutral\">Guardar</button>",
       "css": ".ds-slab-neutral { position: relative; isolation: isolate; } .ds-slab-neutral::before { content: ''; position: absolute; inset: 0 6px; z-index: -1; background: var(--c-text, #fff); border: 2px solid transparent; transform: skewX(-12deg); } .ds-slab-neutral { display: inline-flex; align-items: center; justify-content: center; min-width: 160px; min-height: 56px; padding: 0 24px; border: 0; background: none; color: var(--c-ground, #0e1114); font-family: var(--font, 'Kanit', sans-serif); font-style: italic; font-weight: 800; font-size: var(--t-button, 1.25rem); line-height: 1.1; letter-spacing: 0.5px; text-transform: uppercase; white-space: nowrap; cursor: pointer; transition: transform 90ms cubic-bezier(0.16, 1, 0.3, 1); } .ds-slab-neutral:not(:disabled):hover::before { filter: brightness(1.12); } .ds-slab-neutral:not(:disabled):active { transform: translateX(3px); } .ds-slab-neutral:not(:disabled):active::before { opacity: 0.7; } .ds-slab-neutral:focus-visible { outline: 3px solid var(--c-text, #fff); outline-offset: 3px; } .ds-slab-neutral:disabled { color: var(--c-muted, #b6bcc4); cursor: default; } .ds-slab-neutral:disabled::before { background: var(--c-raised, #2a2f36); border-color: transparent; }"
     },
@@ -621,7 +659,7 @@
       "name": "Slab Button, Danger",
       "kind": "button",
       "refersTo": "slab-button-danger",
-      "description": "An action that deletes: Eliminar on a selected hand, Todo on the reset sheet.",
+      "description": "An action that deletes: Eliminar under a selected hand, Todo on the reset sheet.",
       "html": "<button class=\"ds-slab-danger\">Eliminar</button>",
       "css": ".ds-slab-danger { position: relative; isolation: isolate; } .ds-slab-danger::before { content: ''; position: absolute; inset: 0 6px; z-index: -1; background: var(--c-danger, #ff6b5c); border: 2px solid transparent; transform: skewX(-12deg); } .ds-slab-danger { display: inline-flex; align-items: center; justify-content: center; min-width: 160px; min-height: 56px; padding: 0 24px; border: 0; background: none; color: var(--c-on-danger, #0e1114); font-family: var(--font, 'Kanit', sans-serif); font-style: italic; font-weight: 800; font-size: var(--t-button, 1.25rem); line-height: 1.1; letter-spacing: 0.5px; text-transform: uppercase; white-space: nowrap; cursor: pointer; transition: transform 90ms cubic-bezier(0.16, 1, 0.3, 1); } .ds-slab-danger:not(:disabled):hover::before { filter: brightness(1.12); } .ds-slab-danger:not(:disabled):active { transform: translateX(3px); } .ds-slab-danger:not(:disabled):active::before { opacity: 0.7; } .ds-slab-danger:focus-visible { outline: 3px solid var(--c-text, #fff); outline-offset: 3px; } .ds-slab-danger:disabled { color: var(--c-muted, #b6bcc4); cursor: default; } .ds-slab-danger:disabled::before { background: var(--c-raised, #2a2f36); border-color: transparent; }"
     },
@@ -638,7 +676,7 @@
       "kind": "custom",
       "refersTo": "target-slab",
       "description": "Compact outlined header slab showing the score that wins the round; opens the settings sheet.",
-      "html": "<button class=\"ds-target\"><span class=\"ds-target-label\">Se gana con</span><span class=\"ds-target-value\">200</span><svg class=\"ds-target-pencil\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M4 20l1-4.5L16.5 4 20 7.5 8.5 19z\"/><path d=\"M14 6.5l3.5 3.5\"/></svg></button>",
+      "html": "<button class=\"ds-target\"><span class=\"ds-target-label\">Meta</span><span class=\"ds-target-value\">200</span><svg class=\"ds-target-pencil\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M4 20l1-4.5L16.5 4 20 7.5 8.5 19z\"/><path d=\"M14 6.5l3.5 3.5\"/></svg></button>",
       "css": ".ds-target { position: relative; isolation: isolate; } .ds-target::before { content: ''; position: absolute; inset: 0 6px; z-index: -1; background: var(--c-ground, #0e1114); border: 2px solid var(--c-line, #6b7480); transform: skewX(-12deg); } .ds-target { display: inline-flex; align-items: center; gap: 8px; min-height: 48px; padding: 0 16px; border: 0; background: none; color: var(--c-text, #fff); font-family: var(--font, 'Kanit', sans-serif); font-style: italic; font-weight: 800; text-transform: uppercase; white-space: nowrap; cursor: pointer; transition: transform 90ms cubic-bezier(0.16, 1, 0.3, 1); } .ds-target-label { color: var(--c-muted, #b6bcc4); font-weight: 600; font-size: var(--t-body, 1rem); line-height: 1.2; } .ds-target-value { font-size: var(--t-title, 1.75rem); font-variant-numeric: tabular-nums; } .ds-target-pencil { width: 16px; height: 16px; fill: none; stroke: var(--c-muted, #b6bcc4); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; } .ds-target:hover::before { filter: brightness(1.12); } .ds-target:active { transform: translateX(3px); } .ds-target:active::before { opacity: 0.7; } .ds-target:focus-visible { outline: 3px solid var(--c-text, #fff); outline-offset: 3px; }"
     },
     {
@@ -653,45 +691,45 @@
       "name": "Score Row",
       "kind": "custom",
       "refersTo": "score-row",
-      "description": "One hand: points chip under the scoring team, hand number between the columns. The row is a button; tapping it offers Dejar and Eliminar in its place.",
-      "html": "<button class=\"ds-row\"><span class=\"ds-row-cell\"><span class=\"ds-points\">45</span></span><span class=\"ds-row-hand\">01</span><span class=\"ds-row-cell\"><span class=\"ds-row-zero\">0</span></span></button>",
-      "css": ".ds-row { position: relative; isolation: isolate; } .ds-row::before { content: ''; position: absolute; inset: 0 6px; z-index: -1; background: var(--c-surface, #1a1e23); border: 2px solid transparent; transform: skewX(-12deg); } .ds-points { position: relative; isolation: isolate; } .ds-points::before { content: ''; position: absolute; inset: 0 3px; z-index: -1; background: var(--c-team-a, #ff5a00); border: 2px solid var(--c-team-edge, transparent); transform: skewX(-12deg); } .ds-row { width: 358px; min-height: 52px; display: flex; align-items: center; padding: 0; border: 0; background: none; cursor: pointer; font-variant-numeric: tabular-nums; } .ds-row:hover::before { filter: brightness(1.12); } .ds-row:active::before { opacity: 0.7; } .ds-row:focus-visible { outline: 3px solid var(--c-text, #fff); outline-offset: 3px; } .ds-row-cell { flex: 1; display: grid; place-items: center; } .ds-points { min-width: 64px; padding: 4px 12px; color: var(--c-ink, #0e1114); font-family: var(--font, 'Kanit', sans-serif); font-style: italic; font-weight: 800; font-size: var(--t-button, 1.25rem); line-height: 1.3; text-align: center; } .ds-row-zero { color: var(--c-muted, #b6bcc4); font-family: var(--font, 'Kanit', sans-serif); font-style: italic; font-weight: 600; font-size: var(--t-button, 1.25rem); line-height: 1.3; } .ds-row-hand { flex: none; width: 44px; text-align: center; color: var(--c-muted, #b6bcc4); font-family: var(--font, 'Kanit', sans-serif); font-style: italic; font-weight: 600; font-size: var(--t-label, 0.8125rem); line-height: 1.2; }"
+      "description": "One hand: points chip under the scoring team, hand number between the columns. The row is a button; tapping it keeps the hand in view on a raised fill with a text-colour keyline, above three compact slabs: Cancelar, Corregir, Eliminar.",
+      "html": "<div class=\"ds-rows\"><button class=\"ds-row\"><span class=\"ds-row-cell\"><span class=\"ds-points\">45</span></span><span class=\"ds-row-hand\">01</span><span class=\"ds-row-cell\"><span class=\"ds-row-zero\">0</span></span></button><div class=\"ds-row-selected\" role=\"group\" aria-label=\"Mano 2: Equipo A anotó 30\"><div class=\"ds-row ds-row-on\"><span class=\"ds-row-cell\"><span class=\"ds-points\">30</span></span><span class=\"ds-row-hand\">02</span><span class=\"ds-row-cell\"><span class=\"ds-row-zero\">0</span></span></div><div class=\"ds-row-options\"><button class=\"ds-opt\">Cancelar</button><button class=\"ds-opt ds-opt-edit\">Corregir</button><button class=\"ds-opt ds-opt-danger\">Eliminar</button></div></div></div>",
+      "css": ".ds-row { position: relative; isolation: isolate; } .ds-row::before { content: ''; position: absolute; inset: 0 6px; z-index: -1; background: var(--c-surface, #1a1e23); border: 2px solid transparent; transform: skewX(-12deg); } .ds-points { position: relative; isolation: isolate; } .ds-points::before { content: ''; position: absolute; inset: 0 3px; z-index: -1; background: var(--c-team-a, #ff5a00); border: 2px solid var(--c-team-edge, transparent); transform: skewX(-12deg); } .ds-row { width: 358px; min-height: 52px; display: flex; align-items: center; padding: 0; border: 0; background: none; cursor: pointer; font-variant-numeric: tabular-nums; } .ds-row:hover::before { filter: brightness(1.12); } .ds-row:active::before { opacity: 0.7; } .ds-row:focus-visible { outline: 3px solid var(--c-text, #fff); outline-offset: 3px; } .ds-row-cell { flex: 1; display: grid; place-items: center; } .ds-points { min-width: 64px; padding: 4px 12px; color: var(--c-ink, #0e1114); font-family: var(--font, 'Kanit', sans-serif); font-style: italic; font-weight: 800; font-size: var(--t-button, 1.25rem); line-height: 1.3; text-align: center; } .ds-row-zero { color: var(--c-muted, #b6bcc4); font-family: var(--font, 'Kanit', sans-serif); font-style: italic; font-weight: 600; font-size: var(--t-button, 1.25rem); line-height: 1.3; } .ds-row-hand { flex: none; width: 44px; text-align: center; color: var(--c-muted, #b6bcc4); font-family: var(--font, 'Kanit', sans-serif); font-style: italic; font-weight: 600; font-size: var(--t-label, 0.8125rem); line-height: 1.2; } .ds-rows { display: flex; flex-direction: column; gap: 8px; width: 358px; } div.ds-row { cursor: default; } .ds-row-on::before { background: var(--c-raised, #2a2f36); border-color: var(--c-text, #fff); } .ds-row-on .ds-row-hand { color: var(--c-text, #fff); font-weight: 800; } .ds-row-selected { display: flex; flex-direction: column; gap: 8px; padding-bottom: 8px; } .ds-row-options { display: flex; gap: 8px; } .ds-opt { position: relative; isolation: isolate; flex: 1 1 0; min-width: 0; min-height: 48px; padding: 0 12px; border: 0; background: none; color: var(--c-text, #fff); font-family: var(--font, 'Kanit', sans-serif); font-style: italic; font-weight: 800; font-size: var(--t-compact, 1.125rem); line-height: 1.1; letter-spacing: 0.5px; text-transform: uppercase; white-space: nowrap; cursor: pointer; transition: transform 90ms cubic-bezier(0.16, 1, 0.3, 1); } .ds-opt::before { content: ''; position: absolute; inset: 0 5px; z-index: -1; background: var(--c-ground, #0e1114); border: 2px solid var(--c-line, #6b7480); transform: skewX(-12deg); } .ds-opt-edit { color: var(--c-ground, #0e1114); } .ds-opt-edit::before { background: var(--c-text, #fff); border-color: transparent; } .ds-opt-danger { color: var(--c-on-danger, #0e1114); } .ds-opt-danger::before { background: var(--c-danger, #ff6b5c); border-color: transparent; } .ds-opt:hover::before { filter: brightness(1.12); } .ds-opt:active { transform: translateX(3px); } .ds-opt:active::before { opacity: 0.7; } .ds-opt:focus-visible { outline: 3px solid var(--c-text, #fff); outline-offset: 3px; }"
     },
     {
       "name": "Number Field",
       "kind": "input",
       "refersTo": "number-field",
-      "description": "Rectangular numeric field with its label above; the border and message turn to the danger colour when the value is invalid.",
-      "html": "<div class=\"ds-field\"><label class=\"ds-field-label\" for=\"ds-field-input\">Puntos de la mano</label><input id=\"ds-field-input\" class=\"ds-field-input\" type=\"text\" inputmode=\"numeric\" pattern=\"[0-9]*\" placeholder=\"—\" aria-describedby=\"ds-field-message\" /><p id=\"ds-field-message\" class=\"ds-field-message\" role=\"status\">Escribe un número entre 1 y 999.</p></div>",
-      "css": ".ds-field { display: flex; flex-direction: column; gap: 4px; width: 342px; } .ds-field-label { color: var(--c-muted, #b6bcc4); font-family: var(--font, 'Kanit', sans-serif); font-style: italic; font-weight: 600; font-size: var(--t-label, 0.8125rem); line-height: 1.3; text-transform: uppercase; } .ds-field-input { width: 100%; min-height: 76px; padding: 8px 16px; border: 2px solid var(--c-line, #6b7480); border-radius: 0; background: var(--c-surface, #1a1e23); color: var(--c-text, #fff); caret-color: var(--c-text, #fff); font-family: var(--font, 'Kanit', sans-serif); font-style: italic; font-weight: 800; font-size: var(--t-field, 2.75rem); line-height: 1.2; font-variant-numeric: tabular-nums; appearance: none; } .ds-field-input::placeholder { color: var(--c-muted, #b6bcc4); opacity: 1; } .ds-field-input:focus-visible { outline: 3px solid var(--c-text, #fff); outline-offset: 0; } .ds-field-input:invalid { border-color: var(--c-danger, #ff6b5c); } .ds-field-message { display: none; margin: 0; color: var(--c-danger, #ff6b5c); font-family: var(--font, 'Kanit', sans-serif); font-weight: 500; font-size: var(--t-body, 1rem); line-height: 1.35; } .ds-field-input:invalid + .ds-field-message { display: block; }"
+      "description": "Rectangular numeric field with its label above and no placeholder. What is typed is left as typed; the border and message turn to the danger colour when the value is invalid.",
+      "html": "<div class=\"ds-field\"><label class=\"ds-field-label\" for=\"ds-field-input\">Puntos de la mano</label><input id=\"ds-field-input\" class=\"ds-field-input\" type=\"text\" inputmode=\"numeric\" pattern=\"[0-9]*\" aria-describedby=\"ds-field-message\" /><p id=\"ds-field-message\" class=\"ds-field-message\" role=\"status\">Escribe un número entre 1 y 999, sin signos ni decimales.</p></div>",
+      "css": ".ds-field { display: flex; flex-direction: column; width: 342px; } .ds-field-label { margin-bottom: 4px; color: var(--c-muted, #b6bcc4); font-family: var(--font, 'Kanit', sans-serif); font-style: italic; font-weight: 600; font-size: var(--t-label, 0.8125rem); line-height: 1.3; text-transform: uppercase; } .ds-field-input { width: 100%; min-height: 76px; padding: 8px 16px; border: 2px solid var(--c-line, #6b7480); border-radius: 0; background: var(--c-surface, #1a1e23); color: var(--c-text, #fff); caret-color: var(--c-text, #fff); font-family: var(--font, 'Kanit', sans-serif); font-style: italic; font-weight: 800; font-size: var(--t-field, 2.75rem); line-height: 1.2; font-variant-numeric: tabular-nums; appearance: none; } .ds-field-input:focus-visible { outline: 3px solid var(--c-text, #fff); outline-offset: 0; } .ds-field-input:invalid { border-color: var(--c-danger, #ff6b5c); } .ds-field-message { display: none; margin: 0; color: var(--c-danger, #ff6b5c); font-family: var(--font, 'Kanit', sans-serif); font-weight: 500; font-size: var(--t-body, 1rem); line-height: 1.35; } .ds-field-input:invalid + .ds-field-message { display: block; }"
     },
     {
       "name": "Winner Scores",
       "kind": "custom",
       "refersTo": "winner-slab",
-      "description": "On the winner flood: a large graphite slab with the winner's name above the total, and a smaller ink-outlined slab for the other team.",
+      "description": "On the winner flood: a large graphite slab with the winner's name above the total, and a smaller ink-outlined slab for the other team. On a short screen the winner's slab becomes one line with the total at Display size.",
       "html": "<div class=\"ds-winner\"><p class=\"ds-winner-slab\"><span class=\"ds-winner-name\">Equipo A</span><span class=\"ds-winner-total\">225</span></p><p class=\"ds-winner-other\"><span class=\"ds-winner-name\">Equipo B</span><span class=\"ds-winner-other-total\">30</span></p></div>",
-      "css": ".ds-winner-slab { position: relative; isolation: isolate; } .ds-winner-slab::before { content: ''; position: absolute; inset: 0 20px; z-index: -1; background: var(--c-ink, #0e1114); border: 2px solid transparent; transform: skewX(-12deg); } .ds-winner-other { position: relative; isolation: isolate; } .ds-winner-other::before { content: ''; position: absolute; inset: 0 8px; z-index: -1; background: var(--c-team-a, #ff5a00); border: 2px solid var(--c-ink, #0e1114); transform: skewX(-12deg); } .ds-winner { display: flex; flex-direction: column; gap: 12px; width: 342px; padding: 24px 8px; background: var(--c-team-a, #ff5a00); color: var(--c-ink, #0e1114); font-family: var(--font, 'Kanit', sans-serif); font-style: italic; font-weight: 800; text-transform: uppercase; font-variant-numeric: tabular-nums; } .ds-winner p { margin: 0; } .ds-winner-slab { display: flex; flex-direction: column; padding: 24px 40px 12px; color: var(--c-team-a, #ff5a00); } .ds-winner-name { font-size: var(--t-button, 1.25rem); line-height: 1.2; } .ds-winner-total { font-size: var(--t-winner, 8.25rem); line-height: 1.06; } .ds-winner-other { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 8px 32px; } .ds-winner-other-total { font-size: var(--t-display, 3.5rem); line-height: 1.1; }"
+      "css": ".ds-winner-slab { position: relative; isolation: isolate; } .ds-winner-slab::before { content: ''; position: absolute; inset: 0 24px; z-index: -1; background: var(--c-ink, #0e1114); border: 2px solid transparent; transform: skewX(-12deg); } .ds-winner-other { position: relative; isolation: isolate; } .ds-winner-other::before { content: ''; position: absolute; inset: 0 8px; z-index: -1; background: var(--c-team-a, #ff5a00); border: 2px solid var(--c-ink, #0e1114); transform: skewX(-12deg); } .ds-winner { display: flex; flex-direction: column; gap: 12px; width: 342px; padding: 24px 8px; background: var(--c-team-a, #ff5a00); color: var(--c-ink, #0e1114); font-family: var(--font, 'Kanit', sans-serif); font-style: italic; font-weight: 800; text-transform: uppercase; font-variant-numeric: tabular-nums; } .ds-winner p { margin: 0; } .ds-winner-slab { display: flex; flex-direction: column; padding: 24px 40px 12px; color: var(--c-team-a, #ff5a00); } .ds-winner-name { font-size: var(--t-button, 1.25rem); line-height: 1.2; } .ds-winner-total { font-size: var(--t-winner, 8.25rem); line-height: 1.06; } .ds-winner-other { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 8px 32px; } .ds-winner-other-total { font-size: var(--t-display, 3.5rem); line-height: 1.1; }"
     },
     {
       "name": "Undo Bar",
       "kind": "custom",
       "refersTo": "undo-snackbar",
-      "description": "Leaning inverse slab shown for 8 seconds after a deletion, a closed round or a reset; the timer pauses while it is hovered or focused.",
+      "description": "The board's one transient bar, in inverse colours. Undo for one hand lasts 8 seconds and pauses while hovered or focused; undo for a reset or a closed round has no time limit. With nothing to undo and an empty board it announces a waiting update.",
       "html": "<div class=\"ds-undo\"><span class=\"ds-undo-message\">Mano 2 eliminada</span><button class=\"ds-undo-action\">Deshacer</button></div>",
-      "css": ".ds-undo { position: relative; isolation: isolate; } .ds-undo::before { content: ''; position: absolute; inset: 0 6px; z-index: -1; background: var(--c-text, #fff); border: 2px solid transparent; transform: skewX(-12deg); } .ds-undo { display: flex; align-items: center; width: 358px; min-height: 52px; padding: 0 8px 0 24px; color: var(--c-ground, #0e1114); font-family: var(--font, 'Kanit', sans-serif); font-weight: 500; font-size: var(--t-body, 1rem); } .ds-undo-message { flex: 1; min-width: 0; line-height: 1.25; } .ds-undo-action { min-height: 48px; padding: 0 16px; border: 0; background: none; color: inherit; font-family: var(--font, 'Kanit', sans-serif); font-style: italic; font-weight: 800; font-size: var(--t-body, 1rem); line-height: 1.2; text-transform: uppercase; text-decoration: underline; text-underline-offset: 0.2em; cursor: pointer; } .ds-undo-action:active { opacity: 0.7; } .ds-undo-action:focus-visible { outline: 3px solid var(--c-ground, #0e1114); outline-offset: 3px; }"
+      "css": ".ds-undo { position: relative; isolation: isolate; } .ds-undo::before { content: ''; position: absolute; inset: 0 6px; z-index: -1; background: var(--c-text, #fff); border: 2px solid transparent; transform: skewX(-12deg); } .ds-undo { display: flex; align-items: center; width: 358px; min-height: 52px; padding: 4px 8px 4px 24px; color: var(--c-ground, #0e1114); font-family: var(--font, 'Kanit', sans-serif); font-weight: 500; font-size: var(--t-body, 1rem); } .ds-undo-message { flex: 1; min-width: 0; line-height: 1.25; overflow-wrap: anywhere; } .ds-undo-action { flex: none; min-height: 48px; padding: 0 16px; border: 0; background: none; color: inherit; font-family: var(--font, 'Kanit', sans-serif); font-style: italic; font-weight: 800; font-size: var(--t-body, 1rem); line-height: 1.2; text-transform: uppercase; text-decoration: underline; text-underline-offset: 0.2em; cursor: pointer; } .ds-undo-action:active { opacity: 0.7; } .ds-undo-action:focus-visible { outline: 3px solid var(--c-ground, #0e1114); outline-offset: -5px; }"
     },
     {
       "name": "Triple-Slash Mark",
       "kind": "custom",
-      "description": "The only ornament: three leaning bars, 18 to 40 pixels tall, hidden from assistive technology.",
+      "description": "The only ornament: three leaning bars, 18 to 40 pixels tall, hidden from assistive technology. On sheets it takes the accent at night and the text colour by day; short screens leave it out of overlays.",
       "html": "<span class=\"ds-slashes\" aria-hidden=\"true\"><i></i><i></i><i></i></span>",
       "css": ".ds-slashes { --size: 18px; display: inline-flex; gap: calc(var(--size) * 0.05); color: var(--c-line, #6b7480); } .ds-slashes i { width: calc(var(--size) * 0.62); height: var(--size); background: currentColor; clip-path: polygon(21.26% 0, 100% 0, 78.74% 100%, 0 100%); }"
     }
   ],
   "narrative": {
     "northStar": "Liga de Carreras",
-    "overview": "The scoreboard is painted like two rival race cars parked nose to nose. Each team owns a flood of one loud colour with its total set in numerals large enough to read from the far seat at the table, and every other surface steps back to graphite at night or pit silver by day. There is one screen, and its four overlays (points sheet, settings sheet, reset sheet, winner screen) are built from the same parts.\n\nThe system has one shape and one typeface. The shape is a parallelogram that leans 12 degrees forward, used for buttons, rows, chips, the two liveries, the undo bar and the full-screen winner flood. The typeface is Kanit, set in heavy italic capitals for everything that is a name, a number or a command, and in upright medium only for full sentences. The only ornament is a mark of three small leaning bars cut from the same shape.\n\nDensity is low and the targets are large: the smallest control is 48 pixels, slab buttons are 56 pixels tall, and the screen carries no navigation, no cards and no icons beyond two small utility symbols. On a wide screen the same phone column sits centred on the ground, 480 pixels wide.",
+    "overview": "The scoreboard is painted like two rival race cars parked nose to nose. Each team owns a flood of one loud colour with its total set in numerals large enough to read from the far seat at the table, and every other surface steps back to graphite at night or pit silver by day. There is one screen, and its four overlays (points sheet, settings sheet, reset sheet, winner screen) are built from the same parts.\n\nThe system has one shape and one typeface. The shape is a parallelogram that leans 12 degrees forward, used for buttons, rows, chips, the two liveries, the undo bar and the full-screen winner flood. The typeface is Kanit, set in heavy italic capitals for everything that is a name, a number or a command, and in upright medium only for full sentences. The only ornament is a mark of three small leaning bars cut from the same shape.\n\nDensity is low and the targets are large: the smallest control is 48 pixels, slab buttons are 56 pixels tall (48 on a short screen), and the screen carries no navigation, no cards and no icons beyond two small utility symbols. On a wide screen the same phone column sits centred on the ground, 480 pixels wide.",
     "keyCharacteristics": [
       "Two saturated team colours used as fills, always carrying graphite ink.",
       "One forward-leaning parallelogram as the shape of every filled element; zero corner radius anywhere.",
@@ -743,12 +781,12 @@
       },
       {
         "name": "The One Line Rule",
-        "body": "Totals, team names, slab labels and the winner heading shrink to fit their box on one line rather than wrap or truncate. They never shrink below 0.6 of their designed size; the winner's total may go to 0.4.",
+        "body": "Totals, team names, slab labels and the winner heading shrink to fit their box on one line rather than wrap or truncate. They never shrink below 0.5 of their designed size; the winner's total may go to 0.4. The fit leaves 4% of slack, because letter-spacing does not shrink with the type, and only the width is clipped, so tall glyphs such as an opening exclamation mark stay whole.",
         "section": "typography"
       },
       {
         "name": "The Tonal Step Rule",
-        "body": "A surface is distinguished from what is beneath it by stepping one neutral tone, never by a shadow or a gradient. The newest row is marked by moving from Surface to Raised Surface.",
+        "body": "A surface is distinguished from what is beneath it by stepping one neutral tone, never by a shadow or a gradient. The newest row is marked by moving from Surface to Raised Surface. A selected row takes the same step and adds a 2-pixel Text colour keyline.",
         "section": "elevation"
       },
       {
@@ -770,12 +808,14 @@
       "Do set names, numbers and commands in Kanit italic capitals, and keep upright sentence case for full sentences.",
       "Do use tabular numerals for any number that updates.",
       "Do size type in rem with a pixel cap: 1.6 times for text, 1.2 times for numerals and the winner heading. Let one-line text shrink to fit.",
-      "Do keep every target at least 48 pixels and slab buttons at least 56 tall.",
-      "Do mark state by stepping a neutral tone (Surface to Raised Surface) or by swapping fill and outline.",
-      "Do give every interactive element the 3-pixel focus ring, in a colour that contrasts with the surface it sits on.",
+      "Do keep every target at least 48 pixels and slab buttons at least 56 tall; on a short screen slabs may drop to 48, never lower.",
+      "Do mark state by stepping a neutral tone (Surface to Raised Surface), by adding a Text colour keyline, or by swapping fill and outline.",
+      "Do give every interactive element the 3-pixel focus ring, in a colour that contrasts with the surface it sits on and drawn wholly on that surface. After a touch, withhold the ring but leave focus where it is; text fields always keep theirs.",
       "Do bring things in from the side or edge that owns them, in 200 to 220 ms with the exponential ease-out, and declare the movement only when reduced motion is not requested.",
       "Do keep text fields and the sheet panel rectangular.",
       "Do keep sheets above the on-screen keyboard and inside the 480 column.",
+      "Do tighten the same parts when the viewport is 36em tall or less, with thresholds in em, and keep the actions of every overlay on screen.",
+      "Do keep what is about to change in view while its options are showing, and put each explanation directly under the action it explains.",
       "Do give any gesture-only shortcut a visible control that reaches the same value."
     ],
     "donts": [
