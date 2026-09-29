@@ -1,18 +1,15 @@
 import { initialState } from './state';
 import {
   HISTORY_KEY,
+  forgetSavedUndo,
   STORAGE_KEY,
   TOURNAMENT_KEY,
-  UNDO_KEY,
   loadHistory,
   loadState,
   loadTournament,
-  loadUndo,
-  nothingRecorded,
   saveHistory,
   saveState,
   saveTournament,
-  saveUndo,
 } from './storage';
 import { create } from './tournament';
 
@@ -41,27 +38,6 @@ describe('storage', () => {
   it('ignores a saved match with invalid values', () => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...initialState, target: -5 }));
     expect(loadState()).toBeNull();
-  });
-
-  it('keeps and clears the way back from a reset', () => {
-    const undo = {
-      message: 'Todo reiniciado',
-      snapshot: { ...initialState, target: 150 },
-      tournament: null,
-      recorded: nothingRecorded,
-    };
-    saveUndo(undo);
-    expect(loadUndo()).toEqual(undo);
-
-    saveUndo(null);
-    expect(localStorage.getItem(UNDO_KEY)).toBeNull();
-    expect(loadUndo()).toBeNull();
-  });
-
-  it('reads a way back saved before tournaments existed', () => {
-    const old = { message: 'Todo reiniciado', snapshot: initialState };
-    localStorage.setItem(UNDO_KEY, JSON.stringify(old));
-    expect(loadUndo()).toEqual({ ...old, tournament: null, recorded: nothingRecorded });
   });
 
   it('reads a board saved before players existed', () => {
@@ -132,8 +108,9 @@ describe('storage', () => {
     expect(loadHistory()).toEqual({ matches: [], tournaments: [] });
   });
 
-  it('ignores a saved way back whose board is invalid', () => {
-    localStorage.setItem(UNDO_KEY, JSON.stringify({ message: 'x', snapshot: { rows: 'no' } }));
-    expect(loadUndo()).toBeNull();
+  it('forgets the way back that older versions kept across a restart', () => {
+    localStorage.setItem('domino/undo/v1', JSON.stringify({ message: 'x' }));
+    forgetSavedUndo();
+    expect(localStorage.getItem('domino/undo/v1')).toBeNull();
   });
 });

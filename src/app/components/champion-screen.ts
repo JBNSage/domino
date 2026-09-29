@@ -51,6 +51,10 @@ import { Screen } from './screen';
             class="slab slab--compact lean back"
             [attr.aria-label]="copy.tournament.undoA11y(store.undo()?.message ?? '')"
             (click)="store.restore()"
+            (pointerenter)="store.holdUndo()"
+            (pointerleave)="store.releaseUndo()"
+            (focus)="store.holdUndo()"
+            (blur)="store.releaseUndo()"
           >
             <span class="slab__label" [appFitText]="copy.undo.action">{{ copy.undo.action }}</span>
           </button>

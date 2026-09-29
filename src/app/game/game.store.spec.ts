@@ -4,7 +4,7 @@ import { copy } from '../copy';
 import { GameStore, UNDO_MS } from './game.store';
 import { HistoryStore } from './history.store';
 import { initialState } from './state';
-import { STORAGE_KEY, TOURNAMENT_KEY, UNDO_KEY, loadTournament, loadUndo } from './storage';
+import { STORAGE_KEY, TOURNAMENT_KEY, loadTournament } from './storage';
 import { standings } from './tournament';
 import { addTable } from './tables';
 import { TablesStore } from './tables.store';
@@ -150,21 +150,14 @@ describe('GameStore', () => {
       expect(store.undo()).toBeNull();
     });
 
-    it('keeps a reset on offer with no time limit, and across a restart', () => {
+    it('lets a reset offer expire after a few seconds', () => {
       store.addPoints('a', 10);
-      const before = store.state();
       store.resetAll();
 
-      vi.advanceTimersByTime(UNDO_MS * 10);
+      vi.advanceTimersByTime(UNDO_MS - 1);
       expect(store.undo()?.message).toBe(copy.undo.allReset);
-
-      TestBed.tick();
-      expect(loadUndo()).toEqual({
-        message: copy.undo.allReset,
-        snapshot: before,
-        tournament: null,
-        recorded: { matches: [], tournaments: [] },
-      });
+      vi.advanceTimersByTime(1);
+      expect(store.undo()).toBeNull();
     });
 
     it('withdraws a reset offer once the new board is in use', () => {
@@ -172,8 +165,6 @@ describe('GameStore', () => {
       store.clearRows();
       store.addPoints('b', 5);
       expect(store.undo()).toBeNull();
-      TestBed.tick();
-      expect(loadUndo()).toBeNull();
     });
 
     it('lets the offer for one hand expire, unless someone is reaching for it', () => {
@@ -293,15 +284,19 @@ describe('GameStore', () => {
       expect(history().matches).toEqual([match]);
     });
 
-    it('clears everything, with no time limit on the way back', () => {
+    it('clears everything, with a way back for a few seconds', () => {
       store.addPoints('a', 200);
       store.closeRound();
       store.clearHistory();
       expect(history().matches).toHaveLength(0);
 
-      vi.advanceTimersByTime(UNDO_MS * 10);
+      vi.advanceTimersByTime(UNDO_MS - 1);
       store.restore();
       expect(history().matches).toHaveLength(1);
+
+      store.clearHistory();
+      vi.advanceTimersByTime(UNDO_MS);
+      expect(store.undo()).toBeNull();
     });
 
     it('offers nothing when the history was already empty', () => {
@@ -497,14 +492,13 @@ describe('GameStore', () => {
       expect(draft?.touched).toBe(true);
     });
 
-    it('keeps a deleted tournament on offer with no time limit', () => {
+    it('puts a deleted tournament back with its matches', () => {
       store.startTournament(teams.slice(0, 2), { kind: 'firstTo', count: 1 });
       win('a');
       store.finishTournament();
       store.deleteTournament(history().tournaments[0].id);
       expect(history()).toEqual({ matches: [], tournaments: [] });
 
-      vi.advanceTimersByTime(UNDO_MS * 10);
       store.restore();
       expect(history().tournaments).toHaveLength(1);
       expect(history().matches).toHaveLength(1);
@@ -559,15 +553,6 @@ describe('GameStore', () => {
 
       expect(store.state()).toEqual(theirs);
       expect(store.undo()).toBeNull();
-    });
-
-    it('shows the way back from a reset made in the other one', () => {
-      const snapshot = { ...initialState, rows: [{ id: 'x1', team: 'a' as const, points: 40 }] };
-      fromOtherTab(UNDO_KEY, JSON.stringify({ message: copy.undo.allReset, snapshot }));
-      expect(store.undo()?.message).toBe(copy.undo.allReset);
-
-      store.restore();
-      expect(store.state()).toEqual(snapshot);
     });
 
     it('falls back to a clean board when the other one saved something unreadable', () => {

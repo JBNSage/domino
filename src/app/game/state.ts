@@ -64,6 +64,8 @@ export const MAX_POINTS = 999;
 export const MAX_TARGET = 9999;
 export const MAX_NAME_LENGTH = 16;
 export const MAX_PLAYER_LENGTH = 16;
+/** How long every offer to undo stays on screen. */
+export const UNDO_SECONDS = 3;
 
 export const initialState: State = {
   teams: {

@@ -4,26 +4,11 @@ import { Tables, noTables, parseTables } from './tables';
 import { Tournament, parseTournament } from './tournament';
 
 export const STORAGE_KEY = 'domino/state/v1';
-export const UNDO_KEY = 'domino/undo/v1';
+/** No longer written: an offer to undo lasts seconds, not across a restart. */
+const UNDO_KEY = 'domino/undo/v1';
 export const TOURNAMENT_KEY = 'domino/tournament/v1';
 export const HISTORY_KEY = 'domino/history/v1';
 export const TABLES_KEY = 'domino/tables/v1';
-
-/** History entries written by a change, which go when the change is taken back. */
-export type Recorded = { matches: string[]; tournaments: string[] };
-
-/**
- * A saved way back from a reset, a closed match or a change to the tournament:
- * the board and the tournament as they were.
- */
-export type SavedUndo = {
-  message: string;
-  snapshot: State;
-  tournament: Tournament | null;
-  recorded: Recorded;
-};
-
-export const nothingRecorded: Recorded = { matches: [], tournaments: [] };
 
 function parse(raw: string | null): unknown {
   if (raw === null) return null;
@@ -48,27 +33,6 @@ export function readHistory(raw: string | null): History {
 
 export function readTables(raw: string | null): Tables {
   return raw === null ? noTables : parseTables(parse(raw));
-}
-
-function readIds(value: unknown): string[] {
-  return Array.isArray(value) ? value.filter((id): id is string => typeof id === 'string') : [];
-}
-
-export function readUndo(raw: string | null): SavedUndo | null {
-  const value = parse(raw) as Record<string, unknown> | null;
-  if (typeof value !== 'object' || value === null) return null;
-  if (typeof value.message !== 'string') return null;
-  const snapshot = parseState(value.snapshot);
-  if (snapshot === null) return null;
-
-  // Ways back saved before tournaments existed carry neither of these.
-  const recorded = (value.recorded ?? {}) as Record<string, unknown>;
-  return {
-    message: value.message,
-    snapshot,
-    tournament: parseTournament(value.tournament),
-    recorded: { matches: readIds(recorded.matches), tournaments: readIds(recorded.tournaments) },
-  };
 }
 
 function read(key: string): string | null {
@@ -96,12 +60,9 @@ export function saveState(state: State): void {
   write(STORAGE_KEY, JSON.stringify(state));
 }
 
-export function loadUndo(): SavedUndo | null {
-  return readUndo(read(UNDO_KEY));
-}
-
-export function saveUndo(undo: SavedUndo | null): void {
-  write(UNDO_KEY, undo === null ? null : JSON.stringify(undo));
+/** Removes the way back that older versions kept across a restart. */
+export function forgetSavedUndo(): void {
+  write(UNDO_KEY, null);
 }
 
 export function loadTournament(): Tournament | null {

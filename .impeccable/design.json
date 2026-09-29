@@ -651,7 +651,7 @@
     },
     "timing": {
       "undoSingleHand": "8000ms for a deleted, corrected or quick-added hand; paused while hovered or focused",
-      "undoBoard": "no time limit for a closed match, cleared hands, a full reset and every step of a tournament; persisted across a restart; ends when the board changes",
+      "undoBoard": "every offer to undo lasts 3 seconds, paused while the bar is hovered or focused; nothing is kept across a restart; a board-wide offer also ends when the board changes",
       "longPress": "500ms hold, 10px slop",
       "undoHistory": "No time limit for a deleted match or tournament or a cleared history, until another undo takes its place or the app is closed. Full screens offer only these."
     },
@@ -851,7 +851,7 @@
       "name": "Undo Bar",
       "kind": "custom",
       "refersTo": "undo-snackbar",
-      "description": "The board's one transient bar, in inverse colours. Undo for one hand lasts 8 seconds and pauses while hovered or focused; undo for a reset, a closed match, a step of a tournament, or anything removed from the history or the mesas has no time limit. With large text the action moves under the message. On a full screen it only offers back what was removed from the history or the mesas. With nothing to undo and an empty board it announces a waiting update.",
+      "description": "The board's one transient bar, in inverse colours. Every offer to undo lasts 3 seconds, paused while hovered or focused, and none survives a restart. With large text the action moves under the message. On a full screen it only offers back what was removed from the history or the mesas. With nothing to undo and an empty board it announces a waiting update.",
       "html": "<div class=\"ds-undo\"><span class=\"ds-undo-message\">Mano 2 eliminada</span><button class=\"ds-undo-action\">Deshacer</button></div>",
       "css": ".ds-undo { position: relative; isolation: isolate; } .ds-undo::before { content: ''; position: absolute; inset: 0 6px; z-index: -1; background: var(--c-text, #fff); border: 2px solid transparent; transform: skewX(-12deg); } .ds-undo { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; width: 358px; min-height: 52px; padding: 4px 8px 4px 24px; color: var(--c-ground, #0e1114); font-family: var(--font, 'Kanit', sans-serif); font-weight: 500; font-size: var(--t-body, 1rem); } .ds-undo-message { flex: 1 1 9rem; min-width: 0; line-height: 1.25; overflow-wrap: anywhere; } .ds-undo-action { flex: none; min-height: 48px; padding: 0 16px; border: 0; background: none; color: inherit; font-family: var(--font, 'Kanit', sans-serif); font-style: italic; font-weight: 800; font-size: var(--t-body, 1rem); line-height: 1.2; text-transform: uppercase; text-decoration: underline; text-underline-offset: 0.2em; cursor: pointer; } .ds-undo-action:active { opacity: 0.7; } .ds-undo-action:focus-visible { outline: 3px solid var(--c-ground, #0e1114); outline-offset: -5px; }"
     },

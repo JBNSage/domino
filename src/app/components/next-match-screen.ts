@@ -90,6 +90,10 @@ import { TeamEdit } from './team-sheet';
               class="slab slab--compact lean"
               [attr.aria-label]="copy.tournament.undoA11y(store.undo()?.message ?? '')"
               (click)="undo()"
+              (pointerenter)="store.holdUndo()"
+              (pointerleave)="store.releaseUndo()"
+              (focus)="store.holdUndo()"
+              (blur)="store.releaseUndo()"
             >
               <span class="slab__label" [appFitText]="copy.undo.action">{{
                 copy.undo.action

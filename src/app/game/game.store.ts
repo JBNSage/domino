@@ -22,6 +22,7 @@ import {
   Row,
   State,
   TEAM_IDS,
+  UNDO_SECONDS,
   Team,
   TeamId,
   initialState,
@@ -30,21 +31,15 @@ import {
   selectWinner,
 } from './state';
 import {
-  Recorded,
   STORAGE_KEY,
-  SavedUndo,
   TOURNAMENT_KEY,
-  UNDO_KEY,
   loadState,
   loadTournament,
-  loadUndo,
-  nothingRecorded,
   readState,
   readTournament,
-  readUndo,
   saveState,
+  forgetSavedUndo,
   saveTournament,
-  saveUndo,
 } from './storage';
 import {
   Rule,
@@ -64,11 +59,15 @@ import {
   winsOf,
 } from './tournament';
 
-// Long enough to notice at a noisy table.
-export const UNDO_MS = 8000;
+export const UNDO_MS = UNDO_SECONDS * 1000;
 
 /** A no-break space: invisible, but enough for a live region to speak again. */
 const REPEAT_MARK = String.fromCharCode(160);
+
+/** History entries written by a change, which go when the change is taken back. */
+type Recorded = { matches: string[]; tournaments: string[] };
+
+const nothingRecorded: Recorded = { matches: [], tournaments: [] };
 
 /** The board and the tournament as they were, and what was written since. */
 type Snapshot = { state: State; tournament: Tournament | null; recorded: Recorded };
@@ -76,8 +75,8 @@ type Snapshot = { state: State; tournament: Tournament | null; recorded: Recorde
 /**
  * How an action is taken back. Changes to one hand are reversed on their own,
  * so hands scored in the meantime stay. A reset, a closed match or a change to
- * the tournament goes back to everything as it was, and is kept until the
- * board changes again. Entries removed from the history are put back.
+ * the tournament goes back to everything as it was. Entries removed from the
+ * history or the mesas are put back.
  */
 type Reversal =
   | { kind: 'restoreRow'; row: Row; index: number }
@@ -87,8 +86,7 @@ type Reversal =
   | { kind: 'history'; removed: History }
   | { kind: 'tables'; before: Tables; after: Tables };
 
-/** `lasting` offers have no time limit. */
-export type Undo = { message: string; reversal: Reversal; lasting: boolean };
+export type Undo = { message: string; reversal: Reversal };
 
 export type MatchResult = {
   winner: TeamId;
@@ -110,7 +108,7 @@ export class GameStore {
   readonly state = signal<State>(loadState() ?? initialState);
   /** The tournament being played, if any. */
   readonly tournament = signal<Tournament | null>(loadTournament());
-  readonly undo = signal<Undo | null>(GameStore.savedUndo());
+  readonly undo = signal<Undo | null>(null);
   /** Text for the screen reader's live region. */
   readonly announcement = signal('');
 
@@ -181,12 +179,8 @@ export class GameStore {
 
     effect(() => saveTournament(this.tournament()));
 
-    effect(() => {
-      const undo = this.undo();
-      if (undo?.reversal.kind !== 'snapshot') return saveUndo(null);
-      const { state, tournament, recorded } = undo.reversal.snapshot;
-      saveUndo({ message: undo.message, snapshot: state, tournament, recorded });
-    });
+    // Versions before 3-second undo kept an offer across restarts.
+    forgetSavedUndo();
 
     effect(() => {
       const result = this.result();
@@ -457,16 +451,16 @@ export class GameStore {
   }
 
   deleteMatch(id: string): void {
-    this.offerHistory(copy.undo.matchDeleted, this.history.remove({ matches: [id] }), true);
+    this.offerHistory(copy.undo.matchDeleted, this.history.remove({ matches: [id] }));
   }
 
   deleteTournament(id: string): void {
     const removed = this.history.remove({ tournaments: [id] });
-    this.offerHistory(copy.undo.tournamentDeleted, removed, true);
+    this.offerHistory(copy.undo.tournamentDeleted, removed);
   }
 
   clearHistory(): void {
-    this.offerHistory(copy.undo.historyCleared, this.history.clear(), true);
+    this.offerHistory(copy.undo.historyCleared, this.history.clear());
   }
 
   saveSettings(target: number, quickValue: number): void {
@@ -539,11 +533,10 @@ export class GameStore {
     this.undoTimer = null;
   }
 
+  /** Every offer ends a few seconds after it is made, or after it is let go. */
   releaseUndo(): void {
     this.holdUndo();
-    const undo = this.undo();
-    // A reset or a closed match stays on offer; single changes expire.
-    if (undo === null || undo.lasting) return;
+    if (this.undo() === null) return;
     this.undoTimer = setTimeout(() => this.undo.set(null), UNDO_MS);
   }
 
@@ -552,39 +545,29 @@ export class GameStore {
     this.announcement.update((current) => (current === message ? message + REPEAT_MARK : message));
   }
 
-  private static savedUndo(saved: SavedUndo | null = loadUndo()): Undo | null {
-    if (saved === null) return null;
-    const { message, snapshot, tournament, recorded } = saved;
-    return {
-      message,
-      reversal: { kind: 'snapshot', snapshot: { state: snapshot, tournament, recorded } },
-      lasting: true,
-    };
-  }
-
   private newId(): string {
     this.nextId += 1;
     return `${Date.now()}-${this.nextId}`;
   }
 
-  private offer(message: string, reversal: Reversal, lasting = false): void {
-    this.undo.set({ message, reversal, lasting });
+  private offer(message: string, reversal: Reversal): void {
+    this.undo.set({ message, reversal });
     this.announce(`${message}. ${copy.undo.action}`);
     this.releaseUndo();
   }
 
-  private offerHistory(message: string, removed: History, lasting: boolean): void {
+  private offerHistory(message: string, removed: History): void {
     if (removed.matches.length === 0 && removed.tournaments.length === 0) return;
-    this.offer(message, { kind: 'history', removed }, lasting);
+    this.offer(message, { kind: 'history', removed });
   }
 
-  /** Removes something from the mesas, with a way back that lasts. */
+  /** Removes something from the mesas, with a way back. */
   private changeTables(message: string, apply: (tables: Tables) => Tables): void {
     const before = this.tables.tables();
     this.tables.change(apply);
     const after = this.tables.tables();
     if (after === before) return;
-    this.offer(message, { kind: 'tables', before, after }, true);
+    this.offer(message, { kind: 'tables', before, after });
   }
 
   /** Makes a change that can be taken back whole. */
@@ -594,7 +577,7 @@ export class GameStore {
     const recorded = apply() ?? nothingRecorded;
     if (this.state() === state && this.tournament() === tournament) return;
     this.lastChange.set({ kind: 'hand' });
-    this.offer(message, { kind: 'snapshot', snapshot: { state, tournament, recorded } }, true);
+    this.offer(message, { kind: 'snapshot', snapshot: { state, tournament, recorded } });
   }
 
   /** Sits the tournament's two teams at the board, with the wins they bring. */
@@ -647,18 +630,13 @@ export class GameStore {
         this.state.set(state);
         this.lastChange.set({ kind: 'hand' });
         // Whatever this tab was offering belongs to a board that is gone.
-        this.holdUndo();
-        this.undo.set(GameStore.savedUndo());
+        this.clearUndo();
       }
       if (event.key === TOURNAMENT_KEY || event.key === null) {
         const tournament = readTournament(event.newValue);
         if (JSON.stringify(tournament) !== JSON.stringify(this.tournament())) {
           this.tournament.set(tournament);
         }
-      }
-      if (event.key === UNDO_KEY) {
-        this.holdUndo();
-        this.undo.set(GameStore.savedUndo(readUndo(event.newValue)));
       }
     };
 

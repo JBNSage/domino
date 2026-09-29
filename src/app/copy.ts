@@ -1,4 +1,4 @@
-import { MAX_POINTS, MAX_TARGET, Players } from './game/state';
+import { MAX_POINTS, MAX_TARGET, Players, UNDO_SECONDS } from './game/state';
 import { MAX_SAVED_TEAMS, MAX_TABLES, MAX_TABLE_PLAYERS } from './game/tables';
 import { MAX_COUNT, MAX_TEAMS, Rule } from './game/tournament';
 
@@ -194,7 +194,7 @@ export const copy = {
       ];
       return `Se borra todo: ${joinNames(parts)}.`;
     },
-    clearUndo: 'Se puede deshacer mientras no cierres la aplicación.',
+    clearUndo: `Se puede deshacer durante ${UNDO_SECONDS} segundos.`,
     matchNumber: (position: number) => `Partida ${position}`,
     matchTitle: 'Partida',
     tournamentTitle: 'Torneo',
@@ -383,7 +383,7 @@ export const copy = {
     removeTitle: (name: string) => `¿Eliminar la mesa ${name}?`,
     removeBody: (playerCount: number, teamCount: number) =>
       `Se borran ${players(playerCount)} y ${teams(teamCount)} guardados. El historial se conserva.`,
-    removeUndo: 'Se puede deshacer mientras no cierres la aplicación.',
+    removeUndo: `Se puede deshacer durante ${UNDO_SECONDS} segundos.`,
     status: (name: string) => `Mesa: ${name}`,
     statusA11y: (name: string) => `Mesa: ${name}. Cambiar de mesa`,
     announce: (name: string | null) => (name === null ? 'Sin mesa' : `Mesa: ${name}`),
