@@ -70,10 +70,8 @@ import { Slashes } from './slashes';
     }
 
     /* By day the acid yellow vanishes on the pale ground, so the mark turns ink. */
-    @media (prefers-color-scheme: light) {
-      .mark {
-        color: var(--c-text);
-      }
+    :host-context([data-scheme='light']) .mark {
+      color: var(--c-text);
     }
 
     @media (max-height: 36em) {

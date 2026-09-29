@@ -89,6 +89,15 @@ export const copy = {
     undoNote: 'Las dos opciones se pueden deshacer.',
     cancel: 'Cancelar',
   },
+  appearance: {
+    label: 'Apariencia',
+    system: 'Sistema',
+    light: 'Claro',
+    dark: 'Oscuro',
+    toLight: 'Cambiar a modo claro',
+    toDark: 'Cambiar a modo oscuro',
+    announce: (name: string) => `Apariencia: ${name}`,
+  },
   install: {
     prompt: 'Instálala para abrirla desde la pantalla de inicio, también sin conexión.',
     ios: 'Para instalarla: toca Compartir y luego «Agregar a pantalla de inicio».',

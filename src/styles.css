@@ -52,22 +52,21 @@
   --keyboard-inset: 0px;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color-scheme: light;
+/* Set by the appearance choice: light, dark, or whatever the phone says. */
+:root[data-scheme='light'] {
+  color-scheme: light;
 
-    --c-ground: #f1f2f4;
-    --c-surface: #ffffff;
-    --c-raised: #e1e4e8;
-    --c-line: #7d858f;
-    --c-text: #0e1114;
-    --c-muted: #4a525b;
-    --c-team-edge: #0e1114;
-    --team-edge-width: 2px;
-    --c-danger: #b3261e;
-    --c-on-danger: #ffffff;
-    --c-scrim: rgb(14 17 20 / 0.6);
-  }
+  --c-ground: #f1f2f4;
+  --c-surface: #ffffff;
+  --c-raised: #e1e4e8;
+  --c-line: #7d858f;
+  --c-text: #0e1114;
+  --c-muted: #4a525b;
+  --c-team-edge: #0e1114;
+  --team-edge-width: 2px;
+  --c-danger: #b3261e;
+  --c-on-danger: #ffffff;
+  --c-scrim: rgb(14 17 20 / 0.6);
 }
 
 *,

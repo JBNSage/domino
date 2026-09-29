@@ -7,8 +7,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="description" content="Contador de puntos para dominó en dos equipos." />
     <meta name="color-scheme" content="dark light" />
-    <meta name="theme-color" content="#0E1114" media="(prefers-color-scheme: dark)" />
-    <meta name="theme-color" content="#F1F2F4" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0E1114" />
+    <!-- Decides light or dark before the first paint, so a saved choice never flashes the other. -->
+    <script>
+      (function () {
+        var scheme = 'dark';
+        try {
+          var choice = localStorage.getItem('domino/appearance/v1');
+          scheme =
+            choice === 'light' || choice === 'dark'
+              ? choice
+              : matchMedia('(prefers-color-scheme: light)').matches
+                ? 'light'
+                : 'dark';
+        } catch (error) {}
+        document.documentElement.dataset.scheme = scheme;
+        document
+          .querySelector('meta[name="theme-color"]')
+          .setAttribute('content', scheme === 'light' ? '#F1F2F4' : '#0E1114');
+      })();
+    </script>
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="Dominó" />

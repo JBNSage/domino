@@ -525,7 +525,7 @@
     "mediaFeatures": [
       {
         "name": "prefers-color-scheme: light",
-        "purpose": "Swaps the neutral, danger, scrim and team-edge tokens to the day appearance; turns the sheet's triple-slash mark to Text colour."
+        "purpose": "Read only by script, as the answer for the \"Sistema\" appearance choice. Styles look at data-scheme=\"light\" on the root element, which swaps the neutral, danger, scrim and team-edge tokens to the day appearance and turns the sheet's triple-slash mark to Text colour."
       },
       {
         "name": "prefers-reduced-motion: no-preference",

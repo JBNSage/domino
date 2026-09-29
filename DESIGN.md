@@ -215,7 +215,7 @@ components:
 
 # Design System: Dominó
 
-Dominó is an Angular progressive web app. Every token below is a CSS custom property on `:root` in `src/styles.css`; component styles live inline in `src/app/components/*.ts`. Lengths are CSS pixels and type sizes are rem, so they follow the reader's font size. Component tokens reference the night appearance, which is the default; the day appearance is applied by `prefers-color-scheme: light`, swaps each `-night` colour for its `-day` sibling and leaves the team colours and ink untouched. The CSS names drop the suffix (`--c-ground`, `--c-surface`, `--c-raised`, `--c-line`, `--c-text`, `--c-muted`, `--c-danger`, `--c-on-danger`, `--c-team-edge`, `--c-scrim`).
+Dominó is an Angular progressive web app. Every token below is a CSS custom property on `:root` in `src/styles.css`; component styles live inline in `src/app/components/*.ts`. Lengths are CSS pixels and type sizes are rem, so they follow the reader's font size. Component tokens reference the night appearance, which is the default; the day appearance is applied by `data-scheme="light"` on the root element, swaps each `-night` colour for its `-day` sibling and leaves the team colours and ink untouched. The CSS names drop the suffix (`--c-ground`, `--c-surface`, `--c-raised`, `--c-line`, `--c-text`, `--c-muted`, `--c-danger`, `--c-on-danger`, `--c-team-edge`, `--c-scrim`).
 
 ## Overview
 
@@ -237,7 +237,7 @@ Density is low and the targets are large: the smallest control is 48 pixels, sla
 
 ## Colors
 
-Two loud liveries on a neutral ground that flips between graphite and pit silver with the system appearance.
+Two loud liveries on a neutral ground that flips between graphite and pit silver. The appearance follows the system until the reader chooses otherwise: "Sistema", "Claro" or "Oscuro". The choice is kept on the device, resolved to `data-scheme` on the root element before the first paint, and is not part of the match, so "Todo" in the reset sheet leaves it alone.
 
 ### Primary
 - **Safety Orange** (`team-a`): team A. Floods the left livery, the team A points chip in each row, the left "Anotar" slab, the slash mark and confirm slab on team A's points sheet, and the whole screen when team A wins.
@@ -307,7 +307,7 @@ Copy lives in `src/app/copy.ts`. Commands are one or two words ("Anotar", "Guard
 
 One column, the full dynamic viewport tall (`100dvh`), capped at 480 pixels wide (`--column`) and centred on the ground. The page itself never scrolls; only the list does. Four bands, top to bottom:
 
-1. **Header.** Target slab at the left, reset control at the right. Padding 24 left, 8 right, 12 vertical. The top safe-area inset is added above it.
+1. **Header.** Target slab at the left; at the right, two 48-pixel icon controls side by side: appearance, then reset. Padding 24 left, 8 right, 12 vertical. The top safe-area inset is added above it.
 2. **Lockup.** Two equal panels, edge to edge, minimum height 172. Each livery bleeds 48 past the column edge and leans a fixed 36 pixels, leaving a diagonal seam of ground about 6 pixels wide between them.
 3. **List.** Fills the remaining height and scrolls inside itself. 16 horizontal padding, 12 vertical, 8 between rows. Each row has two equal team columns with a 44-wide hand number between them, so points sit centred under their livery. The list follows a new hand to the end; a correction or a deletion further up leaves the reader where they are, unless the undo bar arrives while the end of the list is within 80 pixels, in which case the list moves to the end so the bar does not cover it. When empty, the content is left-aligned and vertically centred with 32 horizontal padding. While the undo bar is showing, the list gains bottom padding equal to the bar's height so the last row stays visible.
 4. **Quick bar.** Pinned to the bottom, separated from the list by a 1-pixel Line hairline. Two equal columns with a 24 gap, one per team. Each column stacks a compact outlined quick-points slab above the team's filled "Anotar" slab with an 8 gap, so the every-hand action sits at the bottom edge. Padding 12 top, 24 sides, 12 plus the bottom safe-area inset below.
@@ -413,7 +413,7 @@ With no hands the list shows the triple-slash mark (22, Line colour), a Title he
 ### Sheets
 A rectangular Ground-colour panel on a native `<dialog>`, rising from the bottom over a Scrim. It opens with the triple-slash mark in the sheet's accent, then its title or fields, then its actions. The first field takes focus as the sheet opens, so the keyboard arrives with it.
 - **Points sheet** (accent: the team colour): name field, points field, then "Cancelar" and the team's "Anotar". With a new name and no points the confirm reads "Guardar nombre". The same sheet corrects a hand: a Title heading ("Corregir mano 2 de Equipo B") takes the place of the name field, the points field opens with the hand's points selected, and the confirm reads "Guardar".
-- **Settings sheet** (accent: Text colour): title "Ajustes", the fields "Meta: puntos para ganar" and "Puntos rápidos: el botón +", then "Cancelar" and neutral "Guardar".
+- **Settings sheet** (accent: Text colour): title "Ajustes", the appearance choice, the fields "Meta: puntos para ganar" and "Puntos rápidos: el botón +", then "Cancelar" and neutral "Guardar".
 - **Reset sheet** (accent: Danger): title, then two choices, each a full-width slab with its explanation 8 beneath it in Muted Text, tied to the button as its description: outlined "Solo las manos" and Danger "Todo". Below them one sentence in Text colour says that both can be undone, then a compact outlined "Cancelar". Blocks are 16 apart.
 - **Closing:** Escape, the system Back gesture, a tap on the scrim and "Cancelar" all close the sheet and discard; nothing is saved without its button.
 - **Motion:** the panel slides up from below over 200 ms while the scrim fades in, and reverses on close.
@@ -429,8 +429,11 @@ A full-screen `<dialog>`. The winning team's colour floods the screen, sweeping 
 ### Navigation
 None. The header carries two utility controls: the target slab and the reset control, a 24-pixel bin icon in a 48-pixel square that opens the reset sheet. Hover turns the icon from Muted Text to Text colour; pressed drops it to 70% opacity.
 
+### Appearance Choice
+Three compact outlined slabs in one row under the label "Apariencia" (Label size, Muted Text): "Sistema", "Claro", "Oscuro", 8 apart, lean inset 5. The chosen one takes the neutral fill (Text colour, Ground label, no edge). It is a radio group: arrow keys move the choice and wrap around. It applies on touch and is announced; "Guardar" and "Cancelar" belong to the two numbers only. The header control is the one-tap form of the same choice: it switches to the opposite of what is showing, whatever decided it, and its name says where it leads ("Cambiar a modo claro" / "Cambiar a modo oscuro").
+
 ### Icons
-Two line icons drawn inline as SVG on a 24 grid with a 2-pixel round-capped stroke, always Muted Text colour: a pencil (16 in the target slab, 20 in the 48-pixel label beside the name field) and a bin (24). They mark utilities, are hidden from assistive technology, and never carry a team colour.
+Line icons drawn inline as SVG on a 24 grid with a 2-pixel round-capped stroke, always Muted Text colour: a pencil (16 in the target slab, 20 in the 48-pixel label beside the name field), a bin (24), and the appearance mark (24), which shows what is on now: a moon by night, a sun by day. They mark utilities, are hidden from assistive technology, and never carry a team colour.
 
 ### Undo Bar
 The board's one transient bar: a leaning layer in inverse colours (Text colour fill, Ground colour type) floating over the bottom of the list, 8 above the quick bar with 16 side margins, minimum height 52, padding 24 left, 8 right and 4 above and below. The message is Body type, upright, line-height 1.25; it wraps onto as many lines as it needs and the bar grows with it. The action is a text action that keeps its width; its focus ring is Ground colour, drawn 5 pixels inside the target so the whole ring sits on the bar's own fill. It rises 12 pixels while fading in over 200 ms.

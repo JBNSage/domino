@@ -65,10 +65,8 @@ let nextId = 0;
     }
 
     /* By day the team colours vanish on the white field, so the caret stays ink. */
-    @media (prefers-color-scheme: light) {
-      .input {
-        caret-color: var(--c-text);
-      }
+    :host-context([data-scheme='light']) .input {
+      caret-color: var(--c-text);
     }
 
     @media (max-height: 36em) {
