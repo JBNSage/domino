@@ -3,9 +3,10 @@ import { TestBed } from '@angular/core/testing';
 import { copy } from '../copy';
 import { GameStore, UNDO_MS } from './game.store';
 import { HistoryStore } from './history.store';
-import { initialState } from './state';
+import { Players, initialState } from './state';
 import { STORAGE_KEY, TOURNAMENT_KEY, loadTournament } from './storage';
 import { standings } from './tournament';
+import { teamWinsAt } from './stats';
 import { addTable, addPlayer, saveTeam, setActive, updateTable } from './tables';
 import { TablesStore } from './tables.store';
 import { TournamentDraft } from './tournament-draft';
@@ -619,15 +620,41 @@ describe('GameStore at a mesa', () => {
     expect(store.state().between).toBe('start');
   });
 
-  it('gives back the match and the wins of a saved team on undo', () => {
-    store.seatTeam('a', { name: 'Primos', players: null, saved: 's1' });
+  it("counts a saved team's wins from the matches its two players won together", () => {
+    const saved = { id: 's1', name: 'Lo Malo', players: ['Chiky Chang', 'El Vale'] as Players };
+    store.saveTableTeam('m1', saved);
+    store.seatTeam('a', { name: saved.name, players: saved.players, saved: 's1' });
     store.addPoints('a', 200);
     store.closeRound();
-    expect(store.state().tally).toEqual({ s1: 1 });
+    expect(store.state().teams.a.roundsWon).toBe(1);
+    const history = () => TestBed.inject(HistoryStore).history();
+    const mesa = () => tables.active()!;
+    expect(teamWinsAt(history(), mesa(), saved)).toBe(1);
 
+    // El Vale leaves: another pair, which starts from its own wins here.
+    store.setTeam('a', 'Lo Malo', ['Chiky Chang', 'Jose Miguel'], null);
+    expect(store.state().teams.a).toMatchObject({ roundsWon: 0, saved: null });
+    for (let match = 0; match < 4; match += 1) {
+      store.addPoints('a', 200);
+      store.closeRound();
+    }
+    expect(teamWinsAt(history(), mesa(), saved)).toBe(1);
+    expect(
+      teamWinsAt(history(), mesa(), { name: 'x', players: ['Jose Miguel', 'Chiky Chang'] }),
+    ).toBe(4);
+
+    // Back together, they bring their one win.
+    store.seatTeam('a', { name: saved.name, players: saved.players, saved: 's1' });
+    expect(store.state().teams.a.roundsWon).toBe(1);
+  });
+
+  it('gives back the match and its win on undo', () => {
+    store.seatTeam('a', { name: 'Primos', players: ['Ana', 'Luis'], saved: 's1' });
+    store.addPoints('a', 200);
+    store.closeRound();
     store.restore();
-    expect(store.state().tally).toEqual({});
-    expect(store.state().between).toBeNull();
+    expect(store.state().teams.a.roundsWon).toBe(0);
+    expect(TestBed.inject(HistoryStore).history().matches).toHaveLength(0);
     expect(store.totals().a).toBe(200);
   });
 
@@ -644,7 +671,7 @@ describe('GameStore at a mesa', () => {
     store.startTournament(teams, { kind: 'free' });
     store.addPoints('a', 200);
     store.closeRound();
-    expect(store.state().tally).toEqual({});
+    expect(store.winsHere('Primos', null)).toBeUndefined();
     expect(store.state().between).toBeNull();
   });
 

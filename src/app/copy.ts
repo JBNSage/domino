@@ -428,6 +428,9 @@ export const copy = {
     keep: 'Guardar en la mesa',
     keepOn: 'Queda en los equipos de la mesa, con sus victorias.',
     keepOff: 'Solo para esta partida.',
+    keepOffSaved: (name: string) =>
+      `${name} queda en la mesa como está. Con otros jugadores, juega otro equipo.`,
+    keepOnSaved: (name: string) => `${name} pasa a tener estos jugadores y sus victorias.`,
     keepFull: `La mesa ya guarda ${MAX_SAVED_TEAMS} equipos.`,
   },
   stats: {

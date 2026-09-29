@@ -32,7 +32,7 @@ Run lint, typecheck and tests before declaring any task done. The service worker
 - Interface language is Spanish only; add strings to `copy.ts`.
 - Sheets open through their `open()` method, called directly from the tap, so the keyboard opens with them on iOS. Do not open them from an effect. Screens without a text field may follow state, as the winner screen does.
 - A change that can be undone whole goes through `GameStore.change()`, which keeps the board, the tournament and the history entries it wrote together.
-- The wins of a team saved at a mesa live in `State.tally`, by its id, so undoing a closed match takes them back too. Tournament teams sit with `saved: null` and never touch the tally.
+- A team saved at a mesa is its two players. Its wins there are worked out from the history (`teamWinsAt` in `stats.ts`): the matches those two won together at that mesa. Changing a player without saving makes another team, which brings its own wins. Tournament teams sit with `saved: null` and count their wins in the tournament.
 - "Mesa" (a place and its people, `tables.ts`) and "tabla" (a tournament's standings) are different things in code and copy.
 - Team colours belong to the side of the board, not to a team: in a tournament a team takes the colour of the seat it sits in.
 - The app is served under a subpath on GitHub Pages: keep asset and manifest paths relative.

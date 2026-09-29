@@ -12,6 +12,8 @@ import { copy } from '../copy';
 import { FitText } from '../directives/fit-text';
 import { GameStore } from '../game/game.store';
 import { Players, TeamId } from '../game/state';
+import { HistoryStore } from '../game/history.store';
+import { teamWinsAt } from '../game/stats';
 import { TablesStore } from '../game/tables.store';
 import { available, standings, teamOf } from '../game/tournament';
 import { PlayerPair } from './player-pair';
@@ -205,6 +207,7 @@ export class SeatSheet {
 
   private readonly store = inject(GameStore);
   private readonly tables = inject(TablesStore);
+  private readonly history = inject(HistoryStore);
   private readonly edits = inject(TeamEdits);
   protected readonly sheet = viewChild.required(Sheet);
 
@@ -227,12 +230,14 @@ export class SeatSheet {
       const table = standings(tournament);
       return available(tournament).flatMap((id) => table.filter((row) => row.id === id));
     }
-    const { teams, tally } = this.store.state();
+    const { teams } = this.store.state();
+    const mesa = this.tables.active();
+    const history = this.history.history();
     const seated = [teams.a.saved, teams.b.saved];
     // Most wins first: the teams that play most come to hand first.
     return (this.tables.active()?.teams ?? [])
       .filter((team) => !seated.includes(team.id))
-      .map((team) => ({ ...team, won: tally[team.id] ?? 0 }))
+      .map((team) => ({ ...team, won: mesa === null ? 0 : teamWinsAt(history, mesa, team) }))
       .sort(
         (one, other) =>
           other.won - one.won || one.name.localeCompare(other.name, 'es', { sensitivity: 'base' }),

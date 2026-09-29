@@ -28,8 +28,6 @@ export type State = {
   target: number;
   quickValue: number;
   rows: Row[];
-  /** Wins of each team saved at a mesa, by its id, kept while it sits out. */
-  tally: Record<string, number>;
   between: Between | null;
 };
 
@@ -39,8 +37,23 @@ export type Action =
   | { type: 'restoreRow'; row: Row; index: number }
   | { type: 'editRow'; id: string; points: number }
   | { type: 'renameTeam'; team: TeamId; name: string }
-  | { type: 'setTeam'; team: TeamId; name: string; players: Players | null; saved?: string | null }
-  | { type: 'seatTeam'; team: TeamId; name: string; players: Players | null; saved: string | null }
+  | {
+      type: 'setTeam';
+      team: TeamId;
+      name: string;
+      players: Players | null;
+      saved?: string | null;
+      /** The wins the changed team brings, as when other players make it another team. */
+      roundsWon?: number;
+    }
+  | {
+      type: 'seatTeam';
+      team: TeamId;
+      name: string;
+      players: Players | null;
+      saved: string | null;
+      roundsWon: number;
+    }
   | { type: 'seat'; teams: Record<TeamId, Team> }
   | { type: 'setTarget'; target: number }
   | { type: 'setQuickValue'; value: number }
@@ -75,7 +88,6 @@ export const initialState: State = {
   target: DEFAULT_TARGET,
   quickValue: DEFAULT_QUICK_VALUE,
   rows: [],
-  tally: {},
   between: null,
 };
 
@@ -198,29 +210,30 @@ export function reducer(state: State, action: Action): State {
         teams: { ...state.teams, [action.team]: { ...state.teams[action.team], name } },
       };
     }
-    // The same team, changed: it keeps its wins, and a saved team takes them along.
+    // The same side, changed; other players may bring other wins.
     case 'setTeam': {
       const current = state.teams[action.team];
       const name = cleanName(action.name, action.team);
       const saved = action.saved === undefined ? current.saved : action.saved;
+      const roundsWon = action.roundsWon ?? current.roundsWon;
       if (
         name === current.name &&
         samePlayers(action.players, current.players) &&
-        saved === current.saved
+        saved === current.saved &&
+        roundsWon === current.roundsWon
       ) {
         return state;
       }
-      const team: Team = { ...current, name, players: action.players, saved };
-      const tally = saved === null ? state.tally : { ...state.tally, [saved]: current.roundsWon };
-      return { ...state, tally, teams: { ...state.teams, [action.team]: team } };
+      const team: Team = { ...current, name, players: action.players, saved, roundsWon };
+      return { ...state, teams: { ...state.teams, [action.team]: team } };
     }
-    // Another team takes the side, with the wins it has at the mesa.
+    // Another team takes the side, with the wins it brings.
     case 'seatTeam': {
       const team: Team = {
         name: cleanName(action.name, action.team),
         players: action.players,
         saved: action.saved,
-        roundsWon: action.saved === null ? 0 : (state.tally[action.saved] ?? 0),
+        roundsWon: action.roundsWon,
       };
       return { ...state, teams: { ...state.teams, [action.team]: team } };
     }
@@ -242,7 +255,6 @@ export function reducer(state: State, action: Action): State {
         ...state,
         rows: [],
         teams: { ...state.teams, [action.winner]: { ...winner, roundsWon } },
-        tally: winner.saved === null ? state.tally : { ...state.tally, [winner.saved]: roundsWon },
         between: action.pause === true ? 'next' : null,
       };
     }
@@ -312,25 +324,15 @@ export function parseState(value: unknown): State | null {
   const parsedRows = parseRows(rows);
   if (parsedRows === null) return null;
 
-  // Boards saved before mesas existed have neither of these.
+  // Boards saved before mesas existed have none.
   const between = raw.between === 'start' || raw.between === 'next' ? raw.between : null;
   return {
     teams: parsedTeams,
     target,
     quickValue,
     rows: parsedRows,
-    tally: parseTally(raw.tally),
     between,
   };
-}
-
-function parseTally(value: unknown): Record<string, number> {
-  if (typeof value !== 'object' || value === null || Array.isArray(value)) return {};
-  const tally: Record<string, number> = {};
-  for (const [id, won] of Object.entries(value as Record<string, unknown>)) {
-    if (typeof won === 'number' && Number.isInteger(won) && won >= 0) tally[id] = won;
-  }
-  return tally;
 }
 
 export function parseRows(value: unknown): Row[] | null {

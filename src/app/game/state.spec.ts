@@ -273,63 +273,33 @@ describe('cleanName', () => {
   });
 });
 
-describe('teams saved at a mesa', () => {
-  const seated = play([
-    { type: 'seatTeam', team: 'a', name: 'Primos', players: ['Ana', 'Luis'], saved: 's1' },
-    { type: 'seatTeam', team: 'b', name: 'Tías', players: null, saved: 's2' },
-  ]);
-
-  it('count their wins, and bring them back when they sit again', () => {
-    const won = play([add('a', 200, '1'), { type: 'closeRound', winner: 'a' }], seated);
-    expect(won.tally).toEqual({ s1: 1 });
-
-    const away = reducer(won, {
-      type: 'seatTeam',
-      team: 'a',
-      name: 'Otros',
-      players: null,
-      saved: 's3',
-    });
-    expect(away.teams.a.roundsWon).toBe(0);
-    const back = reducer(away, {
+describe('teams at a side', () => {
+  it('sit with the wins they bring, and count new ones', () => {
+    const seated = reducer(initialState, {
       type: 'seatTeam',
       team: 'a',
       name: 'Primos',
-      players: null,
+      players: ['Ana', 'Luis'],
       saved: 's1',
+      roundsWon: 3,
     });
-    expect(back.teams.a.roundsWon).toBe(1);
+    const won = play([add('a', 200, '1'), { type: 'closeRound', winner: 'a' }], seated);
+    expect(won.teams.a).toMatchObject({ roundsWon: 4, saved: 's1' });
   });
 
-  it('keep their wins when only the players change', () => {
-    const won = play([add('a', 200, '1'), { type: 'closeRound', winner: 'a' }], seated);
+  it('take the wins given when their players change, and keep theirs otherwise', () => {
+    const won = play([add('a', 200, '1'), { type: 'closeRound', winner: 'a' }]);
+    const renamed = reducer(won, { type: 'setTeam', team: 'a', name: 'Otro', players: null });
+    expect(renamed.teams.a.roundsWon).toBe(1);
     const changed = reducer(won, {
       type: 'setTeam',
       team: 'a',
-      name: 'Primos',
+      name: 'Equipo A',
       players: ['Ana', 'Rosa'],
+      saved: null,
+      roundsWon: 0,
     });
-    expect(changed.teams.a).toMatchObject({ roundsWon: 1, saved: 's1', players: ['Ana', 'Rosa'] });
-  });
-
-  it('take the wins of the side with them when a team is saved', () => {
-    const won = play([add('b', 200, '1'), { type: 'closeRound', winner: 'b' }]);
-    const saved = reducer(won, {
-      type: 'setTeam',
-      team: 'b',
-      name: 'Equipo B',
-      players: null,
-      saved: 's9',
-    });
-    expect(saved.tally).toEqual({ s9: 1 });
-  });
-
-  it('are forgotten on a full reset', () => {
-    const won = play(
-      [add('a', 200, '1'), { type: 'closeRound', winner: 'a' }, { type: 'resetAll' }],
-      seated,
-    );
-    expect(won.tally).toEqual({});
+    expect(changed.teams.a).toMatchObject({ roundsWon: 0, saved: null });
   });
 });
 
@@ -350,14 +320,10 @@ describe('choosing the next teams', () => {
   });
 
   it('is read back from a saved board, and boards from before mesas load too', () => {
-    const paused = { ...initialState, between: 'next', tally: { s1: 2, bad: -1 } };
-    expect(parseState(JSON.parse(JSON.stringify(paused)))).toMatchObject({
-      between: 'next',
-      tally: { s1: 2 },
-    });
-    const old: Record<string, unknown> = { ...initialState };
+    const paused = { ...initialState, between: 'next' };
+    expect(parseState(JSON.parse(JSON.stringify(paused)))).toMatchObject({ between: 'next' });
+    const old: Record<string, unknown> = { ...initialState, tally: { s1: 2 } };
     delete old['between'];
-    delete old['tally'];
     expect(parseState(old)).toEqual(initialState);
   });
 });

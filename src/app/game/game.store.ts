@@ -4,6 +4,7 @@ import { copy } from '../copy';
 import { haptics } from '../platform/haptics';
 import { History } from './history';
 import { HistoryStore } from './history.store';
+import { teamWinsAt } from './stats';
 import { TablesStore } from './tables.store';
 import {
   SavedTeam,
@@ -25,6 +26,7 @@ import {
   TEAM_IDS,
   UNDO_SECONDS,
   sameName,
+  samePlayers,
   Team,
   TeamId,
   initialState,
@@ -258,7 +260,11 @@ export class GameStore {
   /** Changes the team at one side; `saved` links it to a team of the mesa, or unlinks it. */
   setTeam(team: TeamId, name: string, players: Players | null, saved?: string | null): void {
     const before = this.state();
-    this.dispatch({ type: 'setTeam', team, name, players, saved });
+    // Other players make another team: it brings its own wins at the mesa.
+    const roundsWon = samePlayers(players, before.teams[team].players)
+      ? undefined
+      : this.winsHere(name, players);
+    this.dispatch({ type: 'setTeam', team, name, players, saved, roundsWon });
     if (this.state() === before) return;
     // In a tournament the team keeps its new name when it leaves the table.
     const changed = this.state().teams[team];
@@ -273,7 +279,8 @@ export class GameStore {
 
   /** Another team takes one side, bringing the wins it has at the mesa. */
   seatTeam(team: TeamId, seated: Omit<SavedTeam, 'id'> & { saved: string | null }): void {
-    this.dispatch({ type: 'seatTeam', team, ...seated });
+    const roundsWon = this.winsHere(seated.name, seated.players) ?? 0;
+    this.dispatch({ type: 'seatTeam', team, ...seated, roundsWon });
     this.announce(copy.seat.announce(this.state().teams[team].name));
   }
 
@@ -319,6 +326,17 @@ export class GameStore {
     }
   }
 
+  /**
+   * The wins a team has at the mesa in use, from the history: the same two
+   * people, whatever the team is called. Undefined outside a mesa, or in a
+   * tournament, which counts its own.
+   */
+  winsHere(name: string, players: Players | null): number | undefined {
+    const mesa = this.tables.active();
+    if (mesa === null || this.tournament() !== null) return undefined;
+    return teamWinsAt(this.history.history(), mesa, { name, players });
+  }
+
   /** Clears an offer to bring back a removed entry, once its screen is left behind. */
   dismissScreenUndo(): void {
     if (this.screenUndo()) this.clearUndo();
@@ -331,7 +349,7 @@ export class GameStore {
     const { teams } = this.state();
     for (const side of TEAM_IDS) {
       if (teams[side].saved !== team.id) continue;
-      this.dispatch({ type: 'setTeam', team: side, name: team.name, players: team.players });
+      this.setTeam(side, team.name, team.players);
     }
   }
 

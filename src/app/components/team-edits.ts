@@ -3,7 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import { copy } from '../copy';
 import { GameStore } from '../game/game.store';
 import { newId } from '../game/ids';
-import { DEFAULT_NAMES, TeamId, otherTeam } from '../game/state';
+import { DEFAULT_NAMES, TeamId, otherTeam, samePlayers } from '../game/state';
 import { SavedTeam } from '../game/tables';
 import { TablesStore } from '../game/tables.store';
 import { teamOf } from '../game/tournament';
@@ -64,11 +64,19 @@ export class TeamEdits {
       table,
       blocked: other.players ?? [],
       // Tournament teams belong to the tournament, not to the mesa.
-      keep: table === null || tournament !== null ? null : savedHere !== null,
+      // Off until asked: changing players never rewrites a saved team by itself.
+      keep: table === null || tournament !== null ? null : false,
       savedId: savedHere,
       save: (name, players, keep) => {
-        if (table === null || tournament !== null || !keep) {
+        if (table === null || tournament !== null) {
           this.store.setTeam(side, name, players);
+          return;
+        }
+        if (!keep) {
+          // Other players make another team: the saved one keeps its own players and wins.
+          const kept = this.tables.active()?.teams.find((each) => each.id === savedHere);
+          const same = kept !== undefined && samePlayers(kept.players, players);
+          this.store.setTeam(side, name, players, same ? undefined : null);
           return;
         }
         const id = savedHere ?? newId('s');

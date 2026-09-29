@@ -305,6 +305,12 @@ export class TeamSheet {
   );
   protected readonly keepHelp = computed(() => {
     if (this.keepFull()) return copy.picker.keepFull;
+    const saved = this.mesa()?.teams.find((team) => team.id === this.savedHere());
+    if (saved !== undefined) {
+      return this.keep()
+        ? copy.picker.keepOnSaved(saved.name)
+        : copy.picker.keepOffSaved(saved.name);
+    }
     return this.keep() ? copy.picker.keepOn : copy.picker.keepOff;
   });
 

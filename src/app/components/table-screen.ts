@@ -21,6 +21,8 @@ import {
   renameTable,
   teamsUsing,
 } from '../game/tables';
+import { HistoryStore } from '../game/history.store';
+import { teamWinsAt } from '../game/stats';
 import { TablesStore } from '../game/tables.store';
 import { NameSheet } from './name-sheet';
 import { PlayerPair } from './player-pair';
@@ -465,6 +467,7 @@ export class TableScreen {
 
   private readonly store = inject(GameStore);
   private readonly tables = inject(TablesStore);
+  private readonly history = inject(HistoryStore);
   private readonly screen = viewChild.required(Screen);
   private readonly names = viewChild.required(NameSheet);
   private readonly ask = viewChild.required<Sheet>('ask');
@@ -487,8 +490,11 @@ export class TableScreen {
   );
 
   protected readonly teams = computed(() => {
-    const { tally } = this.store.state();
-    return (this.mesa()?.teams ?? []).map((team) => ({ ...team, won: tally[team.id] ?? 0 }));
+    const mesa = this.mesa();
+    if (mesa === null) return [];
+    // A saved team's wins are those its two players won together here.
+    const history = this.history.history();
+    return mesa.teams.map((team) => ({ ...team, won: teamWinsAt(history, mesa, team) }));
   });
 
   protected readonly playersFull = computed(

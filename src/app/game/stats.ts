@@ -185,6 +185,30 @@ function* teamsIn(matches: MatchRecord[]) {
   }
 }
 
+/**
+ * A team's wins at one mesa, from the history: those of the same two people,
+ * in either order, or for a team without players, of a team of that name
+ * without players. Changing a player makes it another team.
+ */
+export function teamWinsAt(
+  history: History,
+  mesa: { id: string; name: string },
+  team: { name: string; players: Players | null },
+): number {
+  const at: TableChoice = { kind: 'table', id: mesa.id, name: mesa.name };
+  const key = team.players === null ? null : coupleKey(team.players);
+  let won = 0;
+  for (const match of matchesFor(history, { ...noFilter, table: at })) {
+    const side = match.teams[match.winner];
+    const same =
+      key === null
+        ? side.players === null && sameName(side.name, team.name)
+        : side.players !== null && coupleKey(side.players) === key;
+    if (same) won += 1;
+  }
+  return won;
+}
+
 export function playerKey(name: string): string {
   return fold(name);
 }
