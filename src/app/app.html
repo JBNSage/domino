@@ -1,0 +1,21 @@
+<main class="board">
+  <h1 class="sr-only">Dominó</h1>
+  <app-target-header
+    [target]="store.state().target"
+    (editTarget)="settings.open('target')"
+    (reset)="reset.open()"
+  />
+  <app-team-lockup (pressTeam)="points.open($event)" />
+  <div class="body">
+    <app-score-list />
+    <app-undo-snackbar />
+  </div>
+  <app-quick-add-bar (enter)="points.open($event)" (editQuick)="settings.open('quick')" />
+</main>
+
+<app-points-sheet #points />
+<app-settings-sheet #settings />
+<app-reset-sheet #reset />
+<app-winner-modal (openSettings)="settings.open('target')" />
+
+<p class="sr-only" role="status">{{ store.announcement() }}</p>

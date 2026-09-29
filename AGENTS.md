@@ -1,41 +1,35 @@
-This is an Expo/React Native mobile application. Prioritize mobile-first patterns, performance, and cross-platform compatibility.
+This is an Angular progressive web app (PWA), used mostly on phones and installed from the browser. Prioritize mobile-first patterns, performance, offline use, and behaviour that is the same in Safari on iOS and Chrome on Android.
 
-## Expo has changed — do not trust your training data
+## Angular changes between versions
 
-Expo ships breaking changes every SDK release. APIs you remember are likely renamed, moved, or removed. Before writing any code that touches an Expo, EAS, or React Native API:
-
-1. Read the major version of the `expo` package in `package.json`.
-2. Fetch the matching versioned docs: `https://docs.expo.dev/versions/v<major>.0.0/`
-3. For anything else, fetch https://docs.expo.dev/llms.txt — an index of all Expo docs with corrections to common LLM misconceptions. Follow its links to the specific page you need; never answer from memory.
+Read the major version of `@angular/core` in `package.json` and check https://angular.dev before using an API from memory. This project uses standalone components, signals, zoneless change detection and the built-in control flow (`@if`, `@for`).
 
 ## Commands
 
-Use `bunx` instead of `npx` if the project uses bun (`bun.lock` present).
+Node comes from `.nvmrc` (`nvm use`).
 
 ```bash
-npx expo install <package>  # ALWAYS use instead of npm/yarn/pnpm/bun add — resolves SDK-compatible versions
-npx expo start              # start the dev server
-npx expo lint               # lint
-npx tsc --noEmit            # typecheck
-npx expo-doctor             # diagnose dependency and config issues
-npx expo install --fix      # fix incompatible package versions
+npm start          # dev server (ng serve)
+npm run lint       # lint
+npm run typecheck  # typecheck
+npm test           # unit tests, once, headless (Vitest)
+npm run build      # production build into dist/domino/browser
 ```
 
-Run lint and typecheck before declaring any task done.
+Run lint, typecheck and tests before declaring any task done. The service worker only runs in a production build.
 
-## Navigation & Routing
+## Structure
 
-- Use **Expo Router** for all navigation. Routes live in `src/app/` — every file there is a screen, `_layout.tsx` files define navigators. Keep non-route code (components, hooks, utils) outside `src/app/`.
-- Import `Link`, `router`, and `useLocalSearchParams` from `expo-router`.
-- Docs: https://docs.expo.dev/router/introduction.md
-
-## Building with EAS
-
-Use EAS to build, sign, and submit the app in the cloud (`eas build`, `eas submit`) and to ship over-the-air updates (`eas update`) — no local Xcode or Android Studio required. Run EAS CLI as `bunx eas-cli <command>` in Bun projects, or `npx eas-cli@latest <command>` otherwise; substitute that for bare `eas` in docs examples.
-Docs: https://docs.expo.dev/eas/index.md
+- `src/app/game/`: the rules (`state.ts`, a pure reducer), persistence (`storage.ts`) and the signals store (`game.store.ts`). No DOM access in `state.ts`.
+- `src/app/components/`: one file per component, template and styles inline.
+- `src/app/directives/`: `appFitText` (shrinks one line of text to fit) and `appLongPress`.
+- `src/app/platform/`: browser features that may be missing (wake lock, vibration).
+- `src/app/copy.ts`: every Spanish string.
+- `src/styles.css`: design tokens as CSS custom properties, the `.lean` slab and `.slab` button.
 
 ## Rules
 
-- If `ios/` and `android/` directories do not exist, they are generated (Continuous Native Generation). Never create or edit them by hand — configure native behavior in `app.json` and config plugins.
-- Expo Go only includes its bundled native modules. After adding a library with native code, the app needs a development build: `npx expo run:ios|android` locally, or `eas build --profile development`.
-- Prefer recommended Expo modules over third-party libraries, and check your available skills before adding dependencies. Docs: https://docs.expo.dev/versions/latest/index.md
+- Interface language is Spanish only; add strings to `copy.ts`.
+- Sheets open through their `open()` method, called directly from the tap, so the keyboard opens with them on iOS. Do not open them from an effect.
+- The app is served under a subpath on GitHub Pages: keep asset and manifest paths relative.
+- Input text is at least 16px, or iOS zooms the page.

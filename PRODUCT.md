@@ -4,11 +4,11 @@
 
 ## Platform
 
-adaptive
+web
 
 ## Stack
 
-Expo + React Native + TypeScript, shipping to iOS and Android. Expo was named by the user; TypeScript, a single screen without a router, and AsyncStorage persistence were delegated and chosen for the smallest app that meets the brief.
+Angular + TypeScript, shipped as an installable progressive web app (PWA) on GitHub Pages, so it needs no app store. It began as an Expo app; the user asked for the move. A single screen without a router, signals for state, and localStorage persistence were chosen for the smallest app that meets the brief.
 
 ## Users
 
@@ -34,7 +34,7 @@ Opens directly on the live scoreboard. Two teams, one running list, one target; 
 - Two teams, default names "Equipo A" and "Equipo B", renamable from the points input.
 - Rows can be deleted to fix mistakes.
 - Changing the target re-evaluates the match; if a team already meets the new target, the winner is shown.
-- Everything persists across app restarts: rows, team names, target, quick value, rounds won.
+- Works offline once opened, and everything persists across app restarts: rows, team names, target, quick value, rounds won.
 - Follows the system light/dark setting.
 - Portrait phone is the target; tablets are not a design target.
 - Undecided: variants where both teams score in one hand; more than two teams; match history.
@@ -57,4 +57,4 @@ None. No logo, illustrations, or photography exist; future work must not fabrica
 
 ## Accessibility & Inclusion
 
-Honor system font size, Reduce Motion, light and dark appearance, and minimum touch targets (44 pt iOS, 48 dp Android). Every control carries a Spanish accessibility label.
+Honor system font size, Reduce Motion, light and dark appearance, and minimum touch targets (48 px). Every control carries a Spanish accessibility label.
