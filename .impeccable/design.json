@@ -1,0 +1,522 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-29T00:58:09Z",
+  "title": "Design System: Dominó",
+  "extensions": {
+    "colorMeta": {
+      "team-a": {
+        "role": "primary",
+        "displayName": "Safety Orange",
+        "canonical": "#FF5A00",
+        "tonalRamp": [
+          "oklch(15% 0.214 40)",
+          "oklch(27% 0.214 40)",
+          "oklch(38% 0.214 40)",
+          "oklch(50% 0.214 40)",
+          "oklch(61% 0.214 40)",
+          "oklch(73% 0.214 40)",
+          "oklch(84% 0.214 40)",
+          "oklch(95% 0.214 40)"
+        ]
+      },
+      "team-b": {
+        "role": "secondary",
+        "displayName": "Acid Yellow",
+        "canonical": "#DFFF00",
+        "tonalRamp": [
+          "oklch(15% 0.221 119)",
+          "oklch(27% 0.221 119)",
+          "oklch(38% 0.221 119)",
+          "oklch(50% 0.221 119)",
+          "oklch(61% 0.221 119)",
+          "oklch(73% 0.221 119)",
+          "oklch(84% 0.221 119)",
+          "oklch(95% 0.221 119)"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Graphite Ink",
+        "canonical": "#0E1114",
+        "tonalRamp": [
+          "oklch(15% 0.008 248)",
+          "oklch(27% 0.008 248)",
+          "oklch(38% 0.008 248)",
+          "oklch(50% 0.008 248)",
+          "oklch(61% 0.008 248)",
+          "oklch(73% 0.008 248)",
+          "oklch(84% 0.008 248)",
+          "oklch(95% 0.008 248)"
+        ]
+      },
+      "ground-night": {
+        "role": "neutral",
+        "displayName": "Graphite Ground",
+        "canonical": "#0E1114",
+        "tonalRamp": [
+          "oklch(15% 0.008 248)",
+          "oklch(27% 0.008 248)",
+          "oklch(38% 0.008 248)",
+          "oklch(50% 0.008 248)",
+          "oklch(61% 0.008 248)",
+          "oklch(73% 0.008 248)",
+          "oklch(84% 0.008 248)",
+          "oklch(95% 0.008 248)"
+        ]
+      },
+      "surface-night": {
+        "role": "neutral",
+        "displayName": "Surface (night)",
+        "canonical": "#1A1E23",
+        "tonalRamp": [
+          "oklch(15% 0.011 254)",
+          "oklch(27% 0.011 254)",
+          "oklch(38% 0.011 254)",
+          "oklch(50% 0.011 254)",
+          "oklch(61% 0.011 254)",
+          "oklch(73% 0.011 254)",
+          "oklch(84% 0.011 254)",
+          "oklch(95% 0.011 254)"
+        ]
+      },
+      "surface-raised-night": {
+        "role": "neutral",
+        "displayName": "Raised Surface (night)",
+        "canonical": "#2A2F36",
+        "tonalRamp": [
+          "oklch(15% 0.014 257)",
+          "oklch(27% 0.014 257)",
+          "oklch(38% 0.014 257)",
+          "oklch(50% 0.014 257)",
+          "oklch(61% 0.014 257)",
+          "oklch(73% 0.014 257)",
+          "oklch(84% 0.014 257)",
+          "oklch(95% 0.014 257)"
+        ]
+      },
+      "line-night": {
+        "role": "neutral",
+        "displayName": "Line (night)",
+        "canonical": "#6B7480",
+        "tonalRamp": [
+          "oklch(15% 0.022 256)",
+          "oklch(27% 0.022 256)",
+          "oklch(38% 0.022 256)",
+          "oklch(50% 0.022 256)",
+          "oklch(61% 0.022 256)",
+          "oklch(73% 0.022 256)",
+          "oklch(84% 0.022 256)",
+          "oklch(95% 0.022 256)"
+        ]
+      },
+      "text-night": {
+        "role": "neutral",
+        "displayName": "Text (night)",
+        "canonical": "#FFFFFF",
+        "tonalRamp": [
+          "oklch(15% 0.000 90)",
+          "oklch(27% 0.000 90)",
+          "oklch(38% 0.000 90)",
+          "oklch(50% 0.000 90)",
+          "oklch(61% 0.000 90)",
+          "oklch(73% 0.000 90)",
+          "oklch(84% 0.000 90)",
+          "oklch(95% 0.000 90)"
+        ]
+      },
+      "text-muted-night": {
+        "role": "neutral",
+        "displayName": "Muted Text (night)",
+        "canonical": "#B6BCC4",
+        "tonalRamp": [
+          "oklch(15% 0.013 256)",
+          "oklch(27% 0.013 256)",
+          "oklch(38% 0.013 256)",
+          "oklch(50% 0.013 256)",
+          "oklch(61% 0.013 256)",
+          "oklch(73% 0.013 256)",
+          "oklch(84% 0.013 256)",
+          "oklch(95% 0.013 256)"
+        ]
+      },
+      "danger-night": {
+        "role": "error",
+        "displayName": "Danger (night)",
+        "canonical": "#FF6B5C",
+        "tonalRamp": [
+          "oklch(15% 0.184 28)",
+          "oklch(27% 0.184 28)",
+          "oklch(38% 0.184 28)",
+          "oklch(50% 0.184 28)",
+          "oklch(61% 0.184 28)",
+          "oklch(73% 0.184 28)",
+          "oklch(84% 0.184 28)",
+          "oklch(95% 0.184 28)"
+        ]
+      },
+      "ground-day": {
+        "role": "neutral",
+        "displayName": "Pit Silver Ground",
+        "canonical": "#F1F2F4",
+        "tonalRamp": [
+          "oklch(15% 0.003 265)",
+          "oklch(27% 0.003 265)",
+          "oklch(38% 0.003 265)",
+          "oklch(50% 0.003 265)",
+          "oklch(61% 0.003 265)",
+          "oklch(73% 0.003 265)",
+          "oklch(84% 0.003 265)",
+          "oklch(95% 0.003 265)"
+        ]
+      },
+      "surface-day": {
+        "role": "neutral",
+        "displayName": "Surface (day)",
+        "canonical": "#FFFFFF",
+        "tonalRamp": [
+          "oklch(15% 0.000 90)",
+          "oklch(27% 0.000 90)",
+          "oklch(38% 0.000 90)",
+          "oklch(50% 0.000 90)",
+          "oklch(61% 0.000 90)",
+          "oklch(73% 0.000 90)",
+          "oklch(84% 0.000 90)",
+          "oklch(95% 0.000 90)"
+        ]
+      },
+      "surface-raised-day": {
+        "role": "neutral",
+        "displayName": "Raised Surface (day)",
+        "canonical": "#E1E4E8",
+        "tonalRamp": [
+          "oklch(15% 0.006 255)",
+          "oklch(27% 0.006 255)",
+          "oklch(38% 0.006 255)",
+          "oklch(50% 0.006 255)",
+          "oklch(61% 0.006 255)",
+          "oklch(73% 0.006 255)",
+          "oklch(84% 0.006 255)",
+          "oklch(95% 0.006 255)"
+        ]
+      },
+      "line-day": {
+        "role": "neutral",
+        "displayName": "Line (day)",
+        "canonical": "#7D858F",
+        "tonalRamp": [
+          "oklch(15% 0.018 254)",
+          "oklch(27% 0.018 254)",
+          "oklch(38% 0.018 254)",
+          "oklch(50% 0.018 254)",
+          "oklch(61% 0.018 254)",
+          "oklch(73% 0.018 254)",
+          "oklch(84% 0.018 254)",
+          "oklch(95% 0.018 254)"
+        ]
+      },
+      "text-day": {
+        "role": "neutral",
+        "displayName": "Text (day)",
+        "canonical": "#0E1114",
+        "tonalRamp": [
+          "oklch(15% 0.008 248)",
+          "oklch(27% 0.008 248)",
+          "oklch(38% 0.008 248)",
+          "oklch(50% 0.008 248)",
+          "oklch(61% 0.008 248)",
+          "oklch(73% 0.008 248)",
+          "oklch(84% 0.008 248)",
+          "oklch(95% 0.008 248)"
+        ]
+      },
+      "text-muted-day": {
+        "role": "neutral",
+        "displayName": "Muted Text (day)",
+        "canonical": "#4A525B",
+        "tonalRamp": [
+          "oklch(15% 0.018 251)",
+          "oklch(27% 0.018 251)",
+          "oklch(38% 0.018 251)",
+          "oklch(50% 0.018 251)",
+          "oklch(61% 0.018 251)",
+          "oklch(73% 0.018 251)",
+          "oklch(84% 0.018 251)",
+          "oklch(95% 0.018 251)"
+        ]
+      },
+      "danger-day": {
+        "role": "error",
+        "displayName": "Danger (day)",
+        "canonical": "#B3261E",
+        "tonalRamp": [
+          "oklch(15% 0.178 29)",
+          "oklch(27% 0.178 29)",
+          "oklch(38% 0.178 29)",
+          "oklch(50% 0.178 29)",
+          "oklch(61% 0.178 29)",
+          "oklch(73% 0.178 29)",
+          "oklch(84% 0.178 29)",
+          "oklch(95% 0.178 29)"
+        ]
+      },
+      "scrim-night": {
+        "role": "neutral",
+        "displayName": "Scrim (night)",
+        "canonical": "rgba(0, 0, 0, 0.72)"
+      },
+      "scrim-day": {
+        "role": "neutral",
+        "displayName": "Scrim (day)",
+        "canonical": "rgba(14, 17, 20, 0.6)"
+      }
+    },
+    "typographyMeta": {
+      "hull": {
+        "displayName": "Hull",
+        "purpose": "Team totals in the lockup. Kanit_800ExtraBold_Italic, tabular numerals, capped at 1.2x dynamic type and shrunk to fit.",
+        "fontStyle": "italic"
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Target value, team name field, sheet titles, empty-state heading, winner sentence. Kanit_800ExtraBold_Italic, uppercase.",
+        "fontStyle": "italic",
+        "textTransform": "uppercase"
+      },
+      "button": {
+        "displayName": "Button",
+        "purpose": "Slab button labels, team names on liveries, points in row chips. Kanit_800ExtraBold_Italic, uppercase.",
+        "fontStyle": "italic",
+        "textTransform": "uppercase"
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Full sentences only: explanations, errors, snackbar message. Kanit_500Medium, upright.",
+        "fontStyle": "normal"
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Field labels, points remaining, rounds chip, hand numbers. Kanit_600SemiBold_Italic, uppercase, tabular numerals.",
+        "fontStyle": "italic",
+        "textTransform": "uppercase"
+      }
+    },
+    "shadows": [],
+    "motion": [
+      {
+        "name": "ease-out-exp",
+        "value": "cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "CSS equivalent of Easing.out(Easing.exp), the easing of every authored animation."
+      },
+      {
+        "name": "row-enter",
+        "value": "200ms translateX from -56 (team A) or 56 (team B) to 0",
+        "purpose": "A new hand streaks in from its team's side."
+      },
+      {
+        "name": "total-pop",
+        "value": "220ms scale 1.14 to 1",
+        "purpose": "A team total snaps when it changes."
+      },
+      {
+        "name": "winner-flood",
+        "value": "220ms translateX from 1.6 screen widths on the winner's side to 0",
+        "purpose": "The winning colour floods the screen."
+      },
+      {
+        "name": "press-shift",
+        "value": "translateX 3, shape opacity 0.78",
+        "purpose": "Pressed state of slab buttons and the target slab (target slab opacity 0.6)."
+      },
+      {
+        "name": "reduce-motion",
+        "value": "instant",
+        "purpose": "Row entrance, total pop, winner flood and list scrolling cut to their end state; the sheet slide and winner-screen fade are skipped."
+      },
+      {
+        "name": "modal-transitions",
+        "value": "platform slide (sheets), platform fade (winner screen)",
+        "purpose": "System modal transitions, set to none under Reduce Motion."
+      }
+    ],
+    "breakpoints": [],
+    "shape": {
+      "leanDegrees": 12,
+      "leanRatio": 0.2126,
+      "lockupLean": 36,
+      "outlineStroke": 2,
+      "cornerRadius": 0,
+      "renderer": "react-native-svg path; skew transforms are not used because Android does not render them"
+    },
+    "sizing": {
+      "minTouchTarget": 48,
+      "slabButtonMinHeight": 56,
+      "rowMinHeight": 52,
+      "lockupMinHeight": 172,
+      "lockupSeam": 6,
+      "winnerTotal": 132,
+      "winnerOtherTotal": 56
+    }
+  },
+  "components": [
+    {
+      "name": "Slab Button, Team A",
+      "kind": "button",
+      "refersTo": "slab-button-team-a",
+      "description": "Filled team slab for quick points and confirming a hand. Shifts 3 points right when pressed.",
+      "html": "<button class=\"ds-slab-a\">+30</button>",
+      "css": ".ds-slab-a { font-family: 'Kanit', sans-serif; font-weight: 800; font-style: italic; text-transform: uppercase; font-size: 20px; letter-spacing: 0.5px; min-height: 56px; padding: 0 24px; border: none; border-radius: 0; background: #FF5A00; color: #0E1114; clip-path: polygon(12px 0, 100% 0, calc(100% - 12px) 100%, 0 100%); transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1), opacity 200ms; } .ds-slab-a:hover { opacity: 0.9; } .ds-slab-a:active { transform: translateX(3px); opacity: 0.78; } .ds-slab-a:focus-visible { outline: none; opacity: 0.9; transform: translateX(3px); } .ds-slab-a:disabled { background: #2A2F36; color: #B6BCC4; transform: none; opacity: 1; }"
+    },
+    {
+      "name": "Slab Button, Team B",
+      "kind": "button",
+      "refersTo": "slab-button-team-b",
+      "description": "The same slab in team B's colour.",
+      "html": "<button class=\"ds-slab-b\">+30</button>",
+      "css": ".ds-slab-b { font-family: 'Kanit', sans-serif; font-weight: 800; font-style: italic; text-transform: uppercase; font-size: 20px; letter-spacing: 0.5px; min-height: 56px; padding: 0 24px; border: none; border-radius: 0; background: #DFFF00; color: #0E1114; clip-path: polygon(12px 0, 100% 0, calc(100% - 12px) 100%, 0 100%); transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1), opacity 200ms; } .ds-slab-b:hover { opacity: 0.9; } .ds-slab-b:active { transform: translateX(3px); opacity: 0.78; } .ds-slab-b:focus-visible { outline: none; opacity: 0.9; transform: translateX(3px); } .ds-slab-b:disabled { background: #2A2F36; color: #B6BCC4; transform: none; opacity: 1; }"
+    },
+    {
+      "name": "Slab Button, Outlined",
+      "kind": "button",
+      "refersTo": "slab-button-outlined",
+      "description": "Cancel action: ground interior inside a 2-point line outline.",
+      "html": "<button class=\"ds-slab-outline\"><span>Cancelar</span></button>",
+      "css": ".ds-slab-outline { position: relative; font-family: 'Kanit', sans-serif; font-weight: 800; font-style: italic; text-transform: uppercase; font-size: 20px; letter-spacing: 0.5px; min-height: 56px; padding: 0 24px; border: none; border-radius: 0; background: #6B7480; color: #FFFFFF; clip-path: polygon(12px 0, 100% 0, calc(100% - 12px) 100%, 0 100%); transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1), opacity 200ms; } .ds-slab-outline::before { content: ''; position: absolute; inset: 2px 2.2px; background: #0E1114; clip-path: polygon(11.5px 0, 100% 0, calc(100% - 11.5px) 100%, 0 100%); } .ds-slab-outline span { position: relative; } .ds-slab-outline:hover { opacity: 0.9; } .ds-slab-outline:active, .ds-slab-outline:focus-visible { outline: none; transform: translateX(3px); opacity: 0.78; }"
+    },
+    {
+      "name": "Livery Lockup",
+      "kind": "custom",
+      "refersTo": "livery-panel-team-a",
+      "description": "Both team panels meeting on a diagonal seam; each panel is a button that opens the points sheet.",
+      "html": "<div class=\"ds-lockup\"><button class=\"ds-livery ds-livery-a\"><span class=\"ds-livery-name\">Equipo A</span><span class=\"ds-livery-total\">75</span><span class=\"ds-livery-left\">Faltan 25</span><span class=\"ds-rounds ds-rounds-a\">0 rondas</span></button><button class=\"ds-livery ds-livery-b\"><span class=\"ds-livery-name\">Equipo B</span><span class=\"ds-livery-total\">60</span><span class=\"ds-livery-left\">Faltan 40</span><span class=\"ds-rounds ds-rounds-b\">3 rondas</span></button></div>",
+      "css": ".ds-lockup { display: flex; gap: 6px; width: 360px; background: #0E1114; overflow: hidden; } .ds-livery { flex: 1; min-height: 172px; display: flex; flex-direction: column; align-items: flex-start; justify-content: space-between; gap: 4px; border: none; border-radius: 0; color: #0E1114; text-align: left; font-family: 'Kanit', sans-serif; font-weight: 800; font-style: italic; text-transform: uppercase; transition: opacity 200ms; } .ds-livery-a { background: #FF5A00; padding: 16px 40px 16px 16px; margin-right: -18px; clip-path: polygon(0 0, 100% 0, calc(100% - 36px) 100%, 0 100%); } .ds-livery-b { background: #DFFF00; padding: 16px 16px 16px 48px; margin-left: -18px; clip-path: polygon(36px 0, 100% 0, 100% 100%, 0 100%); } .ds-livery:hover, .ds-livery:focus-visible { outline: none; opacity: 0.9; } .ds-livery:active { opacity: 0.8; } .ds-livery-name { font-size: 20px; line-height: 1.15; } .ds-livery-total { font-size: 76px; line-height: 1.05; font-variant-numeric: tabular-nums; } .ds-livery-left { font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; } .ds-rounds { font-size: 13px; font-weight: 600; padding: 2px 12px; background: #0E1114; clip-path: polygon(5px 0, 100% 0, calc(100% - 5px) 100%, 0 100%); } .ds-rounds-a { color: #FF5A00; } .ds-rounds-b { color: #DFFF00; }"
+    },
+    {
+      "name": "Score Row",
+      "kind": "custom",
+      "refersTo": "score-row",
+      "description": "One hand: points chip under the scoring team, hand number between the columns, delete floating at the right edge.",
+      "html": "<div class=\"ds-row\"><span class=\"ds-row-cell\"><span class=\"ds-points\">45</span></span><span class=\"ds-row-hand\">01</span><span class=\"ds-row-cell ds-row-zero\">0</span><button class=\"ds-row-delete\" aria-label=\"Eliminar mano 1\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 512 512\"><path fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"32\" d=\"M368 368L144 144M368 144L144 368\"/></svg></button></div>",
+      "css": ".ds-row { position: relative; display: flex; align-items: center; width: 328px; min-height: 52px; background: #1A1E23; clip-path: polygon(11px 0, 100% 0, calc(100% - 11px) 100%, 0 100%); } .ds-row-cell { flex: 1; display: flex; justify-content: center; } .ds-points { font-family: 'Kanit', sans-serif; font-weight: 800; font-style: italic; text-transform: uppercase; font-size: 20px; font-variant-numeric: tabular-nums; min-width: 40px; text-align: center; padding: 4px 12px; background: #FF5A00; color: #0E1114; clip-path: polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%); } .ds-row-zero { font-family: 'Kanit', sans-serif; font-weight: 600; font-style: italic; text-transform: uppercase; font-size: 20px; color: #B6BCC4; } .ds-row-hand { font-family: 'Kanit', sans-serif; font-weight: 600; font-style: italic; text-transform: uppercase; font-size: 13px; width: 44px; text-align: center; color: #B6BCC4; font-variant-numeric: tabular-nums; } .ds-row-delete { position: absolute; right: 0; top: 0; bottom: 0; width: 48px; display: flex; align-items: center; justify-content: center; background: none; border: none; color: #B6BCC4; } .ds-row-delete:hover, .ds-row-delete:focus-visible { outline: none; color: #FFFFFF; } .ds-row-delete:active { opacity: 0.5; }"
+    },
+    {
+      "name": "Number Field",
+      "kind": "input",
+      "refersTo": "number-field",
+      "description": "Rectangular numeric field with its label above; the border turns to the danger colour when the value is invalid.",
+      "html": "<label class=\"ds-field\"><span class=\"ds-field-label\">Puntos de la mano</span><input class=\"ds-field-input\" inputmode=\"numeric\" placeholder=\"0\" /></label>",
+      "css": ".ds-field { display: flex; flex-direction: column; gap: 4px; width: 312px; } .ds-field-label { font-family: 'Kanit', sans-serif; font-weight: 600; font-style: italic; text-transform: uppercase; font-size: 13px; color: #B6BCC4; } .ds-field-input { font-family: 'Kanit', sans-serif; font-weight: 800; font-style: italic; font-size: 44px; font-variant-numeric: tabular-nums; min-height: 76px; padding: 8px 16px; background: #1A1E23; color: #FFFFFF; border: 2px solid #6B7480; border-radius: 0; caret-color: #FF5A00; outline: none; } .ds-field-input::placeholder { color: #B6BCC4; } .ds-field-input:hover, .ds-field-input:focus-visible { border-color: #B6BCC4; } .ds-field-input:invalid { border-color: #FF6B5C; }"
+    },
+    {
+      "name": "Target Slab",
+      "kind": "custom",
+      "refersTo": "target-slab",
+      "description": "Outlined header slab showing the score that wins the match; tap to edit.",
+      "html": "<button class=\"ds-target\"><span class=\"ds-target-label\">Se gana con</span><span class=\"ds-target-value\">200</span></button>",
+      "css": ".ds-target { position: relative; display: inline-flex; align-items: center; gap: 8px; min-height: 48px; padding: 0 16px; border: none; border-radius: 0; background: #6B7480; clip-path: polygon(10px 0, 100% 0, calc(100% - 10px) 100%, 0 100%); transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1), opacity 200ms; } .ds-target::before { content: ''; position: absolute; inset: 2px 2.2px; background: #0E1114; clip-path: polygon(9.6px 0, 100% 0, calc(100% - 9.6px) 100%, 0 100%); } .ds-target span { position: relative; } .ds-target-label { font-family: 'Kanit', sans-serif; font-weight: 600; font-style: italic; text-transform: uppercase; font-size: 16px; color: #B6BCC4; } .ds-target-value { font-family: 'Kanit', sans-serif; font-weight: 800; font-style: italic; font-size: 28px; color: #FFFFFF; font-variant-numeric: tabular-nums; } .ds-target:hover { opacity: 0.9; } .ds-target:active, .ds-target:focus-visible { outline: none; transform: translateX(3px); opacity: 0.6; }"
+    },
+    {
+      "name": "Winner Scores",
+      "kind": "custom",
+      "refersTo": "winner-slab",
+      "description": "On the winner flood: a large graphite slab with the winner's name above the total, and a smaller outlined slab for the other team.",
+      "html": "<div class=\"ds-winner\"><div class=\"ds-winner-slab\"><span class=\"ds-winner-name\">Equipo A</span><span class=\"ds-winner-total\">100</span></div><div class=\"ds-winner-other\"><span class=\"ds-winner-name\">Equipo B</span><span class=\"ds-winner-other-total\">60</span></div></div>",
+      "css": ".ds-winner { display: flex; flex-direction: column; gap: 12px; width: 344px; padding: 24px 8px; background: #FF5A00; font-family: 'Kanit', sans-serif; font-weight: 800; font-style: italic; text-transform: uppercase; } .ds-winner-slab { display: flex; flex-direction: column; padding: 24px 40px 12px; background: #0E1114; color: #FF5A00; clip-path: polygon(37px 0, 100% 0, calc(100% - 37px) 100%, 0 100%); } .ds-winner-name { font-size: 20px; } .ds-winner-total { font-size: 132px; line-height: 140px; font-variant-numeric: tabular-nums; } .ds-winner-other { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 8px 32px; background: #0E1114; color: #0E1114; clip-path: polygon(16px 0, 100% 0, calc(100% - 16px) 100%, 0 100%); } .ds-winner-other::before { content: ''; position: absolute; inset: 2px 2.2px; background: #FF5A00; clip-path: polygon(15.6px 0, 100% 0, calc(100% - 15.6px) 100%, 0 100%); } .ds-winner-other span { position: relative; } .ds-winner-other-total { font-size: 56px; line-height: 62px; font-variant-numeric: tabular-nums; }"
+    },
+    {
+      "name": "Undo Snackbar",
+      "kind": "custom",
+      "refersTo": "undo-snackbar",
+      "description": "Leaning inverse slab shown for 5 seconds after a hand is deleted; no shadow.",
+      "html": "<div class=\"ds-undo\"><span class=\"ds-undo-message\">Mano eliminada</span><button class=\"ds-undo-action\">Deshacer</button></div>",
+      "css": ".ds-undo { display: flex; align-items: center; width: 328px; min-height: 52px; padding: 0 8px 0 24px; background: #FFFFFF; color: #0E1114; clip-path: polygon(11px 0, 100% 0, calc(100% - 11px) 100%, 0 100%); } .ds-undo-message { flex: 1; font-family: 'Kanit', sans-serif; font-weight: 500; font-size: 16px; } .ds-undo-action { font-family: 'Kanit', sans-serif; font-weight: 800; font-style: italic; text-transform: uppercase; font-size: 16px; text-decoration: underline; min-height: 48px; padding: 0 16px; background: none; border: none; color: #0E1114; } .ds-undo-action:hover, .ds-undo-action:focus-visible { outline: none; opacity: 0.8; } .ds-undo-action:active { opacity: 0.6; }"
+    },
+    {
+      "name": "Triple-Slash Mark",
+      "kind": "custom",
+      "description": "The only ornament: three leaning bars, 14 to 40 points tall.",
+      "html": "<span class=\"ds-slashes\"><i></i><i></i><i></i></span>",
+      "css": ".ds-slashes { display: inline-flex; gap: 1px; } .ds-slashes i { display: block; width: 11px; height: 18px; background: #FF5A00; clip-path: polygon(3.8px 0, 100% 0, calc(100% - 3.8px) 100%, 0 100%); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Liga de Carreras",
+    "overview": "The scoreboard is painted like two rival race cars parked nose to nose. Each team owns a flood of one loud colour with its total set in numerals large enough to read from the far seat at the table, and every other surface steps back to graphite at night or pit silver by day. There is one screen, and its three overlays (points sheet, value sheet, winner screen) are built from the same parts.\n\nThe system has one shape and one typeface. The shape is a parallelogram that leans 12 degrees forward, used for buttons, rows, chips, the two liveries and the full-screen winner flood. The typeface is Kanit, set in heavy italic capitals for everything that is a name, a number or a command, and in upright medium only for full sentences. The only ornament is a mark of three small leaning bars cut from the same shape.\n\nDensity is low and the targets are large: the smallest control is 48 points, slab buttons are 56 points tall, and the screen carries no navigation, no cards and no icons beyond three small utility symbols.",
+    "keyCharacteristics": [
+      "Two saturated team colours used as fills, always carrying graphite ink.",
+      "One forward-leaning parallelogram as the shape of every filled element; zero corner radius anywhere.",
+      "Kanit extra-bold italic capitals with tabular numerals; hull-sized totals at 76 points.",
+      "Flat tonal layering on a single ground colour per appearance.",
+      "Horizontal motion only, 200 to 220 ms, exponential ease-out, removed under Reduce Motion.",
+      "Spanish interface copy throughout."
+    ],
+    "rules": [
+      {
+        "name": "The Livery Rule",
+        "body": "A team colour is a fill. It carries Graphite Ink and never prints as text on the ground or on a surface.",
+        "section": "colors"
+      },
+      {
+        "name": "The Graphite Exception Rule",
+        "body": "A team colour prints as text only on a Graphite Ink fill: the rounds chip inside each livery and the winner's slab on the winner screen.",
+        "section": "colors"
+      },
+      {
+        "name": "The Same Ink Rule",
+        "body": "Ink on a team colour is #0E1114 in both appearances. It does not invert when the ground does.",
+        "section": "colors"
+      },
+      {
+        "name": "The Caps Italic Rule",
+        "body": "Names, numbers and commands are italic capitals. Upright sentence case is reserved for full sentences: explanations, hints, errors and the snackbar message.",
+        "section": "typography"
+      },
+      {
+        "name": "The Tabular Rule",
+        "body": "Every numeral that can change is set with tabular figures so totals and columns do not shift as they update.",
+        "section": "typography"
+      },
+      {
+        "name": "The Hull Cap Rule",
+        "body": "Text follows the system font size up to 1.6 times. Hull numerals, the winner heading, both winner-screen totals and the number field stop at 1.2 times, and hull numerals, the winner's total and button labels shrink to fit one line, so a total never truncates.",
+        "section": "typography"
+      },
+      {
+        "name": "The Tonal Step Rule",
+        "body": "A surface is distinguished from what is beneath it by stepping one neutral tone, never by a shadow or a gradient. The newest row is marked by moving from Surface to Raised Surface.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Lean Rule",
+        "body": "Every filled shape is the 12-degree parallelogram, drawn as a path. Do not reach for a skew transform, a rotated view or a rounded rectangle.",
+        "section": "shapes"
+      },
+      {
+        "name": "The One Ornament Rule",
+        "body": "The triple-slash mark is the only decoration. It is hidden from assistive technology.",
+        "section": "shapes"
+      }
+    ],
+    "dos": [
+      "Do draw every filled shape as the 12-degree parallelogram path (offset = height × 0.2126), leaning the same way as the italic type.",
+      "Do put Graphite Ink (#0E1114) on Safety Orange and Acid Yellow in both appearances.",
+      "Do set names, numbers and commands in Kanit italic capitals, and keep upright sentence case for full sentences.",
+      "Do use tabular numerals for any number that updates.",
+      "Do cap dynamic type at 1.6 times for text and 1.2 times for hull-scale numerals, and let hull numerals shrink to fit.",
+      "Do keep every touch target at least 48 points and slab buttons at least 56 tall.",
+      "Do mark state by stepping a neutral tone (Surface to Raised Surface) or by swapping fill and outline.",
+      "Do move things sideways, from the side of the team they belong to, in 200 to 220 ms with an exponential ease-out, and skip the movement under Reduce Motion.",
+      "Do keep text fields and the sheet panel rectangular."
+    ],
+    "donts": [
+      "Don't print a team colour as text on the ground or on a neutral surface; it is only legible as text on a Graphite Ink fill.",
+      "Don't round a corner. No radius exists in this system.",
+      "Don't use a skew transform to lean a shape; Android will not render it.",
+      "Don't skew or rotate content inside a leaning shape. The shape leans; the italic does the rest.",
+      "Don't add shadows, gradients or blur to slabs, rows, chips, liveries, fields or sheets.",
+      "Don't invert the ink on team colours in the day appearance.",
+      "Don't use Danger for anything other than an invalid field and its message.",
+      "Don't add a second ornament alongside the triple-slash mark.",
+      "Don't give a utility icon a team colour."
+    ]
+  }
+}
