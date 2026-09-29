@@ -50,7 +50,8 @@ export class FitText {
     document.fonts?.ready.then(() => this.fit());
   }
 
-  private fit(): void {
+  /** Fits again, for text changed outside the binding, as a rolling number is. */
+  fit(): void {
     const element = this.element;
     element.style.fontSize = '';
     const available = element.clientWidth;

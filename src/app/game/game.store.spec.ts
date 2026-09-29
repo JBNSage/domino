@@ -52,6 +52,14 @@ describe('GameStore', () => {
       );
     });
 
+    it('keeps the lead in what a quick hand says', () => {
+      store.addPoints('a', 10);
+      store.addQuick('b');
+      expect(store.announcement()).toBe(
+        `${copy.undo.quickAdded(30, 'Equipo B')}. ${copy.undo.action} ${copy.moments.lead}`,
+      );
+    });
+
     it('plays the start of the next match', () => {
       store.addPoints('a', 200);
       store.closeRound();

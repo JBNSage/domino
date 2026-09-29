@@ -28,6 +28,7 @@ import { Players, TeamId } from '../game/state';
       --team: var(--c-text);
       --on-team: var(--c-ground);
 
+      position: relative;
       display: block;
     }
 

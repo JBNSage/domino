@@ -44,6 +44,7 @@ Opens directly on the live scoreboard. Two teams, one running list, one target; 
 - A tournament has 2 to 12 teams. Its table orders them by matches won; teams level on wins share a place.
 - The teams and rule being prepared for a tournament are kept, and the next tournament starts from the teams of the last one.
 - While a tournament is played, the board states what it is played for and which match it is.
+- The board marks the moments of a match without slowing it: each hand, the lead changing sides ("¡Se pone delante!"), a team at match point ("Faltan 25 para ganar", within 30 of the target), the start of a match, a win and a champion. None of it holds up a tap.
 - Rows can be deleted to fix mistakes.
 - Changing the target re-evaluates the match; if a team already meets the new target, the winner is shown.
 - Works offline once opened, and everything persists across app restarts: rows, teams and players, target, quick value, matches won, the tournament under way, the history and the mesas.

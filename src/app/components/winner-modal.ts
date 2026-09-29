@@ -11,6 +11,7 @@ import {
 
 import { copy } from '../copy';
 import { FitText } from '../directives/fit-text';
+import { Roll } from '../directives/roll';
 import { PlayerPair } from './player-pair';
 import { GameStore } from '../game/game.store';
 import { otherTeam } from '../game/state';
@@ -24,12 +25,13 @@ import { Slashes } from './slashes';
  */
 @Component({
   selector: 'app-winner-modal',
-  imports: [Slashes, FitText, PlayerPair],
+  imports: [Slashes, FitText, Roll, PlayerPair],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <dialog #dialog class="winner" aria-labelledby="winner-title" (cancel)="correct()">
       @if (result(); as result) {
         <div class="flood" [class]="'flood--' + result.winner"></div>
+        <div class="trail" [class]="'trail--' + result.winner" aria-hidden="true"></div>
         <div class="content" [class]="'content--' + result.winner">
           <!-- The scores scroll when the screen is short; the two actions never leave it. -->
           <div class="scroll">
@@ -39,7 +41,15 @@ import { Slashes } from './slashes';
                 {{ copy.winner.title }}
               </h2>
               <p class="body">{{ copy.winner.body(result.names[result.winner]) }}</p>
-              <p class="rounds">{{ copy.winner.winsAfter(result.roundsAfter) }}</p>
+              <!-- The count of wins turns over to its new value. -->
+              <p class="rounds">
+                @if (result.roundsAfter > 1) {
+                  <span class="was" aria-hidden="true">{{
+                    copy.winner.winsAfter(result.roundsAfter - 1)
+                  }}</span>
+                }
+                <span class="now">{{ copy.winner.winsAfter(result.roundsAfter) }}</span>
+              </p>
             </div>
 
             <div class="scores">
@@ -56,9 +66,12 @@ import { Slashes } from './slashes';
                   class="winner-total numerals"
                   [appFitText]="result.totals[result.winner]"
                   [minScale]="0.4"
+                  [appRoll]="result.totals[result.winner]"
+                  [rollFrom]="0"
+                  [rollDelay]="160"
+                  [rollDuration]="640"
+                  >{{ result.totals[result.winner] }}</span
                 >
-                  {{ result.totals[result.winner] }}
-                </span>
               </p>
               <p class="loser-slab lean">
                 <span class="who">
@@ -198,9 +211,23 @@ import { Slashes } from './slashes';
     }
 
     .rounds {
+      display: grid;
       margin-top: var(--s-xs);
+      overflow: clip;
       font: italic 600 var(--t-body) / 1.3 var(--font);
       text-transform: uppercase;
+    }
+
+    .rounds > * {
+      grid-area: 1 / 1;
+    }
+
+    .was {
+      visibility: hidden;
+    }
+
+    .trail {
+      display: none;
     }
 
     .scores {
@@ -363,7 +390,7 @@ import { Slashes } from './slashes';
 
     @media (prefers-reduced-motion: no-preference) {
       .flood {
-        animation: flood 220ms var(--ease-out) backwards;
+        animation: flood 300ms var(--ease-out) backwards;
       }
 
       .flood--a {
@@ -380,11 +407,153 @@ import { Slashes } from './slashes';
         }
       }
 
-      .content {
-        animation: arrive 220ms 60ms ease-out backwards;
+      /* An ink band chases the colour across and out the far side. */
+      .trail {
+        display: block;
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        width: 34vw;
+        background: var(--c-ink);
+        opacity: 0;
+        pointer-events: none;
+        animation: trail 440ms 70ms cubic-bezier(0.45, 0, 0.2, 1);
+      }
+
+      .trail--a {
+        --trail-from: -60vw;
+        --trail-to: 130vw;
+      }
+
+      .trail--b {
+        --trail-from: 130vw;
+        --trail-to: -60vw;
+      }
+
+      @keyframes trail {
+        from {
+          opacity: 1;
+          transform: translateX(var(--trail-from)) skewX(-12deg);
+        }
+
+        to {
+          opacity: 1;
+          transform: translateX(var(--trail-to)) skewX(-12deg);
+        }
+      }
+
+      .content--a {
+        --side: -1;
+      }
+
+      .content--b {
+        --side: 1;
+      }
+
+      .mark {
+        animation: streak 260ms 120ms var(--ease-out) backwards;
+      }
+
+      @keyframes streak {
+        from {
+          opacity: 0;
+          transform: translateX(calc(var(--side) * 48px));
+        }
+      }
+
+      .title {
+        transform-origin: left bottom;
+        animation: slam 300ms 150ms var(--ease-out) backwards;
+      }
+
+      @keyframes slam {
+        from {
+          opacity: 0;
+          transform: scale(1.3) skewX(-10deg);
+        }
+      }
+
+      .body {
+        animation: rise 260ms 230ms var(--ease-out) backwards;
+      }
+
+      @keyframes rise {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+      }
+
+      .was {
+        visibility: visible;
+        opacity: 0;
+        animation: turn-out 260ms 520ms ease-in backwards;
+      }
+
+      @keyframes turn-out {
+        from {
+          opacity: 1;
+          transform: none;
+        }
+
+        to {
+          opacity: 0;
+          transform: translateY(-100%);
+        }
+      }
+
+      .now {
+        animation: turn-in 300ms 600ms var(--ease-out) backwards;
+      }
+
+      .was + .now {
+        animation-delay: 700ms;
+      }
+
+      .rounds:not(:has(.was)) .now {
+        animation-delay: 300ms;
+      }
+
+      @keyframes turn-in {
+        from {
+          opacity: 0;
+          transform: translateY(100%);
+        }
+      }
+
+      .winner-slab {
+        animation: arrive 360ms 90ms var(--ease-out) backwards;
+      }
+
+      .loser-slab {
+        animation: arrive-other 360ms 210ms var(--ease-out) backwards;
+      }
+
+      .content--b .loser-slab {
+        --side-of-loser: -1;
       }
 
       @keyframes arrive {
+        from {
+          opacity: 0;
+          transform: translateX(calc(var(--side) * 70%));
+        }
+      }
+
+      @keyframes arrive-other {
+        from {
+          opacity: 0;
+          transform: translateX(calc(var(--side-of-loser, 1) * 70%));
+        }
+      }
+
+      /* The ways out work from the first frame; they only fade in. */
+      .actions {
+        animation: fade 120ms ease-out backwards;
+      }
+
+      @keyframes fade {
         from {
           opacity: 0;
         }

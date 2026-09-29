@@ -71,6 +71,7 @@ export const copy = {
     match: (position: number) => `Partida ${position}`,
     tieBreak: 'Desempate',
     matchPoint: (points: number) => `Faltan ${points} para ganar`,
+    toWin: 'para ganar',
     enters: 'Entra',
   },
   list: {

@@ -254,6 +254,11 @@ export class GameStore {
       kind: 'removeRow',
       id: row.id,
     });
+    // The offer is spoken last, so the lead is added to it rather than lost.
+    const moment = this.moment();
+    if (moment?.kind === 'hand' && moment.lead) {
+      this.announce(`${this.announcement()} ${copy.moments.lead}`);
+    }
   }
 
   editRow(row: Row, index: number, points: number): void {
