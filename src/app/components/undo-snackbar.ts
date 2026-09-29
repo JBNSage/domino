@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
 
 import { copy } from '../copy';
 import { GameStore } from '../game/game.store';
@@ -19,7 +19,7 @@ import { Update } from '../platform/update';
     '(focusout)': 'store.releaseUndo()',
   },
   template: `
-    @if (store.undo(); as undo) {
+    @if (offer(); as undo) {
       <div class="bar lean">
         <span class="message">{{ undo.message }}</span>
         <button
@@ -53,14 +53,17 @@ import { Update } from '../platform/update';
       --focus: var(--c-ground);
 
       display: flex;
+      flex-wrap: wrap;
       align-items: center;
+      justify-content: flex-end;
       min-height: calc(var(--min-target) + 4px);
       padding: var(--s-xs) var(--s-sm) var(--s-xs) var(--s-xl);
       color: var(--c-ground);
     }
 
+    /* With large text the action moves under the message instead of squeezing it. */
     .message {
-      flex: 1;
+      flex: 1 1 9rem;
       min-width: 0;
       line-height: 1.25;
       overflow-wrap: anywhere;
@@ -107,13 +110,24 @@ export class UndoSnackbar {
   protected readonly store = inject(GameStore);
   protected readonly update = inject(Update);
 
+  /**
+   * On the screens above the board: only entries removed from the history are
+   * offered back, and the update notice is left to the board.
+   */
+  readonly historyOnly = input(false);
+
   /** Undo is done; carries the hand that came back, or null to return to the board. */
   readonly restored = output<string | null>();
 
   // Reloading mid-round would interrupt the game, so the notice waits for a clean board.
   protected readonly offerUpdate = computed(
-    () => this.update.ready() && this.store.state().rows.length === 0,
+    () => !this.historyOnly() && this.update.ready() && this.store.state().rows.length === 0,
   );
+
+  protected readonly offer = computed(() => {
+    const undo = this.store.undo();
+    return this.historyOnly() && undo?.reversal.kind !== 'history' ? null : undo;
+  });
 
   protected restore(): void {
     this.restored.emit(this.store.restore());

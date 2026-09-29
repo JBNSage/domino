@@ -2,8 +2,10 @@ import { TestBed } from '@angular/core/testing';
 
 import { copy } from '../copy';
 import { GameStore, UNDO_MS } from './game.store';
+import { HistoryStore } from './history.store';
 import { initialState } from './state';
-import { STORAGE_KEY, UNDO_KEY, loadUndo } from './storage';
+import { STORAGE_KEY, TOURNAMENT_KEY, UNDO_KEY, loadTournament, loadUndo } from './storage';
+import { standings } from './tournament';
 
 describe('GameStore', () => {
   let store: GameStore;
@@ -154,7 +156,12 @@ describe('GameStore', () => {
       expect(store.undo()?.message).toBe(copy.undo.allReset);
 
       TestBed.tick();
-      expect(loadUndo()).toEqual({ message: copy.undo.allReset, snapshot: before });
+      expect(loadUndo()).toEqual({
+        message: copy.undo.allReset,
+        snapshot: before,
+        tournament: null,
+        recorded: { matches: [], tournaments: [] },
+      });
     });
 
     it('withdraws a reset offer once the new board is in use', () => {
@@ -227,6 +234,277 @@ describe('GameStore', () => {
 
       expect(store.correct()).toBe('settings');
       expect(store.state().rows).toHaveLength(2);
+    });
+  });
+
+  describe('players', () => {
+    it('are saved with the team and shown with the result', () => {
+      store.setTeam('a', 'Los Primos', ['Ana', 'Luis']);
+      store.addPoints('a', 200);
+      expect(store.result()?.players).toEqual({ a: ['Ana', 'Luis'], b: null });
+      expect(store.state().teams.b.players).toBeNull();
+    });
+  });
+
+  describe('history', () => {
+    const history = () => TestBed.inject(HistoryStore).history();
+
+    it('keeps a closed match with its teams, players and hands', () => {
+      store.setTeam('b', 'Las Tías', ['Marta', 'Rosa']);
+      store.addPoints('a', 40);
+      store.addPoints('b', 200);
+      const rows = store.state().rows;
+      store.closeRound();
+
+      expect(history().matches).toHaveLength(1);
+      expect(history().matches[0]).toMatchObject({
+        target: 200,
+        winner: 'b',
+        rows,
+        tournament: null,
+        teams: {
+          a: { name: 'Equipo A', players: null },
+          b: { name: 'Las Tías', players: ['Marta', 'Rosa'] },
+        },
+      });
+    });
+
+    it('forgets the match when closing it is taken back', () => {
+      store.addPoints('a', 200);
+      store.closeRound();
+      store.restore();
+      expect(history().matches).toHaveLength(0);
+      expect(store.winner()).toBe('a');
+    });
+
+    it('removes one match and brings it back', () => {
+      store.addPoints('a', 200);
+      store.closeRound();
+      const [match] = history().matches;
+
+      store.deleteMatch(match.id);
+      expect(history().matches).toHaveLength(0);
+      expect(store.undo()?.message).toBe(copy.undo.matchDeleted);
+
+      store.restore();
+      expect(history().matches).toEqual([match]);
+    });
+
+    it('clears everything, with no time limit on the way back', () => {
+      store.addPoints('a', 200);
+      store.closeRound();
+      store.clearHistory();
+      expect(history().matches).toHaveLength(0);
+
+      vi.advanceTimersByTime(UNDO_MS * 10);
+      store.restore();
+      expect(history().matches).toHaveLength(1);
+    });
+
+    it('offers nothing when the history was already empty', () => {
+      store.clearHistory();
+      expect(store.undo()).toBeNull();
+    });
+
+    it('survives a full reset of the board', () => {
+      store.addPoints('a', 200);
+      store.closeRound();
+      store.resetAll();
+      expect(history().matches).toHaveLength(1);
+    });
+  });
+
+  describe('tournament', () => {
+    const history = () => TestBed.inject(HistoryStore).history();
+    const teams = ['Uno', 'Dos', 'Tres'].map((name, index) => ({
+      id: `t${index + 1}`,
+      name,
+      players: index === 0 ? (['Ana', 'Luis'] as [string, string]) : null,
+    }));
+    const names = () => [store.state().teams.a.name, store.state().teams.b.name];
+
+    /** Plays the match on the table to the end and closes it. */
+    const win = (side: 'a' | 'b') => {
+      store.addPoints(side, 200);
+      store.closeRound();
+    };
+
+    it('sweeps the board, waits for the first pair, and can be taken back', () => {
+      store.addPoints('a', 50);
+      const before = store.state();
+      store.startTournament(teams, { kind: 'firstTo', count: 2 });
+
+      expect(store.tournament()?.phase).toBe('between');
+      expect(store.state().rows).toEqual([]);
+      expect(store.addPoints('a', 10)).toBeNull();
+
+      store.restore();
+      expect(store.tournament()).toBeNull();
+      expect(store.state()).toEqual(before);
+    });
+
+    it('sits the chosen teams at the board with their players', () => {
+      store.startTournament(teams, { kind: 'free' });
+      store.setSeat('b', 't3');
+      store.startNextMatch();
+      expect(names()).toEqual(['Uno', 'Tres']);
+      expect(store.state().teams.a.players).toEqual(['Ana', 'Luis']);
+    });
+
+    it('keeps the winner, brings in who waited, and counts wins at the board', () => {
+      store.startTournament(teams, { kind: 'free' });
+      store.startNextMatch();
+      win('b');
+      expect(store.closeLabel()).toBe(copy.winner.close);
+      expect(store.tournament()?.phase).toBe('between');
+
+      store.startNextMatch();
+      expect(names()).toEqual(['Tres', 'Dos']);
+      expect(store.state().teams.b.roundsWon).toBe(1);
+      expect(history().matches[0].tournament).toBe(store.tournament()?.id);
+    });
+
+    it('says what closing the match leads to', () => {
+      store.startTournament(teams, { kind: 'firstTo', count: 2 });
+      store.startNextMatch();
+      store.addPoints('a', 200);
+      expect(store.closeLabel()).toBe(copy.tournament.next);
+      store.closeRound();
+      store.startNextMatch();
+      store.addPoints('a', 200);
+      expect(store.closeLabel()).toBe(copy.tournament.result);
+    });
+
+    it('ends on the limit, and is kept in the history when saved', () => {
+      store.startTournament(teams, { kind: 'firstTo', count: 2 });
+      store.startNextMatch();
+      win('a');
+      store.startNextMatch();
+      win('a');
+      expect(store.tournament()?.phase).toBe('done');
+      expect(store.announcement()).toBe(copy.tournament.announceChampion('Uno'));
+
+      store.finishTournament();
+      expect(store.tournament()).toBeNull();
+      expect(store.state().rows).toEqual([]);
+      expect(store.state().teams.a.roundsWon).toBe(0);
+
+      const [record] = history().tournaments;
+      expect(record.champion).toBe('t1');
+      expect(record.championSeat).toBe('a');
+      expect(record.ranking.map((team) => team.name)).toEqual(['Uno', 'Dos', 'Tres']);
+      expect(history().matches).toHaveLength(2);
+    });
+
+    it('takes back the match that decided it, table and history included', () => {
+      store.startTournament(teams, { kind: 'firstTo', count: 1 });
+      store.startNextMatch();
+      store.addPoints('b', 200);
+      const before = store.tournament();
+      store.closeRound();
+      expect(store.canGoBack()).toBe(true);
+
+      store.restore();
+      expect(store.tournament()).toEqual(before);
+      expect(store.winner()).toBe('b');
+      expect(history().matches).toHaveLength(0);
+    });
+
+    it('takes back saving the tournament', () => {
+      store.startTournament(teams.slice(0, 2), { kind: 'firstTo', count: 1 });
+      win('a');
+      store.finishTournament();
+      store.restore();
+      expect(store.tournament()?.phase).toBe('done');
+      expect(history().tournaments).toHaveLength(0);
+      expect(history().matches).toHaveLength(1);
+    });
+
+    it('is cancelled, not saved, when ended before any match', () => {
+      store.startTournament(teams, { kind: 'free' });
+      store.startNextMatch();
+      store.addPoints('a', 30);
+      store.endTournament();
+      expect(store.tournament()).toBeNull();
+      expect(store.undo()?.message).toBe(copy.undo.tournamentCancelled);
+      expect(history().tournaments).toHaveLength(0);
+    });
+
+    it('ends by hand with the leader as champion, dropping the hands in play', () => {
+      store.startTournament(teams, { kind: 'free' });
+      store.startNextMatch();
+      win('a');
+      store.startNextMatch();
+      store.addPoints('b', 30);
+      store.endTournament();
+
+      expect(store.tournament()?.phase).toBe('done');
+      expect(store.state().rows).toEqual([]);
+      store.finishTournament();
+      expect(history().tournaments[0].champion).toBe('t1');
+    });
+
+    it('breaks a tie for first between the tied teams only', () => {
+      store.startTournament(teams, { kind: 'free' });
+      store.startNextMatch();
+      win('a'); // Uno beats Dos
+      store.startNextMatch();
+      win('b'); // Tres beats Uno
+      store.startNextMatch();
+      store.startTieBreak();
+
+      expect(names().sort()).toEqual(['Tres', 'Uno']);
+      expect(store.tournament()?.phase).toBe('playing');
+      win('a');
+      expect(store.tournament()?.phase).toBe('done');
+      expect(history().matches[0].tieBreak).toBe(true);
+    });
+
+    it('can end level, without a champion', () => {
+      store.startTournament(teams, { kind: 'free' });
+      store.startNextMatch();
+      win('a');
+      store.startNextMatch();
+      win('b');
+      store.endTournament();
+      store.finishTournament();
+      expect(history().tournaments[0].champion).toBeNull();
+    });
+
+    it('keeps a new name when the team leaves the table', () => {
+      store.startTournament(teams, { kind: 'free' });
+      store.startNextMatch();
+      store.setTeam('b', 'Las Tías', ['Marta', 'Rosa']);
+      win('a');
+      const tournament = store.tournament();
+      expect(tournament && standings(tournament).map((team) => team.name)).toEqual([
+        'Uno',
+        'Tres',
+        'Las Tías',
+      ]);
+    });
+
+    it('is not swept away by a full reset', () => {
+      store.startTournament(teams.slice(0, 2), { kind: 'free' });
+      store.resetAll();
+      expect(store.tournament()).not.toBeNull();
+    });
+
+    it('is saved, and taken from the other open copy of the app', () => {
+      store.startTournament(teams, { kind: 'free' });
+      TestBed.tick();
+      const saved = loadTournament();
+      expect(saved).toEqual(store.tournament());
+
+      localStorage.removeItem(TOURNAMENT_KEY);
+      window.dispatchEvent(
+        new StorageEvent('storage', {
+          key: TOURNAMENT_KEY,
+          newValue: null,
+          storageArea: localStorage,
+        }),
+      );
+      expect(store.tournament()).toBeNull();
     });
   });
 

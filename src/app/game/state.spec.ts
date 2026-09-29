@@ -2,6 +2,7 @@ import {
   Action,
   State,
   cleanName,
+  cleanPlayers,
   initialState,
   parseAmount,
   parseState,
@@ -102,7 +103,7 @@ describe('winner', () => {
     ]);
     const next = reducer(won, { type: 'closeRound', winner: 'a' });
     expect(next.rows).toEqual([]);
-    expect(next.teams.a).toEqual({ name: 'Los Primos', roundsWon: 1 });
+    expect(next.teams.a).toEqual({ name: 'Los Primos', players: null, roundsWon: 1 });
     expect(next.teams.b.roundsWon).toBe(0);
     expect(next.target).toBe(100);
     expect(next.quickValue).toBe(25);
@@ -133,7 +134,7 @@ describe('settings', () => {
     ]);
     const cleared = reducer(state, { type: 'clearRows' });
     expect(cleared.rows).toEqual([]);
-    expect(cleared.teams.a).toEqual({ name: 'Los Primos', roundsWon: 1 });
+    expect(cleared.teams.a).toEqual({ name: 'Los Primos', players: null, roundsWon: 1 });
     expect(cleared.target).toBe(150);
   });
 
@@ -184,6 +185,71 @@ describe('editRow', () => {
     expect(reducer(state, { type: 'editRow', id: 'r1', points: 0 })).toBe(state);
     expect(reducer(state, { type: 'editRow', id: 'nope', points: 5 })).toBe(state);
     expect(reducer(state, { type: 'editRow', id: 'r1', points: 10 })).toBe(state);
+  });
+});
+
+describe('players', () => {
+  it('are two or none', () => {
+    expect(cleanPlayers('  Ana ', 'Luis')).toEqual(['Ana', 'Luis']);
+    expect(cleanPlayers('', '   ')).toBeNull();
+    expect(cleanPlayers('Ana', '')).toBe('incomplete');
+    expect(cleanPlayers(' ', 'Luis')).toBe('incomplete');
+  });
+
+  it('can be given to one team and not the other', () => {
+    const state = reducer(initialState, {
+      type: 'setTeam',
+      team: 'a',
+      name: 'Los Primos',
+      players: ['Ana', 'Luis'],
+    });
+    expect(state.teams.a).toEqual({ name: 'Los Primos', players: ['Ana', 'Luis'], roundsWon: 0 });
+    expect(state.teams.b.players).toBeNull();
+  });
+
+  it('stay with the team when it is renamed, and go on a full reset', () => {
+    const state = play([
+      { type: 'setTeam', team: 'b', name: 'Las Tías', players: ['Marta', 'Rosa'] },
+      { type: 'renameTeam', team: 'b', name: 'Las Primas' },
+    ]);
+    expect(state.teams.b).toEqual({
+      name: 'Las Primas',
+      players: ['Marta', 'Rosa'],
+      roundsWon: 0,
+    });
+    expect(reducer(state, { type: 'resetAll' }).teams.b.players).toBeNull();
+  });
+
+  it('changes nothing when the team is saved as it was', () => {
+    expect(
+      reducer(initialState, { type: 'setTeam', team: 'a', name: 'Equipo A', players: null }),
+    ).toBe(initialState);
+  });
+
+  it('drops a saved pair that is not two names', () => {
+    const saved = JSON.parse(JSON.stringify(initialState));
+    saved.teams.a.players = ['Ana'];
+    saved.teams.b.players = ['Marta', 'Rosa'];
+    const state = parseState(saved);
+    expect(state?.teams.a.players).toBeNull();
+    expect(state?.teams.b.players).toEqual(['Marta', 'Rosa']);
+  });
+});
+
+describe('seat', () => {
+  it('sits two other teams at a clean board and keeps the settings', () => {
+    const state = play([{ type: 'setTarget', target: 150 }, add('a', 40, '1')]);
+    const next = reducer(state, {
+      type: 'seat',
+      teams: {
+        a: { name: 'Uno', players: null, roundsWon: 2 },
+        b: { name: 'Dos', players: ['Ana', 'Luis'], roundsWon: 0 },
+      },
+    });
+    expect(next.rows).toEqual([]);
+    expect(next.target).toBe(150);
+    expect(next.teams.a).toEqual({ name: 'Uno', players: null, roundsWon: 2 });
+    expect(next.teams.b.players).toEqual(['Ana', 'Luis']);
   });
 });
 

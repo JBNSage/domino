@@ -3,12 +3,12 @@ import { ChangeDetectionStrategy, Component, inject, input, output } from '@angu
 import { copy } from '../copy';
 import { FitText } from '../directives/fit-text';
 import { GameStore } from '../game/game.store';
-import { Appearance } from '../platform/appearance';
 
 @Component({
   selector: 'app-target-header',
   imports: [FitText],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: { '[class.in-tournament]': 'store.tournament() !== null' },
   template: `
     <button
       type="button"
@@ -26,30 +26,22 @@ import { Appearance } from '../platform/appearance';
       </svg>
     </button>
     <div class="tools">
-      <button
-        type="button"
-        class="tool"
-        [attr.aria-label]="dark() ? copy.appearance.toLight : copy.appearance.toDark"
-        (click)="toggleAppearance()"
-      >
-        <!-- Shows what is on now: a moon by night, a sun by day. -->
+      @if (store.tournament() !== null) {
+        <button
+          type="button"
+          class="slab slab--compact lean table"
+          [attr.aria-label]="copy.tournament.tableA11y"
+          (click)="table.emit()"
+        >
+          <span class="slab__label" [appFitText]="copy.tournament.table">{{
+            copy.tournament.table
+          }}</span>
+        </button>
+      }
+      <button type="button" class="tool" [attr.aria-label]="copy.menu.a11y" (click)="menu.emit()">
+        <!-- Three bars that lean like everything else. -->
         <svg viewBox="0 0 24 24" aria-hidden="true">
-          @if (dark()) {
-            <path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" />
-          } @else {
-            <circle cx="12" cy="12" r="4" />
-            <path
-              d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8"
-            />
-          }
-        </svg>
-      </button>
-      <button type="button" class="tool" [attr.aria-label]="copy.reset.a11y" (click)="reset.emit()">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M4 7h16" />
-          <path d="M9 7V4h6v3" />
-          <path d="M6 7l1 13h10l1-13" />
-          <path d="M10 11v6M14 11v6" />
+          <path d="M6.5 6.5h14M5 12h14M3.5 17.5h14" />
         </svg>
       </button>
     </div>
@@ -100,8 +92,27 @@ import { Appearance } from '../platform/appearance';
     }
 
     .tools {
-      flex: none;
+      flex: 0 1 auto;
+      min-width: 0;
       display: flex;
+      align-items: center;
+      gap: var(--s-xs);
+    }
+
+    .table {
+      --lean-inset: 5px;
+
+      flex: none;
+      padding: 0 min(var(--s-lg), 4vw);
+      font-size: min(var(--t-compact), 5.5vw);
+    }
+
+    /* Three controls on a narrow screen: the value speaks for itself. */
+    @media (max-width: 24em) {
+      /* The fitting directive sets its own display on the element. */
+      :host(.in-tournament) .label {
+        display: none !important;
+      }
     }
 
     .tool {
@@ -134,18 +145,11 @@ import { Appearance } from '../platform/appearance';
 export class TargetHeader {
   protected readonly copy = copy;
 
-  private readonly appearance = inject(Appearance);
-  private readonly store = inject(GameStore);
+  protected readonly store = inject(GameStore);
 
   readonly target = input.required<number>();
   readonly editTarget = output<void>();
-  // eslint-disable-next-line @angular-eslint/no-output-native
-  readonly reset = output<void>();
-
-  protected readonly dark = () => this.appearance.scheme() === 'dark';
-
-  protected toggleAppearance(): void {
-    const scheme = this.appearance.toggle();
-    this.store.announce(copy.appearance.announce(copy.appearance[scheme]));
-  }
+  readonly menu = output<void>();
+  /** The table of the tournament being played. */
+  readonly table = output<void>();
 }

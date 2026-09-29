@@ -11,13 +11,12 @@ import { copy } from '../copy';
 import { FitText } from '../directives/fit-text';
 import { GameStore } from '../game/game.store';
 import { MAX_POINTS, MAX_TARGET, parseAmount, selectTotals, selectWinner } from '../game/state';
-import { Appearance, AppearanceChoice } from '../platform/appearance';
 import { NumberField } from './number-field';
 import { Sheet } from './sheet';
 
 export type SettingsFocus = 'target' | 'quick';
 
-/** The round's two numbers: points to win and the quick bonus. */
+/** The match's two numbers: points to win and the quick bonus. */
 @Component({
   selector: 'app-settings-sheet',
   imports: [Sheet, NumberField, FitText],
@@ -25,30 +24,6 @@ export type SettingsFocus = 'target' | 'quick';
   template: `
     <app-sheet labelledBy="settings-sheet-title">
       <h2 class="title" id="settings-sheet-title">{{ copy.settings.title }}</h2>
-
-      <!-- Applies on touch: it is a choice you need to see, not one to save with the numbers. -->
-      <div class="appearance">
-        <span class="label" id="settings-appearance-label">{{ copy.appearance.label }}</span>
-        <div class="choices" role="radiogroup" aria-labelledby="settings-appearance-label">
-          @for (option of choices; track option) {
-            <button
-              type="button"
-              role="radio"
-              class="slab slab--compact lean choice"
-              [class.choice--on]="appearance.choice() === option"
-              [attr.aria-checked]="appearance.choice() === option"
-              [attr.tabindex]="appearance.choice() === option ? 0 : -1"
-              [attr.data-choice]="option"
-              (click)="choose(option)"
-              (keydown)="moveChoice($event)"
-            >
-              <span class="slab__label" [appFitText]="copy.appearance[option]">{{
-                copy.appearance[option]
-              }}</span>
-            </button>
-          }
-        </div>
-      </div>
 
       <app-number-field
         #target
@@ -92,36 +67,6 @@ export type SettingsFocus = 'target' | 'quick';
       text-wrap: balance;
     }
 
-    .appearance {
-      display: flex;
-      flex-direction: column;
-      gap: var(--s-xs);
-    }
-
-    .label {
-      color: var(--c-muted);
-      font: italic 600 var(--t-label) / 1.3 var(--font);
-      text-transform: uppercase;
-    }
-
-    .choices {
-      display: flex;
-      gap: var(--s-sm);
-    }
-
-    .choice {
-      --lean-inset: 5px;
-
-      flex: 1 1 0;
-      padding: 0 var(--s-sm);
-    }
-
-    .choice--on {
-      --fill: var(--c-text);
-      --edge: transparent;
-      --label: var(--c-ground);
-    }
-
     app-number-field {
       --caret: var(--c-text);
     }
@@ -137,10 +82,7 @@ export class SettingsSheet {
   protected readonly targetLength = String(MAX_TARGET).length;
   protected readonly quickLength = String(MAX_POINTS).length;
 
-  protected readonly choices: AppearanceChoice[] = ['system', 'light', 'dark'];
-
   private readonly store = inject(GameStore);
-  protected readonly appearance = inject(Appearance);
   protected readonly sheet = viewChild.required(Sheet);
   private readonly target = viewChild.required<NumberField>('target');
   private readonly quick = viewChild.required<NumberField>('quick');
@@ -158,7 +100,7 @@ export class SettingsSheet {
     this.quickText().length > 0 && this.quickValue() === null ? copy.settings.quickError : null,
   );
 
-  // Saving a target at or below a running total ends the round, so say so first.
+  // Saving a target at or below a running total ends the match, so say so first.
   protected readonly notice = computed(() => {
     const state = this.store.state();
     const target = this.targetValue();
@@ -184,26 +126,6 @@ export class SettingsSheet {
     this.sheet().open();
     if (focus === 'quick') this.quick().focus(quick);
     else this.target().focus(target);
-  }
-
-  protected choose(choice: AppearanceChoice): void {
-    this.appearance.set(choice);
-    this.store.announce(copy.appearance.announce(copy.appearance[choice]));
-  }
-
-  /** Arrow keys move the choice, as in any group of radio buttons. */
-  protected moveChoice(event: KeyboardEvent): void {
-    const step = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[event.key];
-    if (step === undefined) return;
-    event.preventDefault();
-
-    const count = this.choices.length;
-    const current = this.choices.indexOf(this.appearance.choice());
-    const next = this.choices[(current + step + count) % count];
-    this.choose(next);
-    (event.currentTarget as HTMLElement).parentElement
-      ?.querySelector<HTMLElement>(`[data-choice="${next}"]`)
-      ?.focus();
   }
 
   protected save(): void {

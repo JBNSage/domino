@@ -8,7 +8,7 @@ web
 
 ## Stack
 
-Angular + TypeScript, shipped as an installable progressive web app (PWA) on GitHub Pages, so it needs no app store. It began as an Expo app; the user asked for the move. A single screen without a router, signals for state, and localStorage persistence were chosen for the smallest app that meets the brief.
+Angular + TypeScript, shipped as an installable progressive web app (PWA) on GitHub Pages, so it needs no app store. It began as an Expo app; the user asked for the move. No router: the scoreboard is the page, and every other surface is a sheet or a full screen above it. Signals for state and localStorage persistence were chosen for the smallest app that meets the brief.
 
 ## Users
 
@@ -20,24 +20,30 @@ A domino score keeper that is ready the instant it opens: no setup, no menu, no 
 
 ## Positioning
 
-Opens directly on the live scoreboard. Two teams, one running list, one target; nothing to configure before the first point.
+Opens directly on the live scoreboard. Two teams, one running list, one target; nothing to configure before the first point. Players, the history and tournaments are there for those who want them, behind one menu button.
 
 ## Operating Context
 
 - A match is played to a target score (default 200, user-editable).
 - Points are entered per hand for one team; the other team scores 0 on that row.
 - Quick points add a fixed bonus (default 30, user-editable) to one team in a single tap.
-- When a team reaches the target the match ends, the winner is celebrated, the list resets, and the winner's rounds-won count goes up by one.
+- When a team reaches the target the match ends, the winner is celebrated, the list resets, the winner's count of matches won goes up by one, and the match is kept in the history.
+- A tournament is a series of matches between two or more teams. After each match the winner stays at the table and the team that has waited longest comes in; either side can be given to another waiting team.
+- A tournament ends when a team reaches a set number of wins ("Primero a N"), wins the majority of a set number of matches ("Mejor de N"), or when it is ended by hand ("Libre"). Ended by hand with first place shared, it goes to tie-break matches between the tied teams, or ends without a champion.
 
 ## Capabilities and Constraints
 
-- Two teams, default names "Equipo A" and "Equipo B", renamable from the points input.
+- Two teams, default names "Equipo A" and "Equipo B", renamable from the points input or from the menu.
+- A team has two named players or none. One team may have players while the other has none.
+- The history keeps finished matches (teams, players, every hand) and finished tournaments (ranking, champion, matches), filtered by "Todo", "Partidas" or "Torneos". Entries can be removed one by one or all at once, and both can be undone. It holds the 500 most recent matches.
+- A tournament has 2 to 12 teams. Its table orders them by matches won.
 - Rows can be deleted to fix mistakes.
 - Changing the target re-evaluates the match; if a team already meets the new target, the winner is shown.
-- Works offline once opened, and everything persists across app restarts: rows, team names, target, quick value, rounds won.
-- Follows the system light/dark setting.
+- Works offline once opened, and everything persists across app restarts: rows, teams and players, target, quick value, matches won, the tournament under way and the history.
+- Follows the system light/dark setting unless the reader chooses light or dark.
 - Portrait phone is the target; tablets are not a design target.
-- Undecided: variants where both teams score in one hand; more than two teams; match history.
+- Everything stays on the device: no accounts, no sync, no sharing of results.
+- Undecided: variants where both teams score in one hand; statistics per player; brackets or fixed fixtures.
 
 ## Brand Commitments
 

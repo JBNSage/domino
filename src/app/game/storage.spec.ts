@@ -1,5 +1,20 @@
 import { initialState } from './state';
-import { STORAGE_KEY, UNDO_KEY, loadState, loadUndo, saveState, saveUndo } from './storage';
+import {
+  HISTORY_KEY,
+  STORAGE_KEY,
+  TOURNAMENT_KEY,
+  UNDO_KEY,
+  loadHistory,
+  loadState,
+  loadTournament,
+  loadUndo,
+  nothingRecorded,
+  saveHistory,
+  saveState,
+  saveTournament,
+  saveUndo,
+} from './storage';
+import { create } from './tournament';
 
 describe('storage', () => {
   beforeEach(() => localStorage.clear());
@@ -29,13 +44,86 @@ describe('storage', () => {
   });
 
   it('keeps and clears the way back from a reset', () => {
-    const undo = { message: 'Todo reiniciado', snapshot: { ...initialState, target: 150 } };
+    const undo = {
+      message: 'Todo reiniciado',
+      snapshot: { ...initialState, target: 150 },
+      tournament: null,
+      recorded: nothingRecorded,
+    };
     saveUndo(undo);
     expect(loadUndo()).toEqual(undo);
 
     saveUndo(null);
     expect(localStorage.getItem(UNDO_KEY)).toBeNull();
     expect(loadUndo()).toBeNull();
+  });
+
+  it('reads a way back saved before tournaments existed', () => {
+    const old = { message: 'Todo reiniciado', snapshot: initialState };
+    localStorage.setItem(UNDO_KEY, JSON.stringify(old));
+    expect(loadUndo()).toEqual({ ...old, tournament: null, recorded: nothingRecorded });
+  });
+
+  it('reads a board saved before players existed', () => {
+    const old = {
+      ...initialState,
+      teams: { a: { name: 'Los Primos', roundsWon: 2 }, b: { name: 'Equipo B', roundsWon: 0 } },
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(old));
+    expect(loadState()?.teams.a).toEqual({ name: 'Los Primos', players: null, roundsWon: 2 });
+  });
+
+  it('keeps and clears the tournament being played', () => {
+    const teams = ['Uno', 'Dos', 'Tres'].map((name, index) => ({
+      id: `t${index}`,
+      name,
+      players: null,
+    }));
+    const tournament = create('x', 1, teams, { kind: 'firstTo', count: 3 });
+    saveTournament(tournament);
+    expect(loadTournament()).toEqual(tournament);
+
+    saveTournament(null);
+    expect(localStorage.getItem(TOURNAMENT_KEY)).toBeNull();
+  });
+
+  it('ignores a saved tournament that seats a team twice', () => {
+    const teams = ['Uno', 'Dos'].map((name, index) => ({ id: `t${index}`, name, players: null }));
+    const tournament = create('x', 1, teams, { kind: 'free' });
+    localStorage.setItem(
+      TOURNAMENT_KEY,
+      JSON.stringify({ ...tournament, seats: { a: 't0', b: 't0' } }),
+    );
+    expect(loadTournament()).toBeNull();
+  });
+
+  it('keeps the history, and leaves no key behind once it is empty', () => {
+    const match = {
+      id: 'm1',
+      endedAt: 10,
+      target: 200,
+      teams: {
+        a: { name: 'Equipo A', players: ['Ana', 'Luis'] as [string, string] },
+        b: { name: 'Equipo B', players: null },
+      },
+      rows: [{ id: 'r1', team: 'a' as const, points: 200 }],
+      winner: 'a' as const,
+      tournament: null,
+      tieBreak: false,
+    };
+    saveHistory({ matches: [match], tournaments: [] });
+    expect(loadHistory().matches).toEqual([match]);
+
+    saveHistory({ matches: [], tournaments: [] });
+    expect(localStorage.getItem(HISTORY_KEY)).toBeNull();
+  });
+
+  it('keeps the readable entries of a damaged history', () => {
+    localStorage.setItem(
+      HISTORY_KEY,
+      JSON.stringify({ matches: [{ id: 'bad' }, null], tournaments: 'no' }),
+    );
+    expect(loadHistory()).toEqual({ matches: [], tournaments: [] });
   });
 
   it('ignores a saved way back whose board is invalid', () => {

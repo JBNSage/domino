@@ -3,7 +3,8 @@
   <app-target-header
     [target]="store.state().target"
     (editTarget)="settings.open('target')"
-    (reset)="reset.open()"
+    (menu)="menu.open()"
+    (table)="standings.open()"
   />
   <app-team-lockup (pressTeam)="points.open($event)" />
   <div class="body">
@@ -13,9 +14,31 @@
   <app-quick-add-bar (enter)="points.open($event)" (editQuick)="settings.open('quick')" />
 </main>
 
+<app-menu-sheet
+  #menu
+  (tournament)="store.tournament() === null ? setup.open() : standings.open()"
+  (history)="history.open()"
+  (editTeam)="team.open(boardTeam($event))"
+  (reset)="reset.open()"
+/>
 <app-points-sheet #points />
 <app-settings-sheet #settings />
 <app-reset-sheet #reset />
+
+<app-history-screen
+  #history
+  (openMatch)="match.open($event)"
+  (openTournament)="record.open($event)"
+/>
+<app-tournament-record-screen #record (openMatch)="match.open($event)" />
+<app-match-screen #match />
+
+<app-tournament-setup-screen #setup (editTeam)="team.open($event)" />
+<app-next-match-screen (table)="standings.open()" />
+<app-standings-screen #standings />
+<app-champion-screen />
+
+<app-team-sheet #team />
 <app-winner-modal (openSettings)="settings.open('target')" />
 
 <p class="sr-only" role="status">{{ store.announcement() }}</p>

@@ -1,31 +1,68 @@
+import { History, emptyHistory, parseHistory } from './history';
 import { State, parseState } from './state';
+import { Tournament, parseTournament } from './tournament';
 
 export const STORAGE_KEY = 'domino/state/v1';
 export const UNDO_KEY = 'domino/undo/v1';
+export const TOURNAMENT_KEY = 'domino/tournament/v1';
+export const HISTORY_KEY = 'domino/history/v1';
 
-/** A saved way back from a reset or a closed round. */
-export type SavedUndo = { message: string; snapshot: State };
+/** History entries written by a change, which go when the change is taken back. */
+export type Recorded = { matches: string[]; tournaments: string[] };
 
-export function readState(raw: string | null): State | null {
+/**
+ * A saved way back from a reset, a closed match or a change to the tournament:
+ * the board and the tournament as they were.
+ */
+export type SavedUndo = {
+  message: string;
+  snapshot: State;
+  tournament: Tournament | null;
+  recorded: Recorded;
+};
+
+export const nothingRecorded: Recorded = { matches: [], tournaments: [] };
+
+function parse(raw: string | null): unknown {
   if (raw === null) return null;
   try {
-    return parseState(JSON.parse(raw));
+    return JSON.parse(raw) as unknown;
   } catch {
     return null;
   }
 }
 
+export function readState(raw: string | null): State | null {
+  return parseState(parse(raw));
+}
+
+export function readTournament(raw: string | null): Tournament | null {
+  return parseTournament(parse(raw));
+}
+
+export function readHistory(raw: string | null): History {
+  return raw === null ? emptyHistory : parseHistory(parse(raw));
+}
+
+function readIds(value: unknown): string[] {
+  return Array.isArray(value) ? value.filter((id): id is string => typeof id === 'string') : [];
+}
+
 export function readUndo(raw: string | null): SavedUndo | null {
-  if (raw === null) return null;
-  try {
-    const value = JSON.parse(raw) as Record<string, unknown> | null;
-    if (typeof value !== 'object' || value === null) return null;
-    if (typeof value.message !== 'string') return null;
-    const snapshot = parseState(value.snapshot);
-    return snapshot === null ? null : { message: value.message, snapshot };
-  } catch {
-    return null;
-  }
+  const value = parse(raw) as Record<string, unknown> | null;
+  if (typeof value !== 'object' || value === null) return null;
+  if (typeof value.message !== 'string') return null;
+  const snapshot = parseState(value.snapshot);
+  if (snapshot === null) return null;
+
+  // Ways back saved before tournaments existed carry neither of these.
+  const recorded = (value.recorded ?? {}) as Record<string, unknown>;
+  return {
+    message: value.message,
+    snapshot,
+    tournament: parseTournament(value.tournament),
+    recorded: { matches: readIds(recorded.matches), tournaments: readIds(recorded.tournaments) },
+  };
 }
 
 function read(key: string): string | null {
@@ -59,6 +96,23 @@ export function loadUndo(): SavedUndo | null {
 
 export function saveUndo(undo: SavedUndo | null): void {
   write(UNDO_KEY, undo === null ? null : JSON.stringify(undo));
+}
+
+export function loadTournament(): Tournament | null {
+  return readTournament(read(TOURNAMENT_KEY));
+}
+
+export function saveTournament(tournament: Tournament | null): void {
+  write(TOURNAMENT_KEY, tournament === null ? null : JSON.stringify(tournament));
+}
+
+export function loadHistory(): History {
+  return readHistory(read(HISTORY_KEY));
+}
+
+export function saveHistory(history: History): void {
+  const empty = history.matches.length === 0 && history.tournaments.length === 0;
+  write(HISTORY_KEY, empty ? null : JSON.stringify(history));
 }
 
 /** Asks the browser not to evict the saved match when storage runs low. */

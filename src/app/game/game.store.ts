@@ -2,10 +2,14 @@ import { DestroyRef, Injectable, computed, effect, inject, signal, untracked } f
 
 import { copy } from '../copy';
 import { haptics } from '../platform/haptics';
+import { History } from './history';
+import { HistoryStore } from './history.store';
 import {
   Action,
+  Players,
   Row,
   State,
+  Team,
   TeamId,
   initialState,
   reducer,
@@ -13,15 +17,39 @@ import {
   selectWinner,
 } from './state';
 import {
+  Recorded,
   STORAGE_KEY,
+  SavedUndo,
+  TOURNAMENT_KEY,
   UNDO_KEY,
   loadState,
+  loadTournament,
   loadUndo,
+  nothingRecorded,
   readState,
+  readTournament,
   readUndo,
   saveState,
+  saveTournament,
   saveUndo,
 } from './storage';
+import {
+  Rule,
+  Tournament,
+  TournamentTeam,
+  champion,
+  create,
+  end,
+  lastWinningSeat,
+  recordResult,
+  renameTeam,
+  setSeat,
+  standings,
+  startMatch,
+  startTieBreak,
+  teamOf,
+  winsOf,
+} from './tournament';
 
 // Long enough to notice at a noisy table.
 export const UNDO_MS = 8000;
@@ -29,24 +57,31 @@ export const UNDO_MS = 8000;
 /** A no-break space: invisible, but enough for a live region to speak again. */
 const REPEAT_MARK = String.fromCharCode(160);
 
+/** The board and the tournament as they were, and what was written since. */
+type Snapshot = { state: State; tournament: Tournament | null; recorded: Recorded };
+
 /**
  * How an action is taken back. Changes to one hand are reversed on their own,
- * so hands scored in the meantime stay. A reset or a closed round goes back to
- * the board as it was, and is kept until the board changes again.
+ * so hands scored in the meantime stay. A reset, a closed match or a change to
+ * the tournament goes back to everything as it was, and is kept until the
+ * board changes again. Entries removed from the history are put back.
  */
 type Reversal =
   | { kind: 'restoreRow'; row: Row; index: number }
   | { kind: 'removeRow'; id: string }
   | { kind: 'editRow'; id: string; points: number }
-  | { kind: 'snapshot'; snapshot: State };
+  | { kind: 'snapshot'; snapshot: Snapshot }
+  | { kind: 'history'; removed: History };
 
-export type Undo = { message: string; reversal: Reversal };
+/** `lasting` offers have no time limit. */
+export type Undo = { message: string; reversal: Reversal; lasting: boolean };
 
 export type MatchResult = {
   winner: TeamId;
   names: Record<TeamId, string>;
+  players: Record<TeamId, Players | null>;
   totals: Record<TeamId, number>;
-  /** Rounds the winner will have once this one is counted. */
+  /** Matches the winner will have won once this one is counted. */
   roundsAfter: number;
 };
 
@@ -59,6 +94,8 @@ export type Correction = 'restored' | 'deleted' | 'settings';
 @Injectable({ providedIn: 'root' })
 export class GameStore {
   readonly state = signal<State>(loadState() ?? initialState);
+  /** The tournament being played, if any. */
+  readonly tournament = signal<Tournament | null>(loadTournament());
   readonly undo = signal<Undo | null>(GameStore.savedUndo());
   /** Text for the screen reader's live region. */
   readonly announcement = signal('');
@@ -73,6 +110,7 @@ export class GameStore {
     return {
       winner,
       names: { a: teams.a.name, b: teams.b.name },
+      players: { a: teams.a.players, b: teams.b.players },
       totals: this.totals(),
       roundsAfter: teams[winner].roundsWon + 1,
     };
@@ -95,6 +133,20 @@ export class GameStore {
     return this.cause() === 'hand' ? copy.winner.correct : copy.winner.changeTarget;
   });
 
+  /** What closing the match leads to: another match, or the end of the tournament. */
+  readonly closeLabel = computed(() => {
+    const tournament = this.tournament();
+    const result = this.result();
+    if (tournament === null || result === null) return copy.winner.close;
+    const after = recordResult(tournament, '', result.winner, result.totals);
+    if (after.phase === 'done') return copy.tournament.result;
+    return after.phase === 'between' ? copy.tournament.next : copy.winner.close;
+  });
+
+  /** Whether the way back on offer undoes a whole step, such as closing a match. */
+  readonly canGoBack = computed(() => this.undo()?.reversal.kind === 'snapshot');
+
+  private readonly history = inject(HistoryStore);
   private readonly lastChange = signal<LastChange>({ kind: 'hand' });
   private undoTimer: ReturnType<typeof setTimeout> | null = null;
   private nextId = 0;
@@ -102,13 +154,13 @@ export class GameStore {
   constructor() {
     effect(() => saveState(this.state()));
 
+    effect(() => saveTournament(this.tournament()));
+
     effect(() => {
       const undo = this.undo();
-      saveUndo(
-        undo?.reversal.kind === 'snapshot'
-          ? { message: undo.message, snapshot: undo.reversal.snapshot }
-          : null,
-      );
+      if (undo?.reversal.kind !== 'snapshot') return saveUndo(null);
+      const { state, tournament, recorded } = undo.reversal.snapshot;
+      saveUndo({ message: undo.message, snapshot: state, tournament, recorded });
     });
 
     effect(() => {
@@ -126,9 +178,10 @@ export class GameStore {
   }
 
   addPoints(team: TeamId, points: number): Row | null {
-    this.nextId += 1;
+    // Between two matches of a tournament nobody is playing.
+    if ((this.tournament()?.phase ?? 'playing') !== 'playing') return null;
     const before = this.state();
-    const id = `${Date.now()}-${this.nextId}`;
+    const id = this.newId();
     this.dispatch({ type: 'addPoints', team, points, id });
     const state = this.state();
     if (state === before) return null;
@@ -166,7 +219,20 @@ export class GameStore {
   }
 
   renameTeam(team: TeamId, name: string): void {
-    this.dispatch({ type: 'renameTeam', team, name });
+    this.setTeam(team, name, this.state().teams[team].players);
+  }
+
+  setTeam(team: TeamId, name: string, players: Players | null): void {
+    const before = this.state();
+    this.dispatch({ type: 'setTeam', team, name, players });
+    if (this.state() === before) return;
+    // In a tournament the team keeps its new name when it leaves the table.
+    const saved = this.state().teams[team];
+    this.tournament.update((tournament) =>
+      tournament === null
+        ? null
+        : renameTeam(tournament, tournament.seats[team], saved.name, saved.players),
+    );
     this.boardChanged();
   }
 
@@ -177,18 +243,130 @@ export class GameStore {
     this.offer(copy.undo.handDeleted(index + 1), { kind: 'restoreRow', row, index });
   }
 
+  /** Counts the win and keeps the match in the history. */
   closeRound(): void {
-    const winner = this.winner();
-    if (winner === null) return;
-    this.withSnapshot(copy.undo.roundClosed, { type: 'closeRound', winner });
+    const result = this.result();
+    if (result === null) return;
+    const { teams, target, rows } = this.state();
+    const tournament = this.tournament();
+    const id = this.newId();
+
+    this.change(copy.undo.roundClosed, () => {
+      this.history.addMatch({
+        id,
+        endedAt: Date.now(),
+        target,
+        teams: {
+          a: { name: teams.a.name, players: teams.a.players },
+          b: { name: teams.b.name, players: teams.b.players },
+        },
+        rows,
+        winner: result.winner,
+        tournament: tournament?.id ?? null,
+        tieBreak: tournament !== null && tournament.tieBreak !== null,
+      });
+      this.dispatch({ type: 'closeRound', winner: result.winner });
+      if (tournament !== null) {
+        this.tournament.set(recordResult(tournament, id, result.winner, result.totals));
+      }
+      return { matches: [id], tournaments: [] };
+    });
+
+    const winner = this.tournamentWinner();
+    if (winner !== null) this.announce(copy.tournament.announceChampion(winner));
   }
 
   clearRows(): void {
-    this.withSnapshot(copy.undo.handsCleared, { type: 'clearRows' });
+    this.change(copy.undo.handsCleared, () => this.dispatch({ type: 'clearRows' }));
   }
 
   resetAll(): void {
-    this.withSnapshot(copy.undo.allReset, { type: 'resetAll' });
+    // A tournament is ended from its table, not swept away with the board.
+    if (this.tournament() !== null) return;
+    this.change(copy.undo.allReset, () => this.dispatch({ type: 'resetAll' }));
+  }
+
+  startTournament(teams: TournamentTeam[], rule: Rule): void {
+    this.change(copy.undo.tournamentStarted, () => {
+      const tournament = create(this.newId(), Date.now(), teams, rule);
+      this.tournament.set(tournament);
+      this.seat(tournament);
+    });
+  }
+
+  /** Changes who plays next, while the next match is being chosen. */
+  setSeat(seat: TeamId, team: string): void {
+    this.tournament.update((tournament) =>
+      tournament === null ? null : setSeat(tournament, seat, team),
+    );
+  }
+
+  startNextMatch(): void {
+    const tournament = this.tournament();
+    if (tournament === null || tournament.phase !== 'between') return;
+    const playing = startMatch(tournament);
+    this.tournament.set(playing);
+    this.seat(playing);
+  }
+
+  /** Ends the tournament by hand, with whoever leads as champion. */
+  endTournament(): void {
+    const tournament = this.tournament();
+    if (tournament === null) return;
+    if (tournament.results.length === 0) {
+      this.change(copy.undo.tournamentCancelled, () => this.leaveTournament());
+      return;
+    }
+    this.change(copy.undo.tournamentEnded, () => {
+      this.tournament.set(end(tournament));
+      this.dispatch({ type: 'clearRows' });
+    });
+    const winner = this.tournamentWinner();
+    if (winner !== null) this.announce(copy.tournament.announceChampion(winner));
+  }
+
+  startTieBreak(): void {
+    const tournament = this.tournament();
+    if (tournament === null) return;
+    this.change(copy.undo.tieBreakStarted, () => {
+      const tied = startTieBreak(tournament);
+      this.tournament.set(tied);
+      this.seat(tied);
+    });
+  }
+
+  /** Keeps the finished tournament in the history and returns to a clean board. */
+  finishTournament(): void {
+    const tournament = this.tournament();
+    if (tournament === null || tournament.phase !== 'done') return;
+    this.change(copy.undo.tournamentSaved, () => {
+      const winner = champion(tournament);
+      this.history.addTournament({
+        id: tournament.id,
+        startedAt: tournament.startedAt,
+        endedAt: Date.now(),
+        rule: tournament.rule,
+        ranking: standings(tournament),
+        champion: winner?.id ?? null,
+        championSeat: winner === null ? null : lastWinningSeat(tournament, winner.id),
+        results: tournament.results,
+      });
+      this.leaveTournament();
+      return { matches: [], tournaments: [tournament.id] };
+    });
+  }
+
+  deleteMatch(id: string): void {
+    this.offerHistory(copy.undo.matchDeleted, this.history.remove({ matches: [id] }), false);
+  }
+
+  deleteTournament(id: string): void {
+    const removed = this.history.remove({ tournaments: [id] });
+    this.offerHistory(copy.undo.tournamentDeleted, removed, false);
+  }
+
+  clearHistory(): void {
+    this.offerHistory(copy.undo.historyCleared, this.history.clear(), true);
   }
 
   saveSettings(target: number, quickValue: number): void {
@@ -239,7 +417,15 @@ export class GameStore {
         this.dispatch({ type: 'editRow', id: reversal.id, points: reversal.points });
         return reversal.id;
       case 'snapshot':
-        this.dispatch({ type: 'hydrate', state: reversal.snapshot });
+        this.dispatch({ type: 'hydrate', state: reversal.snapshot.state });
+        this.tournament.set(reversal.snapshot.tournament);
+        this.history.remove({
+          matches: reversal.snapshot.recorded.matches,
+          records: reversal.snapshot.recorded.tournaments,
+        });
+        return null;
+      case 'history':
+        this.history.restore(reversal.removed);
         return null;
     }
   }
@@ -253,8 +439,8 @@ export class GameStore {
   releaseUndo(): void {
     this.holdUndo();
     const undo = this.undo();
-    // A reset or a closed round stays on offer; only single hands expire.
-    if (undo === null || undo.reversal.kind === 'snapshot') return;
+    // A reset or a closed match stays on offer; single changes expire.
+    if (undo === null || undo.lasting) return;
     this.undoTimer = setTimeout(() => this.undo.set(null), UNDO_MS);
   }
 
@@ -263,25 +449,65 @@ export class GameStore {
     this.announcement.update((current) => (current === message ? message + REPEAT_MARK : message));
   }
 
-  private static savedUndo(): Undo | null {
-    const saved = loadUndo();
-    return saved === null
-      ? null
-      : { message: saved.message, reversal: { kind: 'snapshot', snapshot: saved.snapshot } };
+  private static savedUndo(saved: SavedUndo | null = loadUndo()): Undo | null {
+    if (saved === null) return null;
+    const { message, snapshot, tournament, recorded } = saved;
+    return {
+      message,
+      reversal: { kind: 'snapshot', snapshot: { state: snapshot, tournament, recorded } },
+      lasting: true,
+    };
   }
 
-  private offer(message: string, reversal: Reversal): void {
-    this.undo.set({ message, reversal });
+  private newId(): string {
+    this.nextId += 1;
+    return `${Date.now()}-${this.nextId}`;
+  }
+
+  private offer(message: string, reversal: Reversal, lasting = false): void {
+    this.undo.set({ message, reversal, lasting });
     this.announce(`${message}. ${copy.undo.action}`);
     this.releaseUndo();
   }
 
-  private withSnapshot(message: string, action: Action): void {
-    const snapshot = this.state();
-    this.dispatch(action);
-    if (this.state() === snapshot) return;
+  private offerHistory(message: string, removed: History, lasting: boolean): void {
+    if (removed.matches.length === 0 && removed.tournaments.length === 0) return;
+    this.offer(message, { kind: 'history', removed }, lasting);
+  }
+
+  /** Makes a change that can be taken back whole. */
+  private change(message: string, apply: () => Recorded | void): void {
+    const state = this.state();
+    const tournament = this.tournament();
+    const recorded = apply() ?? nothingRecorded;
+    if (this.state() === state && this.tournament() === tournament) return;
     this.lastChange.set({ kind: 'hand' });
-    this.offer(message, { kind: 'snapshot', snapshot });
+    this.offer(message, { kind: 'snapshot', snapshot: { state, tournament, recorded } }, true);
+  }
+
+  /** Sits the tournament's two teams at the board, with the wins they bring. */
+  private seat(tournament: Tournament): void {
+    const at = (side: TeamId): Team => {
+      const { name, players } = teamOf(tournament, tournament.seats[side]);
+      return { name, players, roundsWon: winsOf(tournament, tournament.seats[side]) };
+    };
+    this.dispatch({ type: 'seat', teams: { a: at('a'), b: at('b') } });
+  }
+
+  /** Back to single matches: the last two teams stay, their count starts again. */
+  private leaveTournament(): void {
+    const { a, b } = this.state().teams;
+    this.tournament.set(null);
+    this.dispatch({
+      type: 'seat',
+      teams: { a: { ...a, roundsWon: 0 }, b: { ...b, roundsWon: 0 } },
+    });
+  }
+
+  private tournamentWinner(): string | null {
+    const tournament = this.tournament();
+    if (tournament === null || tournament.phase !== 'done') return null;
+    return champion(tournament)?.name ?? null;
   }
 
   /** Going back to an old board would now erase newer work, so that offer ends. */
@@ -309,14 +535,15 @@ export class GameStore {
         this.holdUndo();
         this.undo.set(GameStore.savedUndo());
       }
+      if (event.key === TOURNAMENT_KEY || event.key === null) {
+        const tournament = readTournament(event.newValue);
+        if (JSON.stringify(tournament) !== JSON.stringify(this.tournament())) {
+          this.tournament.set(tournament);
+        }
+      }
       if (event.key === UNDO_KEY) {
-        const saved = readUndo(event.newValue);
         this.holdUndo();
-        this.undo.set(
-          saved === null
-            ? null
-            : { message: saved.message, reversal: { kind: 'snapshot', snapshot: saved.snapshot } },
-        );
+        this.undo.set(GameStore.savedUndo(readUndo(event.newValue)));
       }
     };
 

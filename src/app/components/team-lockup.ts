@@ -29,7 +29,14 @@ import { prefersReducedMotion } from '../platform/motion';
         [attr.aria-label]="team.label"
         (click)="pressTeam.emit(team.id)"
       >
-        <span class="name" [appFitText]="team.name">{{ team.name }}</span>
+        <span class="who">
+          <span class="name" [appFitText]="team.name">{{ team.name }}</span>
+          @if (team.players; as players) {
+            <span class="players" [appFitText]="copy.players.pair(players)">{{
+              copy.players.pair(players)
+            }}</span>
+          }
+        </span>
         <span #total class="total numerals" [class.total--long]="long()" [appFitText]="team.total">
           {{ team.total }}
         </span>
@@ -37,9 +44,9 @@ import { prefersReducedMotion } from '../platform/motion';
           <span class="remaining numerals" [appFitText]="team.remaining">
             {{ copy.team.remaining(team.remaining) }}
           </span>
-          <!-- With no rounds yet the chip keeps its space, so both totals stay level. -->
+          <!-- With no wins yet the chip keeps its space, so both totals stay level. -->
           <span class="rounds lean numerals" [class.hidden]="team.roundsWon === 0">
-            {{ copy.team.rounds(team.roundsWon) }}
+            {{ copy.team.wins(team.roundsWon) }}
           </span>
         </span>
       </button>
@@ -133,8 +140,19 @@ import { prefersReducedMotion } from '../platform/motion';
       outline-offset: -8px;
     }
 
+    .who {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
     .name {
       font: italic 800 var(--t-button) / 1.15 var(--font);
+      text-transform: uppercase;
+    }
+
+    .players {
+      font: italic 600 var(--t-label) / 1.3 var(--font);
       text-transform: uppercase;
     }
 
@@ -187,8 +205,11 @@ import { prefersReducedMotion } from '../platform/motion';
         padding-block: var(--s-sm);
       }
 
-      .name {
+      .who {
         flex: 1 1 100%;
+      }
+
+      .name {
         font-size: var(--t-meta);
       }
 
@@ -227,16 +248,17 @@ export class TeamLockup {
     const state = this.store.state();
     const totals = this.store.totals();
     return TEAM_IDS.map((id) => {
-      const { name, roundsWon } = state.teams[id];
+      const { name, players, roundsWon } = state.teams[id];
       const total = totals[id];
       const remaining = Math.max(0, state.target - total);
       return {
         id,
         name,
+        players,
         roundsWon,
         total,
         remaining,
-        label: `${copy.team.a11y(name, total, remaining, roundsWon)}. ${copy.team.a11yHint}`,
+        label: `${copy.team.a11y(name, players, total, remaining, roundsWon)}. ${copy.team.a11yHint}`,
       };
     });
   });

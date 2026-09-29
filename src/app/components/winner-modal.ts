@@ -17,9 +17,9 @@ import { Overlays } from './overlays';
 import { Slashes } from './slashes';
 
 /**
- * The winning livery floods the screen. "Nueva ronda" counts the win;
+ * The winning livery floods the screen. "Nueva partida" counts the win;
  * everything else, Escape and system Back included, takes back what ended
- * the round.
+ * the match.
  */
 @Component({
   selector: 'app-winner-modal',
@@ -38,13 +38,20 @@ import { Slashes } from './slashes';
                 {{ copy.winner.title }}
               </h2>
               <p class="body">{{ copy.winner.body(result.names[result.winner]) }}</p>
-              <p class="rounds">{{ copy.winner.roundsAfter(result.roundsAfter) }}</p>
+              <p class="rounds">{{ copy.winner.winsAfter(result.roundsAfter) }}</p>
             </div>
 
             <div class="scores">
               <p class="winner-slab lean">
-                <span class="name" [appFitText]="result.names[result.winner]">
-                  {{ result.names[result.winner] }}
+                <span class="who">
+                  <span class="name" [appFitText]="result.names[result.winner]">
+                    {{ result.names[result.winner] }}
+                  </span>
+                  @if (result.players[result.winner]; as players) {
+                    <span class="players" [appFitText]="copy.players.pair(players)">{{
+                      copy.players.pair(players)
+                    }}</span>
+                  }
                 </span>
                 <span
                   class="winner-total numerals"
@@ -55,8 +62,15 @@ import { Slashes } from './slashes';
                 </span>
               </p>
               <p class="loser-slab lean">
-                <span class="name loser-name" [appFitText]="result.names[loser()]">
-                  {{ result.names[loser()] }}
+                <span class="who">
+                  <span class="name" [appFitText]="result.names[loser()]">
+                    {{ result.names[loser()] }}
+                  </span>
+                  @if (result.players[loser()]; as players) {
+                    <span class="players" [appFitText]="copy.players.pair(players)">{{
+                      copy.players.pair(players)
+                    }}</span>
+                  }
                 </span>
                 <span class="loser-total numerals">{{ result.totals[loser()] }}</span>
               </p>
@@ -70,8 +84,8 @@ import { Slashes } from './slashes';
               </span>
             </button>
             <button type="button" class="slab lean next" (click)="store.closeRound()">
-              <span class="slab__label" [appFitText]="copy.winner.close">{{
-                copy.winner.close
+              <span class="slab__label" [appFitText]="store.closeLabel()">{{
+                store.closeLabel()
               }}</span>
             </button>
           </div>
@@ -215,9 +229,19 @@ import { Slashes } from './slashes';
       text-transform: uppercase;
     }
 
-    .loser-name {
-      flex: 1;
+    .players {
+      font: italic 600 var(--t-label) / 1.3 var(--font);
+      text-transform: uppercase;
+    }
+
+    .who {
+      display: flex;
+      flex-direction: column;
       min-width: 0;
+    }
+
+    .loser-slab .who {
+      flex: 1;
     }
 
     .loser-total {
@@ -280,9 +304,8 @@ import { Slashes } from './slashes';
         padding: var(--s-sm) var(--s-xxl);
       }
 
-      .winner-slab .name {
+      .winner-slab .who {
         flex: 1;
-        min-width: 0;
       }
 
       .winner-total {
@@ -349,7 +372,7 @@ export class WinnerModal {
   protected readonly copy = copy;
   protected readonly store = inject(GameStore);
 
-  /** The round was decided by a target that only the settings can change. */
+  /** The match was decided by a target that only the settings can change. */
   readonly openSettings = output<void>();
 
   private readonly overlays = inject(Overlays);

@@ -20,8 +20,8 @@ Run lint, typecheck and tests before declaring any task done. The service worker
 
 ## Structure
 
-- `src/app/game/`: the rules (`state.ts`, a pure reducer), persistence (`storage.ts`) and the signals store (`game.store.ts`). No DOM access in `state.ts`.
-- `src/app/components/`: one file per component, template and styles inline.
+- `src/app/game/`: the rules of a match (`state.ts`, a pure reducer), of a tournament (`tournament.ts`) and of the history (`history.ts`); persistence (`storage.ts`); and the signals stores (`game.store.ts` for the board and the tournament, `history.store.ts` for finished matches). No DOM access in `state.ts`, `tournament.ts` or `history.ts`.
+- `src/app/components/`: one file per component, template and styles inline. `sheet.ts` is the bottom sheet for a short task; `screen.ts` is the full screen for the history and the tournament. There is no router.
 - `src/app/directives/`: `appFitText` (shrinks one line of text to fit) and `appLongPress`.
 - `src/app/platform/`: browser features that may be missing (wake lock, vibration).
 - `src/app/copy.ts`: every Spanish string.
@@ -30,6 +30,8 @@ Run lint, typecheck and tests before declaring any task done. The service worker
 ## Rules
 
 - Interface language is Spanish only; add strings to `copy.ts`.
-- Sheets open through their `open()` method, called directly from the tap, so the keyboard opens with them on iOS. Do not open them from an effect.
+- Sheets open through their `open()` method, called directly from the tap, so the keyboard opens with them on iOS. Do not open them from an effect. Screens without a text field may follow state, as the winner screen does.
+- A change that can be undone whole goes through `GameStore.change()`, which keeps the board, the tournament and the history entries it wrote together.
+- Team colours belong to the side of the board, not to a team: in a tournament a team takes the colour of the seat it sits in.
 - The app is served under a subpath on GitHub Pages: keep asset and manifest paths relative.
 - Input text is at least 16px, or iOS zooms the page.

@@ -5,7 +5,10 @@ import { FitText } from '../directives/fit-text';
 import { GameStore } from '../game/game.store';
 import { Sheet } from './sheet';
 
-/** Asks how much to clear. Each answer says what it keeps, and both can be undone. */
+/**
+ * Asks how much to clear. Each answer says what it keeps, and both can be
+ * undone. A tournament is ended from its table, so here it only clears hands.
+ */
 @Component({
   selector: 'app-reset-sheet',
   imports: [Sheet, FitText],
@@ -26,19 +29,26 @@ import { Sheet } from './sheet';
         <p class="help" id="reset-sheet-hands">{{ copy.reset.handsHelp }}</p>
       </div>
 
-      <div class="choice">
-        <button
-          type="button"
-          class="slab slab--danger lean"
-          aria-describedby="reset-sheet-all"
-          (click)="all()"
-        >
-          <span class="slab__label" [appFitText]="copy.reset.all">{{ copy.reset.all }}</span>
-        </button>
-        <p class="help" id="reset-sheet-all">{{ copy.reset.allHelp }}</p>
-      </div>
+      @if (store.tournament() === null) {
+        <div class="choice">
+          <button
+            type="button"
+            class="slab slab--danger lean"
+            aria-describedby="reset-sheet-all"
+            (click)="all()"
+          >
+            <span class="slab__label" [appFitText]="copy.reset.all">{{ copy.reset.all }}</span>
+          </button>
+          <p class="help" id="reset-sheet-all">{{ copy.reset.allHelp }}</p>
+        </div>
+      }
 
-      <p class="note">{{ copy.reset.undoNote }}</p>
+      <p class="note">
+        {{ store.tournament() === null ? copy.reset.undoNote : copy.reset.undoNoteOne }}
+      </p>
+      @if (store.tournament() !== null) {
+        <p class="help">{{ copy.reset.tournament }}</p>
+      }
 
       <button type="button" class="slab slab--compact lean cancel" (click)="sheet().close()">
         <span class="slab__label" [appFitText]="copy.reset.cancel">{{ copy.reset.cancel }}</span>
@@ -83,7 +93,7 @@ import { Sheet } from './sheet';
 export class ResetSheet {
   protected readonly copy = copy;
 
-  private readonly store = inject(GameStore);
+  protected readonly store = inject(GameStore);
   protected readonly sheet = viewChild.required(Sheet);
 
   open(): void {
