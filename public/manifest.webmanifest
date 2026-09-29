@@ -3,7 +3,7 @@
   "short_name": "Dominó",
   "description": "Contador de puntos para dominó en dos equipos.",
   "lang": "es",
-  "id": "/domino/",
+  "id": "/dominoes/",
   "scope": "./",
   "start_url": "./",
   "display": "standalone",
