@@ -9,6 +9,7 @@ import {
   reducer,
   selectTotals,
   selectWinner,
+  sharedPlayer,
 } from './state';
 
 function play(actions: Action[], from: State = initialState): State {
@@ -103,7 +104,7 @@ describe('winner', () => {
     ]);
     const next = reducer(won, { type: 'closeRound', winner: 'a' });
     expect(next.rows).toEqual([]);
-    expect(next.teams.a).toEqual({ name: 'Los Primos', players: null, roundsWon: 1 });
+    expect(next.teams.a).toEqual({ name: 'Los Primos', players: null, roundsWon: 1, saved: null });
     expect(next.teams.b.roundsWon).toBe(0);
     expect(next.target).toBe(100);
     expect(next.quickValue).toBe(25);
@@ -134,7 +135,12 @@ describe('settings', () => {
     ]);
     const cleared = reducer(state, { type: 'clearRows' });
     expect(cleared.rows).toEqual([]);
-    expect(cleared.teams.a).toEqual({ name: 'Los Primos', players: null, roundsWon: 1 });
+    expect(cleared.teams.a).toEqual({
+      name: 'Los Primos',
+      players: null,
+      roundsWon: 1,
+      saved: null,
+    });
     expect(cleared.target).toBe(150);
   });
 
@@ -203,7 +209,12 @@ describe('players', () => {
       name: 'Los Primos',
       players: ['Ana', 'Luis'],
     });
-    expect(state.teams.a).toEqual({ name: 'Los Primos', players: ['Ana', 'Luis'], roundsWon: 0 });
+    expect(state.teams.a).toEqual({
+      name: 'Los Primos',
+      players: ['Ana', 'Luis'],
+      roundsWon: 0,
+      saved: null,
+    });
     expect(state.teams.b.players).toBeNull();
   });
 
@@ -216,6 +227,7 @@ describe('players', () => {
       name: 'Las Primas',
       players: ['Marta', 'Rosa'],
       roundsWon: 0,
+      saved: null,
     });
     expect(reducer(state, { type: 'resetAll' }).teams.b.players).toBeNull();
   });
@@ -242,13 +254,13 @@ describe('seat', () => {
     const next = reducer(state, {
       type: 'seat',
       teams: {
-        a: { name: 'Uno', players: null, roundsWon: 2 },
-        b: { name: 'Dos', players: ['Ana', 'Luis'], roundsWon: 0 },
+        a: { name: 'Uno', players: null, roundsWon: 2, saved: null },
+        b: { name: 'Dos', players: ['Ana', 'Luis'], roundsWon: 0, saved: null },
       },
     });
     expect(next.rows).toEqual([]);
     expect(next.target).toBe(150);
-    expect(next.teams.a).toEqual({ name: 'Uno', players: null, roundsWon: 2 });
+    expect(next.teams.a).toEqual({ name: 'Uno', players: null, roundsWon: 2, saved: null });
     expect(next.teams.b.players).toEqual(['Ana', 'Luis']);
   });
 });
@@ -258,5 +270,102 @@ describe('cleanName', () => {
     const name = cleanName('🁣'.repeat(20), 'a');
     expect(Array.from(name)).toHaveLength(16);
     expect(name).toBe('🁣'.repeat(16));
+  });
+});
+
+describe('teams saved at a mesa', () => {
+  const seated = play([
+    { type: 'seatTeam', team: 'a', name: 'Primos', players: ['Ana', 'Luis'], saved: 's1' },
+    { type: 'seatTeam', team: 'b', name: 'Tías', players: null, saved: 's2' },
+  ]);
+
+  it('count their wins, and bring them back when they sit again', () => {
+    const won = play([add('a', 200, '1'), { type: 'closeRound', winner: 'a' }], seated);
+    expect(won.tally).toEqual({ s1: 1 });
+
+    const away = reducer(won, {
+      type: 'seatTeam',
+      team: 'a',
+      name: 'Otros',
+      players: null,
+      saved: 's3',
+    });
+    expect(away.teams.a.roundsWon).toBe(0);
+    const back = reducer(away, {
+      type: 'seatTeam',
+      team: 'a',
+      name: 'Primos',
+      players: null,
+      saved: 's1',
+    });
+    expect(back.teams.a.roundsWon).toBe(1);
+  });
+
+  it('keep their wins when only the players change', () => {
+    const won = play([add('a', 200, '1'), { type: 'closeRound', winner: 'a' }], seated);
+    const changed = reducer(won, {
+      type: 'setTeam',
+      team: 'a',
+      name: 'Primos',
+      players: ['Ana', 'Rosa'],
+    });
+    expect(changed.teams.a).toMatchObject({ roundsWon: 1, saved: 's1', players: ['Ana', 'Rosa'] });
+  });
+
+  it('take the wins of the side with them when a team is saved', () => {
+    const won = play([add('b', 200, '1'), { type: 'closeRound', winner: 'b' }]);
+    const saved = reducer(won, {
+      type: 'setTeam',
+      team: 'b',
+      name: 'Equipo B',
+      players: null,
+      saved: 's9',
+    });
+    expect(saved.tally).toEqual({ s9: 1 });
+  });
+
+  it('are forgotten on a full reset', () => {
+    const won = play(
+      [add('a', 200, '1'), { type: 'closeRound', winner: 'a' }, { type: 'resetAll' }],
+      seated,
+    );
+    expect(won.tally).toEqual({});
+  });
+});
+
+describe('choosing the next teams', () => {
+  it('follows a match closed at a mesa, and takes no points until the match starts', () => {
+    const paused = play([add('a', 200, '1'), { type: 'closeRound', winner: 'a', pause: true }]);
+    expect(paused.between).toBe('next');
+    expect(reducer(paused, add('b', 10, '2'))).toBe(paused);
+    const resumed = reducer(paused, { type: 'resume' });
+    expect(resumed.between).toBeNull();
+    expect(reducer(resumed, add('b', 10, '2')).rows).toHaveLength(1);
+  });
+
+  it('opens at a clean board only', () => {
+    expect(reducer(initialState, { type: 'waitForTeams' }).between).toBe('start');
+    const scored = play([add('a', 10, '1')]);
+    expect(reducer(scored, { type: 'waitForTeams' })).toBe(scored);
+  });
+
+  it('is read back from a saved board, and boards from before mesas load too', () => {
+    const paused = { ...initialState, between: 'next', tally: { s1: 2, bad: -1 } };
+    expect(parseState(JSON.parse(JSON.stringify(paused)))).toMatchObject({
+      between: 'next',
+      tally: { s1: 2 },
+    });
+    const old: Record<string, unknown> = { ...initialState };
+    delete old['between'];
+    delete old['tally'];
+    expect(parseState(old)).toEqual(initialState);
+  });
+});
+
+describe('sharedPlayer', () => {
+  it('finds a player in both teams, accents and case aside', () => {
+    expect(sharedPlayer(['Ana', 'Luis'], ['Rosa', 'luís'])).toBe('Luis');
+    expect(sharedPlayer(['Ana', 'Luis'], ['Rosa', 'Marta'])).toBeNull();
+    expect(sharedPlayer(null, ['Rosa', 'Marta'])).toBeNull();
   });
 });

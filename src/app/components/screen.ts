@@ -27,7 +27,7 @@ let nextId = 0;
   selector: 'app-screen',
   imports: [FitText, UndoSnackbar],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { '[class.with-undo]': 'store.undo()?.reversal?.kind === "history"' },
+  host: { '[class.with-undo]': 'store.screenUndo()' },
   template: `
     <dialog
       #dialog

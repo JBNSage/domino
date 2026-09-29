@@ -11,6 +11,7 @@ import { copy } from '../copy';
 import { FitText } from '../directives/fit-text';
 import { GameStore } from '../game/game.store';
 import { TEAM_IDS, TeamId } from '../game/state';
+import { TablesStore } from '../game/tables.store';
 import { Appearance, AppearanceChoice } from '../platform/appearance';
 import { Choice, ChoiceGroup } from './choice-group';
 import { Sheet } from './sheet';
@@ -34,6 +35,16 @@ import { Sheet } from './sheet';
         </button>
         <button type="button" class="slab lean entry" (click)="go(history)">
           <span class="slab__label" [appFitText]="copy.menu.history">{{ copy.menu.history }}</span>
+        </button>
+        <button
+          type="button"
+          class="slab lean entry"
+          [attr.aria-label]="copy.menu.mesaA11y(mesa())"
+          (click)="go(tables)"
+        >
+          <span class="slab__label" [appFitText]="copy.menu.mesa(mesa())">{{
+            copy.menu.mesa(mesa())
+          }}</span>
         </button>
       </div>
 
@@ -122,10 +133,11 @@ import { Sheet } from './sheet';
     @media (max-height: 36em) and (min-width: 30em) {
       .entries {
         flex-direction: row;
+        flex-wrap: wrap;
       }
 
       .entry {
-        flex: 1 1 0;
+        flex: 1 1 10rem;
         min-height: var(--min-target);
       }
     }
@@ -154,16 +166,20 @@ export class MenuSheet {
   /** A new tournament, or the table of the one being played. */
   readonly tournament = output<void>();
   readonly history = output<void>();
+  /** The mesas, to choose where the match is played. */
+  readonly tables = output<void>();
   readonly editTeam = output<TeamId>();
   // eslint-disable-next-line @angular-eslint/no-output-native
   readonly reset = output<void>();
 
   private readonly store = inject(GameStore);
+  private readonly mesas = inject(TablesStore);
   protected readonly sheet = viewChild.required(Sheet);
 
   protected readonly tournamentLabel = computed(() =>
     this.store.tournament() === null ? copy.menu.tournament : copy.menu.table,
   );
+  protected readonly mesa = computed(() => this.mesas.active()?.name ?? null);
   protected readonly teams = computed(() =>
     TEAM_IDS.map((id) => ({ id, name: this.store.state().teams[id].name })),
   );

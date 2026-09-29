@@ -5,6 +5,7 @@
     (editTarget)="settings.open('target')"
     (menu)="menu.open()"
     (table)="standings.open()"
+    (tables)="tables.open()"
   />
   <app-team-lockup (pressTeam)="points.open($event)" />
   <div class="body">
@@ -18,7 +19,8 @@
   #menu
   (tournament)="store.tournament() === null ? setup.open() : standings.open()"
   (history)="history.open()"
-  (editTeam)="team.open(boardTeam($event))"
+  (tables)="tables.open()"
+  (editTeam)="editSide($event)"
   (reset)="reset.open()"
 />
 <app-points-sheet #points />
@@ -33,11 +35,19 @@
 <app-tournament-record-screen #record (openMatch)="match.open($event)" />
 <app-match-screen #match />
 
+<app-tables-screen #tables (edit)="mesa.open($event)" />
+<app-table-screen #mesa (editTeam)="team.open($event)" />
+
 <app-tournament-setup-screen #setup (editTeam)="team.open($event)" />
-<app-next-match-screen (table)="standings.open()" (setup)="setup.open()" />
+<app-next-match-screen
+  (table)="standings.open()"
+  (setup)="setup.open()"
+  (editTeam)="team.open($event)"
+/>
 <app-standings-screen #standings />
 <app-champion-screen />
 
+<app-seat-sheet #seat (editTeam)="team.open($event)" />
 <app-team-sheet #team />
 <app-winner-modal (openSettings)="settings.open('target')" />
 

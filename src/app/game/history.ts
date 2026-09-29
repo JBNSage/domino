@@ -27,6 +27,8 @@ export type MatchRecord = {
   /** The tournament it was played in, if any. */
   tournament: string | null;
   tieBreak: boolean;
+  /** The name of the mesa it was played at, if any. */
+  table: string | null;
 };
 
 export type TournamentRecord = {
@@ -139,6 +141,8 @@ function parseMatch(value: unknown): MatchRecord | null {
     winner: raw.winner,
     tournament: typeof raw.tournament === 'string' ? raw.tournament : null,
     tieBreak: raw.tieBreak === true,
+    // Matches kept before mesas existed were played at none.
+    table: typeof raw.table === 'string' && raw.table.trim() !== '' ? raw.table : null,
   };
 }
 

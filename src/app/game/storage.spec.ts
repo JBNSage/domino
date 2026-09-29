@@ -70,7 +70,12 @@ describe('storage', () => {
       teams: { a: { name: 'Los Primos', roundsWon: 2 }, b: { name: 'Equipo B', roundsWon: 0 } },
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(old));
-    expect(loadState()?.teams.a).toEqual({ name: 'Los Primos', players: null, roundsWon: 2 });
+    expect(loadState()?.teams.a).toEqual({
+      name: 'Los Primos',
+      players: null,
+      roundsWon: 2,
+      saved: null,
+    });
   });
 
   it('keeps and clears the tournament being played', () => {
@@ -110,6 +115,7 @@ describe('storage', () => {
       winner: 'a' as const,
       tournament: null,
       tieBreak: false,
+      table: null,
     };
     saveHistory({ matches: [match], tournaments: [] });
     expect(loadHistory().matches).toEqual([match]);

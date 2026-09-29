@@ -20,14 +20,18 @@ import { SettingsSheet } from './components/settings-sheet';
 import { StandingsScreen } from './components/standings-screen';
 import { TargetHeader } from './components/target-header';
 import { TeamLockup } from './components/team-lockup';
-import { TeamEdit, TeamSheet } from './components/team-sheet';
+import { SeatSheet } from './components/seat-sheet';
+import { TableScreen } from './components/table-screen';
+import { TablesScreen } from './components/tables-screen';
+import { TeamEdits } from './components/team-edits';
+import { TeamSheet } from './components/team-sheet';
 import { TournamentRecordScreen } from './components/tournament-record-screen';
 import { TournamentSetupScreen } from './components/tournament-setup-screen';
 import { UndoSnackbar } from './components/undo-snackbar';
 import { WinnerModal } from './components/winner-modal';
-import { copy } from './copy';
 import { GameStore } from './game/game.store';
-import { DEFAULT_NAMES, TeamId, otherTeam } from './game/state';
+import { TeamId } from './game/state';
+import { TablesStore } from './game/tables.store';
 import { keepStorage } from './game/storage';
 import { followModality } from './platform/modality';
 import { keepAwake } from './platform/wake-lock';
@@ -45,7 +49,10 @@ import { keepAwake } from './platform/wake-lock';
     SettingsSheet,
     ResetSheet,
     TeamSheet,
+    SeatSheet,
     HistoryScreen,
+    TablesScreen,
+    TableScreen,
     MatchScreen,
     TournamentRecordScreen,
     TournamentSetupScreen,
@@ -60,6 +67,10 @@ import { keepAwake } from './platform/wake-lock';
 })
 export class App {
   protected readonly store = inject(GameStore);
+  private readonly tables = inject(TablesStore);
+  private readonly edits = inject(TeamEdits);
+  private readonly seat = viewChild.required(SeatSheet);
+  private readonly team = viewChild.required(TeamSheet);
 
   private readonly board = viewChild.required<ElementRef<HTMLElement>>('board');
   private readonly list = viewChild.required(ScoreList);
@@ -72,27 +83,13 @@ export class App {
     this.followKeyboard(destroyRef);
   }
 
-  /** What the team sheet needs to change one of the two teams at the board. */
-  protected boardTeam(team: TeamId): TeamEdit {
-    const { teams } = this.store.state();
-    const tournament = this.store.tournament();
-    // In a tournament no two teams share a name; at the board, the two playing do not.
-    const taken =
-      tournament === null
-        ? [teams[otherTeam(team)].name]
-        : tournament.teams
-            .filter((other) => other.id !== tournament.seats[team])
-            .map((other) => other.name);
-    return {
-      title: copy.players.title,
-      accent: `var(--c-team-${team})`,
-      name: teams[team].name,
-      players: teams[team].players,
-      fallback: DEFAULT_NAMES[team],
-      taken,
-      confirm: copy.players.save,
-      save: (name, players) => this.store.setTeam(team, name, players),
-    };
+  /**
+   * A side of the board, from the menu. At a mesa, another team can take it;
+   * otherwise its name and players change.
+   */
+  protected editSide(side: TeamId): void {
+    if (this.tables.active() !== null && this.store.tournament() === null) this.seat().open(side);
+    else this.team().open(this.edits.side(side));
   }
 
   /** The undo bar is gone once used, so focus goes to what it changed. */

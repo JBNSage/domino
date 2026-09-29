@@ -4,12 +4,24 @@ import { copy } from '../copy';
 import { haptics } from '../platform/haptics';
 import { History } from './history';
 import { HistoryStore } from './history.store';
+import { TablesStore } from './tables.store';
+import {
+  SavedTeam,
+  Tables,
+  removePlayer,
+  removeTable,
+  removeTeam,
+  saveTeam,
+  setActive,
+  updateTable,
+} from './tables';
 import { TournamentDraft } from './tournament-draft';
 import {
   Action,
   Players,
   Row,
   State,
+  TEAM_IDS,
   Team,
   TeamId,
   initialState,
@@ -72,7 +84,8 @@ type Reversal =
   | { kind: 'removeRow'; id: string }
   | { kind: 'editRow'; id: string; points: number }
   | { kind: 'snapshot'; snapshot: Snapshot }
-  | { kind: 'history'; removed: History };
+  | { kind: 'history'; removed: History }
+  | { kind: 'tables'; before: Tables; after: Tables };
 
 /** `lasting` offers have no time limit. */
 export type Undo = { message: string; reversal: Reversal; lasting: boolean };
@@ -138,7 +151,10 @@ export class GameStore {
   readonly closeLabel = computed(() => {
     const tournament = this.tournament();
     const result = this.result();
-    if (tournament === null || result === null) return copy.winner.close;
+    // At a mesa the next two teams are chosen before the next match.
+    if (tournament === null)
+      return this.tables.active() === null ? copy.winner.close : copy.tournament.next;
+    if (result === null) return copy.winner.close;
     const after = recordResult(tournament, '', result.winner, result.totals);
     if (after.phase === 'done') return copy.tournament.result;
     return after.phase === 'between' ? copy.tournament.next : copy.winner.close;
@@ -147,8 +163,15 @@ export class GameStore {
   /** Whether the way back on offer undoes a whole step, such as closing a match. */
   readonly canGoBack = computed(() => this.undo()?.reversal.kind === 'snapshot');
 
+  /** A way back that belongs on the screens above the board: removed entries. */
+  readonly screenUndo = computed(() => {
+    const kind = this.undo()?.reversal.kind;
+    return kind === 'history' || kind === 'tables';
+  });
+
   private readonly history = inject(HistoryStore);
   private readonly draft = inject(TournamentDraft);
+  private readonly tables = inject(TablesStore);
   private readonly lastChange = signal<LastChange>({ kind: 'hand' });
   private undoTimer: ReturnType<typeof setTimeout> | null = null;
   private nextId = 0;
@@ -170,6 +193,15 @@ export class GameStore {
       if (result === null) return;
       haptics.win();
       untracked(() => this.announce(copy.winner.body(result.names[result.winner])));
+    });
+
+    // A way back to older mesas would undo whatever changed them since.
+    effect(() => {
+      const tables = this.tables.tables();
+      untracked(() => {
+        const reversal = this.undo()?.reversal;
+        if (reversal?.kind === 'tables' && reversal.after !== tables) this.clearUndo();
+      });
     });
 
     this.followOtherTabs();
@@ -224,18 +256,80 @@ export class GameStore {
     this.setTeam(team, name, this.state().teams[team].players);
   }
 
-  setTeam(team: TeamId, name: string, players: Players | null): void {
+  /** Changes the team at one side; `saved` links it to a team of the mesa, or unlinks it. */
+  setTeam(team: TeamId, name: string, players: Players | null, saved?: string | null): void {
     const before = this.state();
-    this.dispatch({ type: 'setTeam', team, name, players });
+    this.dispatch({ type: 'setTeam', team, name, players, saved });
     if (this.state() === before) return;
     // In a tournament the team keeps its new name when it leaves the table.
-    const saved = this.state().teams[team];
+    const changed = this.state().teams[team];
     this.tournament.update((tournament) =>
       tournament === null
         ? null
-        : renameTeam(tournament, tournament.seats[team], saved.name, saved.players),
+        : renameTeam(tournament, tournament.seats[team], changed.name, changed.players),
     );
-    this.boardChanged();
+    // While the next teams are chosen, the closed match can still be taken back.
+    if (this.state().between === null) this.boardChanged();
+  }
+
+  /** Another team takes one side, bringing the wins it has at the mesa. */
+  seatTeam(team: TeamId, seated: Omit<SavedTeam, 'id'> & { saved: string | null }): void {
+    this.dispatch({ type: 'seatTeam', team, ...seated });
+    this.announce(copy.seat.announce(this.state().teams[team].name));
+  }
+
+  /** Starts the match once the two teams are chosen. */
+  startMatch(): void {
+    if (this.state().between === null) return;
+    this.dispatch({ type: 'resume' });
+  }
+
+  /** Plays at another mesa, or at none. With an empty board, its first two teams are chosen. */
+  chooseTable(id: string | null): void {
+    const before = this.tables.tables();
+    this.tables.change((tables) => setActive(tables, id));
+    if (this.tables.tables() === before) return;
+    if (id === null) this.dispatch({ type: 'resume' });
+    else if (this.tournament() === null) this.dispatch({ type: 'waitForTeams' });
+  }
+
+  /** Keeps a team at a mesa; the side it sits at, if any, follows the change. */
+  saveTableTeam(table: string, team: SavedTeam): void {
+    this.tables.changeTable(table, (current) => saveTeam(current, team));
+    if (this.tournament() !== null) return;
+    const { teams } = this.state();
+    for (const side of TEAM_IDS) {
+      if (teams[side].saved !== team.id) continue;
+      this.dispatch({ type: 'setTeam', team: side, name: team.name, players: team.players });
+    }
+  }
+
+  removeTable(id: string): void {
+    this.changeTables(copy.undo.tableDeleted, (tables) => removeTable(tables, id));
+  }
+
+  removeTablePlayer(table: string, player: string): void {
+    this.changeTables(copy.undo.playerDeleted, (tables) =>
+      updateTable(tables, table, (current) => removePlayer(current, player)),
+    );
+  }
+
+  removeTableTeam(table: string, team: string): void {
+    this.changeTables(copy.undo.teamDeleted, (tables) =>
+      updateTable(tables, table, (current) => removeTeam(current, team)),
+    );
+  }
+
+  /** Changes a tournament team, such as its players between two matches. */
+  setTournamentTeam(id: string, name: string, players: Players | null): void {
+    const tournament = this.tournament();
+    if (tournament === null) return;
+    const side = TEAM_IDS.find((seat) => tournament.seats[seat] === id);
+    if (tournament.phase === 'playing' && side !== undefined) {
+      this.setTeam(side, name, players);
+      return;
+    }
+    this.tournament.set(renameTeam(tournament, id, name, players));
   }
 
   deleteRow(row: Row, index: number): void {
@@ -251,6 +345,7 @@ export class GameStore {
     if (result === null) return;
     const { teams, target, rows } = this.state();
     const tournament = this.tournament();
+    const table = this.tables.active();
     const id = this.newId();
 
     this.change(copy.undo.roundClosed, () => {
@@ -266,8 +361,11 @@ export class GameStore {
         winner: result.winner,
         tournament: tournament?.id ?? null,
         tieBreak: tournament !== null && tournament.tieBreak !== null,
+        table: table?.name ?? null,
       });
-      this.dispatch({ type: 'closeRound', winner: result.winner });
+      // At a mesa, the next two teams are chosen first; a tournament has its own step.
+      const pause = table !== null && tournament === null;
+      this.dispatch({ type: 'closeRound', winner: result.winner, pause });
       if (tournament !== null) {
         this.tournament.set(recordResult(tournament, id, result.winner, result.totals));
       }
@@ -429,6 +527,9 @@ export class GameStore {
       case 'history':
         this.history.restore(reversal.removed);
         return null;
+      case 'tables':
+        this.tables.tables.set(reversal.before);
+        return null;
     }
   }
 
@@ -477,6 +578,15 @@ export class GameStore {
     this.offer(message, { kind: 'history', removed }, lasting);
   }
 
+  /** Removes something from the mesas, with a way back that lasts. */
+  private changeTables(message: string, apply: (tables: Tables) => Tables): void {
+    const before = this.tables.tables();
+    this.tables.change(apply);
+    const after = this.tables.tables();
+    if (after === before) return;
+    this.offer(message, { kind: 'tables', before, after }, true);
+  }
+
   /** Makes a change that can be taken back whole. */
   private change(message: string, apply: () => Recorded | void): void {
     const state = this.state();
@@ -491,7 +601,8 @@ export class GameStore {
   private seat(tournament: Tournament): void {
     const at = (side: TeamId): Team => {
       const { name, players } = teamOf(tournament, tournament.seats[side]);
-      return { name, players, roundsWon: winsOf(tournament, tournament.seats[side]) };
+      // Tournament wins are counted by the tournament, not by the mesa.
+      return { name, players, roundsWon: winsOf(tournament, tournament.seats[side]), saved: null };
     };
     this.dispatch({ type: 'seat', teams: { a: at('a'), b: at('b') } });
   }

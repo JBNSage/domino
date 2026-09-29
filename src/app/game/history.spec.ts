@@ -27,6 +27,7 @@ const match = (id: string, endedAt: number, tournament: string | null = null): M
   winner: 'a',
   tournament,
   tieBreak: false,
+  table: null,
 });
 
 const tournament = (id: string, endedAt: number): TournamentRecord => ({

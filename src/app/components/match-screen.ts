@@ -26,6 +26,9 @@ import { Screen } from './screen';
       @if (match(); as match) {
         <p class="facts numerals">
           <span>{{ copy.date(match.endedAt) }}</span>
+          @if (match.table; as table) {
+            <span>{{ copy.history.table(table) }}</span>
+          }
           <span>{{ copy.history.target(match.target) }}</span>
           <span>{{ copy.history.hands(match.rows.length) }}</span>
           @if (match.tournament !== null) {

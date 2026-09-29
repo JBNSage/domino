@@ -13,13 +13,24 @@ export type Team = {
   name: string;
   players: Players | null;
   roundsWon: number;
+  /** The team saved at a mesa that sits here, whose wins follow it. */
+  saved: string | null;
 };
+
+/**
+ * `start`: a mesa was chosen and the first two teams are being picked.
+ * `next`: a match at a mesa is over and the next two are being picked.
+ */
+export type Between = 'start' | 'next';
 
 export type State = {
   teams: Record<TeamId, Team>;
   target: number;
   quickValue: number;
   rows: Row[];
+  /** Wins of each team saved at a mesa, by its id, kept while it sits out. */
+  tally: Record<string, number>;
+  between: Between | null;
 };
 
 export type Action =
@@ -28,11 +39,14 @@ export type Action =
   | { type: 'restoreRow'; row: Row; index: number }
   | { type: 'editRow'; id: string; points: number }
   | { type: 'renameTeam'; team: TeamId; name: string }
-  | { type: 'setTeam'; team: TeamId; name: string; players: Players | null }
+  | { type: 'setTeam'; team: TeamId; name: string; players: Players | null; saved?: string | null }
+  | { type: 'seatTeam'; team: TeamId; name: string; players: Players | null; saved: string | null }
   | { type: 'seat'; teams: Record<TeamId, Team> }
   | { type: 'setTarget'; target: number }
   | { type: 'setQuickValue'; value: number }
-  | { type: 'closeRound'; winner: TeamId }
+  | { type: 'closeRound'; winner: TeamId; pause?: boolean }
+  | { type: 'waitForTeams' }
+  | { type: 'resume' }
   | { type: 'clearRows' }
   | { type: 'resetAll' }
   | { type: 'hydrate'; state: State };
@@ -53,12 +67,14 @@ export const MAX_PLAYER_LENGTH = 16;
 
 export const initialState: State = {
   teams: {
-    a: { name: DEFAULT_NAMES.a, players: null, roundsWon: 0 },
-    b: { name: DEFAULT_NAMES.b, players: null, roundsWon: 0 },
+    a: { name: DEFAULT_NAMES.a, players: null, roundsWon: 0, saved: null },
+    b: { name: DEFAULT_NAMES.b, players: null, roundsWon: 0, saved: null },
   },
   target: DEFAULT_TARGET,
   quickValue: DEFAULT_QUICK_VALUE,
   rows: [],
+  tally: {},
+  between: null,
 };
 
 export function otherTeam(team: TeamId): TeamId {
@@ -109,6 +125,26 @@ export function cleanPlayers(first: string, second: string): Players | null | 'i
   return written === 2 ? players : 'incomplete';
 }
 
+/** One player's name, tidied; empty when nothing was written. */
+export function cleanPlayer(name: string): string {
+  return tidy(name, MAX_PLAYER_LENGTH);
+}
+
+/** Lower case and without accents, so "Ángel" and "angel" are the same name. */
+export function fold(text: string): string {
+  return text.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().trim().replace(/\s+/g, ' ');
+}
+
+export function sameName(one: string, other: string): boolean {
+  return fold(one) === fold(other);
+}
+
+/** A player the two teams have in common, or null. */
+export function sharedPlayer(one: Players | null, other: Players | null): string | null {
+  if (one === null || other === null) return null;
+  return one.find((player) => other.some((each) => sameName(each, player))) ?? null;
+}
+
 export function parsePlayers(value: unknown): Players | null {
   if (!Array.isArray(value) || value.length !== 2) return null;
   const [first, second] = value as unknown[];
@@ -126,6 +162,8 @@ export function reducer(state: State, action: Action): State {
   switch (action.type) {
     case 'addPoints': {
       if (!isValidAmount(action.points, MAX_POINTS)) return state;
+      // Nobody scores while the next two teams are being chosen.
+      if (state.between !== null) return state;
       // A finished match takes no more points until the round is closed.
       if (selectWinner(state) !== null) return state;
       const row: Row = { id: action.id, team: action.team, points: action.points };
@@ -158,18 +196,35 @@ export function reducer(state: State, action: Action): State {
         teams: { ...state.teams, [action.team]: { ...state.teams[action.team], name } },
       };
     }
+    // The same team, changed: it keeps its wins, and a saved team takes them along.
     case 'setTeam': {
       const current = state.teams[action.team];
       const name = cleanName(action.name, action.team);
-      if (name === current.name && samePlayers(action.players, current.players)) return state;
-      return {
-        ...state,
-        teams: { ...state.teams, [action.team]: { ...current, name, players: action.players } },
+      const saved = action.saved === undefined ? current.saved : action.saved;
+      if (
+        name === current.name &&
+        samePlayers(action.players, current.players) &&
+        saved === current.saved
+      ) {
+        return state;
+      }
+      const team: Team = { ...current, name, players: action.players, saved };
+      const tally = saved === null ? state.tally : { ...state.tally, [saved]: current.roundsWon };
+      return { ...state, tally, teams: { ...state.teams, [action.team]: team } };
+    }
+    // Another team takes the side, with the wins it has at the mesa.
+    case 'seatTeam': {
+      const team: Team = {
+        name: cleanName(action.name, action.team),
+        players: action.players,
+        saved: action.saved,
+        roundsWon: action.saved === null ? 0 : (state.tally[action.saved] ?? 0),
       };
+      return { ...state, teams: { ...state.teams, [action.team]: team } };
     }
     // Other teams sit down, as between two matches of a tournament.
     case 'seat':
-      return { ...state, teams: action.teams, rows: [] };
+      return { ...state, teams: action.teams, rows: [], between: null };
     case 'setTarget': {
       if (!isValidAmount(action.target, MAX_TARGET)) return state;
       return { ...state, target: action.target };
@@ -180,15 +235,21 @@ export function reducer(state: State, action: Action): State {
     }
     case 'closeRound': {
       const winner = state.teams[action.winner];
+      const roundsWon = winner.roundsWon + 1;
       return {
         ...state,
         rows: [],
-        teams: {
-          ...state.teams,
-          [action.winner]: { ...winner, roundsWon: winner.roundsWon + 1 },
-        },
+        teams: { ...state.teams, [action.winner]: { ...winner, roundsWon } },
+        tally: winner.saved === null ? state.tally : { ...state.tally, [winner.saved]: roundsWon },
+        between: action.pause === true ? 'next' : null,
       };
     }
+    case 'waitForTeams':
+      return state.between === null && state.rows.length === 0
+        ? { ...state, between: 'start' }
+        : state;
+    case 'resume':
+      return state.between === null ? state : { ...state, between: null };
     case 'clearRows':
       return state.rows.length === 0 ? state : { ...state, rows: [] };
     case 'resetAll':
@@ -237,6 +298,7 @@ export function parseState(value: unknown): State | null {
       name: cleanName(team.name, id),
       players: parsePlayers(team.players),
       roundsWon,
+      saved: typeof team.saved === 'string' ? team.saved : null,
     };
   }
 
@@ -248,7 +310,25 @@ export function parseState(value: unknown): State | null {
   const parsedRows = parseRows(rows);
   if (parsedRows === null) return null;
 
-  return { teams: parsedTeams, target, quickValue, rows: parsedRows };
+  // Boards saved before mesas existed have neither of these.
+  const between = raw.between === 'start' || raw.between === 'next' ? raw.between : null;
+  return {
+    teams: parsedTeams,
+    target,
+    quickValue,
+    rows: parsedRows,
+    tally: parseTally(raw.tally),
+    between,
+  };
+}
+
+function parseTally(value: unknown): Record<string, number> {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) return {};
+  const tally: Record<string, number> = {};
+  for (const [id, won] of Object.entries(value as Record<string, unknown>)) {
+    if (typeof won === 'number' && Number.isInteger(won) && won >= 0) tally[id] = won;
+  }
+  return tally;
 }
 
 export function parseRows(value: unknown): Row[] | null {

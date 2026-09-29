@@ -3,6 +3,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, input, output } f
 import { copy } from '../copy';
 import { FitText } from '../directives/fit-text';
 import { GameStore } from '../game/game.store';
+import { TablesStore } from '../game/tables.store';
 import { winsNeeded } from '../game/tournament';
 
 @Component({
@@ -36,10 +37,10 @@ import { winsNeeded } from '../game/tournament';
       <button
         type="button"
         class="status lean"
-        [attr.aria-label]="copy.tournament.statusA11y(status)"
-        (click)="table.emit()"
+        [attr.aria-label]="status.a11y"
+        (click)="status.tournament ? table.emit() : tables.emit()"
       >
-        <span class="status__text numerals" [appFitText]="status">{{ status }}</span>
+        <span class="status__text numerals" [appFitText]="status.text">{{ status.text }}</span>
         <svg class="chevron" viewBox="0 0 24 24" aria-hidden="true">
           <path d="M10 5l6 7-6 7" />
         </svg>
@@ -175,15 +176,26 @@ export class TargetHeader {
   protected readonly copy = copy;
 
   private readonly store = inject(GameStore);
+  private readonly mesas = inject(TablesStore);
 
+  /** What is being played for in a tournament; otherwise where. */
   protected readonly status = computed(() => {
     const tournament = this.store.tournament();
-    if (tournament === null) return null;
-    return copy.tournament.status(
+    if (tournament === null) {
+      const mesa = this.mesas.active();
+      if (mesa === null) return null;
+      return {
+        tournament: false,
+        text: copy.tables.status(mesa.name),
+        a11y: copy.tables.statusA11y(mesa.name),
+      };
+    }
+    const text = copy.tournament.status(
       winsNeeded(tournament.rule),
       tournament.results.length + 1,
       tournament.tieBreak !== null,
     );
+    return { tournament: true, text, a11y: copy.tournament.statusA11y(text) };
   });
 
   readonly target = input.required<number>();
@@ -191,4 +203,6 @@ export class TargetHeader {
   readonly menu = output<void>();
   /** The table of the tournament being played. */
   readonly table = output<void>();
+  /** The mesas, to play at another. */
+  readonly tables = output<void>();
 }

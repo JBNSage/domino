@@ -111,8 +111,8 @@ export class UndoSnackbar {
   protected readonly update = inject(Update);
 
   /**
-   * On the screens above the board: only entries removed from the history are
-   * offered back, and the update notice is left to the board.
+   * On the screens above the board: only entries removed from the history or
+   * the mesas are offered back, and the update notice is left to the board.
    */
   readonly historyOnly = input(false);
 
@@ -126,7 +126,7 @@ export class UndoSnackbar {
 
   protected readonly offer = computed(() => {
     const undo = this.store.undo();
-    return this.historyOnly() && undo?.reversal.kind !== 'history' ? null : undo;
+    return this.historyOnly() && !this.store.screenUndo() ? null : undo;
   });
 
   protected restore(): void {

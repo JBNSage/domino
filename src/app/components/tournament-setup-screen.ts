@@ -13,7 +13,9 @@ import {
 import { copy } from '../copy';
 import { FitText } from '../directives/fit-text';
 import { GameStore } from '../game/game.store';
-import { TEAM_IDS, parseAmount } from '../game/state';
+import { TEAM_IDS, parseAmount, sameName } from '../game/state';
+import { SavedTeam } from '../game/tables';
+import { TablesStore } from '../game/tables.store';
 import {
   MAX_COUNT,
   MAX_TEAMS,
@@ -25,7 +27,9 @@ import {
 import { TournamentDraft } from '../game/tournament-draft';
 import { Choice, ChoiceGroup } from './choice-group';
 import { NumberField } from './number-field';
+import { PlayerPair } from './player-pair';
 import { Screen } from './screen';
+import { Sheet } from './sheet';
 import { TeamEdit } from './team-sheet';
 
 type RuleKind = Rule['kind'];
@@ -36,7 +40,7 @@ type RuleKind = Rule['kind'];
  */
 @Component({
   selector: 'app-tournament-setup-screen',
-  imports: [Screen, ChoiceGroup, NumberField, FitText],
+  imports: [Screen, Sheet, ChoiceGroup, NumberField, PlayerPair, FitText],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <app-screen [heading]="copy.tournament.setupTitle">
@@ -54,7 +58,11 @@ type RuleKind = Rule['kind'];
                 <span class="position numerals">{{ index + 1 }}</span>
                 <span class="who">
                   <span class="name" [appFitText]="team.name">{{ team.name }}</span>
-                  <span class="players" [appFitText]="players(team)">{{ players(team) }}</span>
+                  @if (team.players; as players) {
+                    <app-player-pair class="players" [players]="players" />
+                  } @else {
+                    <span class="players">{{ copy.players.none }}</span>
+                  }
                 </span>
                 <svg class="pencil" viewBox="0 0 24 24" aria-hidden="true">
                   <path d="M4 20l1-4.5L16.5 4 20 7.5 8.5 19z" />
@@ -114,6 +122,45 @@ type RuleKind = Rule['kind'];
         }}</span>
       </button>
     </app-screen>
+
+    <app-sheet #pick labelledBy="setup-pick-title">
+      <h2 class="title" id="setup-pick-title">{{ copy.tournament.add }}</h2>
+      <section class="part">
+        <h3 class="heading">{{ copy.seat.saved }}</h3>
+        <ol class="teams">
+          @for (team of saved(); track team.id) {
+            <li>
+              <button
+                type="button"
+                class="team lean"
+                [attr.aria-label]="copy.tournament.addSavedA11y(team.name, team.players)"
+                (click)="addSaved(team)"
+              >
+                <span class="who">
+                  <span class="name" [appFitText]="team.name">{{ team.name }}</span>
+                  @if (team.players; as players) {
+                    <app-player-pair class="players" [players]="players" />
+                  } @else {
+                    <span class="players">{{ copy.players.none }}</span>
+                  }
+                </span>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+              </button>
+            </li>
+          }
+        </ol>
+      </section>
+      <div class="slab-row">
+        <button type="button" class="slab slab--compact lean" (click)="pick.close()">
+          <span class="slab__label" [appFitText]="copy.common.cancel">{{
+            copy.common.cancel
+          }}</span>
+        </button>
+        <button type="button" class="slab slab--compact lean" (click)="addNew()">
+          <span class="slab__label" [appFitText]="copy.seat.newTeam">{{ copy.seat.newTeam }}</span>
+        </button>
+      </div>
+    </app-sheet>
   `,
   styles: `
     .part {
@@ -229,6 +276,13 @@ type RuleKind = Rule['kind'];
       line-height: 1.35;
     }
 
+    .title {
+      margin: 0;
+      font: italic 800 var(--t-title) / 1.15 var(--font);
+      text-transform: uppercase;
+      text-wrap: balance;
+    }
+
     .start:not(:disabled) {
       --fill: var(--c-text);
       --label: var(--c-ground);
@@ -251,6 +305,8 @@ export class TournamentSetupScreen {
   private readonly screen = viewChild.required(Screen);
 
   private readonly drafts = inject(TournamentDraft);
+  private readonly mesas = inject(TablesStore);
+  private readonly pick = viewChild.required<Sheet>('pick');
 
   protected readonly teams = computed(() => this.drafts.draft()?.teams ?? []);
   protected readonly kind = signal<RuleKind>(this.drafts.draft()?.kind ?? 'firstTo');
@@ -258,6 +314,13 @@ export class TournamentSetupScreen {
   private nextTeam = 0;
 
   protected readonly full = computed(() => this.teams().length >= MAX_TEAMS);
+
+  /** Teams of the mesa that are not in the tournament yet. */
+  protected readonly saved = computed(() =>
+    (this.mesas.active()?.teams ?? []).filter(
+      (team) => !this.teams().some((other) => sameName(other.name, team.name)),
+    ),
+  );
   private readonly count = computed(() => parseAmount(this.countText(), MAX_COUNT));
 
   protected readonly countError = computed(() =>
@@ -330,10 +393,6 @@ export class TournamentSetupScreen {
     );
   }
 
-  protected players(team: TournamentTeam): string {
-    return team.players ? copy.players.pair(team.players) : copy.players.none;
-  }
-
   protected edit(team: TournamentTeam, index: number): void {
     const others = this.teams().filter((other) => other.id !== team.id);
     this.editTeam.emit({
@@ -344,6 +403,7 @@ export class TournamentSetupScreen {
       fallback: this.freeName(index + 1, others),
       taken: others.map((other) => other.name),
       confirm: copy.players.save,
+      table: this.mesas.active()?.id ?? null,
       save: (name, players) =>
         this.setTeams((teams) =>
           teams.map((other) => (other.id === team.id ? { ...other, name, players } : other)),
@@ -355,7 +415,23 @@ export class TournamentSetupScreen {
     });
   }
 
+  // With saved teams at the mesa, they are offered first.
   protected add(): void {
+    if (this.saved().length > 0) this.pick().open();
+    else this.addNew();
+  }
+
+  protected addSaved(team: SavedTeam): void {
+    this.pick().close();
+    this.setTeams((current) =>
+      current.length >= MAX_TEAMS
+        ? current
+        : [...current, { id: this.newId(), name: team.name, players: team.players }],
+    );
+  }
+
+  protected addNew(): void {
+    this.pick().close();
     const teams = this.teams();
     this.editTeam.emit({
       title: copy.players.newTitle,
@@ -365,6 +441,7 @@ export class TournamentSetupScreen {
       fallback: this.freeName(teams.length + 1, teams),
       taken: teams.map((team) => team.name),
       confirm: copy.players.add,
+      table: this.mesas.active()?.id ?? null,
       save: (name, players) =>
         this.setTeams((current) => [...current, { id: this.newId(), name, players }]),
     });

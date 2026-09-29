@@ -1,4 +1,5 @@
 import { MAX_POINTS, MAX_TARGET, Players } from './game/state';
+import { MAX_SAVED_TEAMS, MAX_TABLES, MAX_TABLE_PLAYERS } from './game/tables';
 import { MAX_COUNT, MAX_TEAMS, Rule } from './game/tournament';
 
 const dateFormat = new Intl.DateTimeFormat('es', {
@@ -18,6 +19,8 @@ export function joinNames(names: string[]): string {
 
 const matches = (count: number) => (count === 1 ? '1 partida' : `${count} partidas`);
 const wins = (count: number) => (count === 1 ? '1 victoria' : `${count} victorias`);
+const players = (count: number) => (count === 1 ? '1 jugador' : `${count} jugadores`);
+const teams = (count: number) => (count === 1 ? '1 equipo' : `${count} equipos`);
 
 export const copy = {
   date: (time: number) => dateFormat.format(time),
@@ -105,6 +108,9 @@ export const copy = {
     tournamentCancelled: 'Torneo cancelado',
     tournamentSaved: 'Torneo guardado',
     tieBreakStarted: 'Desempate empezado',
+    tableDeleted: 'Mesa eliminada',
+    playerDeleted: 'Jugador eliminado',
+    teamDeleted: 'Equipo eliminado',
     action: 'Deshacer',
     done: 'Deshecho',
   },
@@ -135,6 +141,9 @@ export const copy = {
     tournament: 'Torneo nuevo',
     table: 'Tabla del torneo',
     history: 'Historial',
+    mesa: (name: string | null) => (name === null ? 'Mesa: ninguna' : `Mesa: ${name}`),
+    mesaA11y: (name: string | null) =>
+      name === null ? 'Mesa: ninguna. Elegir una mesa' : `Mesa: ${name}. Cambiar de mesa`,
     teams: 'Equipos y jugadores',
     teamA11y: (name: string) => `Cambiar el equipo ${name} y sus jugadores`,
     reset: 'Borrar',
@@ -148,6 +157,8 @@ export const copy = {
     second: 'Jugador 2',
     optional: 'Los jugadores son opcionales: escribe los dos o ninguno.',
     incomplete: 'Falta un jugador. Escribe los dos, o deja los dos en blanco.',
+    optionalPick: 'Los jugadores son opcionales: elige los dos o ninguno.',
+    incompletePick: 'Falta un jugador. Elige los dos, o quita el que está.',
     limit: (length: number) => `Los nombres tienen ${length} caracteres como máximo.`,
     taken: 'Ya hay un equipo con ese nombre.',
     save: 'Guardar',
@@ -195,6 +206,7 @@ export const copy = {
     summary: (teams: number, played: number) => `${teams} equipos · ${matches(played)}`,
     tieBreak: 'Desempate',
     inTournament: 'Partida de torneo',
+    table: (name: string) => `Mesa ${name}`,
     ranking: 'Clasificación',
     matchesHeading: 'Partidas',
     missing: 'Las partidas de este torneo ya no están guardadas.',
@@ -222,6 +234,8 @@ export const copy = {
     teamA11y: (position: number, name: string, players: Players | null) =>
       `Equipo ${position}: ${name}, ${players ? joinNames(players) : 'sin jugadores'}. Cambiar`,
     add: 'Añadir equipo',
+    addSavedA11y: (name: string, pair: Players | null) =>
+      `${pair ? `${name}, ${joinNames(pair)}` : name}. Añadir al torneo`,
     full: `Un torneo tiene ${MAX_TEAMS} equipos como máximo.`,
     defaultName: (position: number) => `Equipo ${position}`,
     ruleLabel: 'Final del torneo',
@@ -298,9 +312,12 @@ export const copy = {
     nextTitle: 'Siguiente partida',
     firstTitle: 'Primera partida',
     tieBreakTitle: 'Desempate',
-    nextBody: 'El ganador se queda. Toca un equipo para cambiarlo.',
-    firstBody: 'Toca un equipo para cambiarlo.',
+    nextBody: 'El ganador se queda. Toca un equipo para cambiarlo o cambiar sus jugadores.',
+    firstBody: 'Toca un equipo para cambiarlo o cambiar sus jugadores.',
     nextFixed: 'No hay otros equipos esperando.',
+    tableBody: 'Toca un equipo para cambiar sus jugadores o poner otro equipo.',
+    shared: (name: string) =>
+      `${name} está en los dos equipos. Cambia uno de los dos para empezar.`,
     seatA11y: (name: string, players: Players | null, won: number) =>
       `${players ? `${name}, ${joinNames(players)}` : name}, ${wins(won)}. Cambiar este equipo`,
     seatFixedA11y: (name: string, players: Players | null, won: number) =>
@@ -318,6 +335,91 @@ export const copy = {
     undoA11y: (message: string) => `Deshacer: ${message}`,
     tieBreakNote: (names: string[]) => `Desempate entre ${joinNames(names)}.`,
     announceChampion: (name: string) => `Campeón del torneo: ${name}`,
+  },
+  tables: {
+    title: 'Mesas',
+    intro:
+      'Una mesa guarda a quienes suelen jugar en un lugar y los equipos que forman. Al jugar en ella, eliges a los jugadores de una lista.',
+    none: 'Sin mesa',
+    noneHelp: 'Los jugadores se escriben a mano.',
+    summary: (playerCount: number, teamCount: number) =>
+      `${players(playerCount)} · ${teams(teamCount)}`,
+    inUse: 'En uso',
+    chooseA11y: (name: string, summary: string) => `${name}, ${summary}. Jugar en esta mesa`,
+    noneA11y: 'Sin mesa. Escribir los jugadores a mano',
+    editA11y: (name: string) => `Editar la mesa ${name}`,
+    add: 'Mesa nueva',
+    full: `Hay ${MAX_TABLES} mesas como máximo.`,
+    newTitle: 'Mesa nueva',
+    nameTitle: 'Nombre de la mesa',
+    nameLabel: 'Nombre de la mesa',
+    namePlaceholder: 'Casa de Ana',
+    nameTaken: 'Ya hay una mesa con ese nombre.',
+    nameEmpty: 'Escribe un nombre para la mesa.',
+    nameA11y: (name: string) => `Nombre: ${name}. Cambiar`,
+    create: 'Crear',
+    players: (count: number) => `Jugadores (${count})`,
+    noPlayers: 'Todavía no hay jugadores. Añade a quienes suelen jugar aquí.',
+    addPlayer: 'Añadir jugador',
+    playersFull: `Una mesa tiene ${MAX_TABLE_PLAYERS} jugadores como máximo.`,
+    playerTitle: 'Jugador',
+    newPlayerTitle: 'Jugador nuevo',
+    playerLabel: 'Nombre del jugador',
+    playerTaken: 'Ya hay un jugador con ese nombre en esta mesa.',
+    playerEmpty: 'Escribe el nombre del jugador.',
+    playerA11y: (name: string) => `${name}. Cambiar el nombre o eliminar`,
+    playerInUse: (names: string[]) =>
+      `Juega en ${joinNames(names)}. Para eliminarlo, cambia o elimina ese equipo antes.`,
+    removePlayer: 'Eliminar jugador',
+    playerAdded: (name: string) => `${name} está en la mesa`,
+    teams: (count: number) => `Equipos guardados (${count})`,
+    noTeams:
+      'Sin equipos guardados. Añade uno aquí, o marca «Guardar en la mesa» al cambiar un equipo en la partida.',
+    addTeam: 'Añadir equipo',
+    teamsFull: `Una mesa guarda ${MAX_SAVED_TEAMS} equipos como máximo.`,
+    teamA11y: (name: string, pair: Players | null, won: number) =>
+      `${pair ? `${name}, ${joinNames(pair)}` : name}, ${wins(won)}. Cambiar o eliminar`,
+    remove: 'Eliminar mesa',
+    removeTitle: (name: string) => `¿Eliminar la mesa ${name}?`,
+    removeBody: (playerCount: number, teamCount: number) =>
+      `Se borran ${players(playerCount)} y ${teams(teamCount)} guardados. El historial se conserva.`,
+    removeUndo: 'Se puede deshacer mientras no cierres la aplicación.',
+    status: (name: string) => `Mesa: ${name}`,
+    statusA11y: (name: string) => `Mesa: ${name}. Cambiar de mesa`,
+    announce: (name: string | null) => (name === null ? 'Sin mesa' : `Mesa: ${name}`),
+  },
+  picker: {
+    empty: 'Elegir',
+    slotA11y: (label: string, name: string | null) =>
+      name === null ? `${label}: sin elegir` : `${label}: ${name}. Quitar`,
+    search: 'Buscar o añadir jugador',
+    list: 'Jugadores de la mesa',
+    add: (name: string) => `Añadir «${name}» a la mesa`,
+    addA11y: (name: string) => `Añadir a ${name} a la mesa y elegirlo`,
+    blocked: 'En el otro equipo',
+    playerA11y: (name: string, chosen: boolean, blocked: boolean) => {
+      if (blocked) return `${name}, en el otro equipo`;
+      return chosen ? `${name}, elegido. Quitar` : `${name}. Elegir`;
+    },
+    chosen: (name: string, slot: string) => `${name} en ${slot}`,
+    cleared: (slot: string) => `${slot} sin elegir`,
+    noMatch: 'Ningún jugador con ese nombre.',
+    noPlayers: 'La mesa no tiene jugadores. Escribe un nombre para añadirlo.',
+    full: `La mesa ya tiene ${MAX_TABLE_PLAYERS} jugadores.`,
+    keep: 'Guardar en la mesa',
+    keepOn: 'Queda en los equipos de la mesa, con sus victorias.',
+    keepOff: 'Solo para esta partida.',
+    keepFull: `La mesa ya guarda ${MAX_SAVED_TEAMS} equipos.`,
+  },
+  seat: {
+    changePlayers: 'Cambiar jugadores',
+    newTeam: 'Equipo nuevo',
+    saved: 'Equipos de la mesa',
+    waiting: 'Esperan turno',
+    noSaved: 'No hay otros equipos guardados en la mesa.',
+    optionA11y: (name: string, pair: Players | null, won: number) =>
+      `${pair ? `${name}, ${joinNames(pair)}` : name}, ${wins(won)}. Poner este equipo`,
+    announce: (name: string) => `Ahora juega ${name}`,
   },
   install: {
     prompt: 'Instálala para abrirla desde la pantalla de inicio, también sin conexión.',

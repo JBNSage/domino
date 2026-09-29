@@ -6,6 +6,8 @@ import { HistoryStore } from './history.store';
 import { initialState } from './state';
 import { STORAGE_KEY, TOURNAMENT_KEY, UNDO_KEY, loadTournament, loadUndo } from './storage';
 import { standings } from './tournament';
+import { addTable } from './tables';
+import { TablesStore } from './tables.store';
 import { TournamentDraft } from './tournament-draft';
 
 describe('GameStore', () => {
@@ -573,5 +575,101 @@ describe('GameStore', () => {
       fromOtherTab(STORAGE_KEY, '{broken');
       expect(store.state()).toEqual(initialState);
     });
+  });
+});
+
+describe('GameStore at a mesa', () => {
+  let store: GameStore;
+  let tables: TablesStore;
+
+  beforeEach(() => {
+    localStorage.clear();
+    vi.useFakeTimers();
+    store = TestBed.inject(GameStore);
+    tables = TestBed.inject(TablesStore);
+    tables.change((current) => addTable(current, 'm1', 'Casa'));
+  });
+
+  afterEach(() => vi.useRealTimers());
+
+  it('asks for the next teams after a match, and records the mesa', () => {
+    store.addPoints('a', 200);
+    store.closeRound();
+    expect(store.state().between).toBe('next');
+    expect(TestBed.inject(HistoryStore).history().matches[0].table).toBe('Casa');
+
+    store.startMatch();
+    expect(store.state().between).toBeNull();
+  });
+
+  it('goes straight on without a mesa', () => {
+    store.chooseTable(null);
+    store.addPoints('a', 200);
+    store.closeRound();
+    expect(store.state().between).toBeNull();
+    expect(TestBed.inject(HistoryStore).history().matches[0].table).toBeNull();
+  });
+
+  it('asks for the first teams when a mesa is chosen at a clean board', () => {
+    store.chooseTable(null);
+    store.chooseTable('m1');
+    expect(store.state().between).toBe('start');
+  });
+
+  it('gives back the match and the wins of a saved team on undo', () => {
+    store.seatTeam('a', { name: 'Primos', players: null, saved: 's1' });
+    store.addPoints('a', 200);
+    store.closeRound();
+    expect(store.state().tally).toEqual({ s1: 1 });
+
+    store.restore();
+    expect(store.state().tally).toEqual({});
+    expect(store.state().between).toBeNull();
+    expect(store.totals().a).toBe(200);
+  });
+
+  it('keeps the closed match on offer while the next teams are chosen', () => {
+    store.addPoints('a', 200);
+    store.closeRound();
+    store.setTeam('b', 'Tías', ['Rosa', 'Marta']);
+    expect(store.canGoBack()).toBe(true);
+  });
+
+  it('leaves the wins of saved teams alone in a tournament', () => {
+    store.seatTeam('a', { name: 'Primos', players: null, saved: 's1' });
+    const teams = ['Uno', 'Dos'].map((name, index) => ({ id: `t${index}`, name, players: null }));
+    store.startTournament(teams, { kind: 'free' });
+    store.addPoints('a', 200);
+    store.closeRound();
+    expect(store.state().tally).toEqual({});
+    expect(store.state().between).toBeNull();
+  });
+
+  it('updates a seated team when its saved copy changes', () => {
+    store.seatTeam('a', { name: 'Primos', players: null, saved: 's1' });
+    store.saveTableTeam('m1', { id: 's1', name: 'Primas', players: ['Ana', 'Rosa'] });
+    expect(store.state().teams.a).toMatchObject({ name: 'Primas', players: ['Ana', 'Rosa'] });
+    expect(tables.active()?.players).toEqual(['Ana', 'Rosa']);
+  });
+
+  it('brings back a removed mesa, player or team', () => {
+    store.saveTableTeam('m1', { id: 's1', name: 'Primos', players: ['Ana', 'Luis'] });
+    store.removeTableTeam('m1', 's1');
+    expect(tables.active()?.teams).toEqual([]);
+    expect(store.screenUndo()).toBe(true);
+    store.restore();
+    expect(tables.active()?.teams).toHaveLength(1);
+
+    store.removeTable('m1');
+    expect(tables.tables().tables).toEqual([]);
+    store.restore();
+    expect(tables.active()?.name).toBe('Casa');
+  });
+
+  it('stops offering an old mesa back once the mesas change again', () => {
+    store.removeTable('m1');
+    tables.change((current) => addTable(current, 'm2', 'Club'));
+    TestBed.tick();
+    expect(store.undo()).toBeNull();
   });
 });

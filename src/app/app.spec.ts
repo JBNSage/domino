@@ -3,6 +3,8 @@ import { TestBed } from '@angular/core/testing';
 import { App } from './app';
 import { copy } from './copy';
 import { GameStore } from './game/game.store';
+import { addTable } from './game/tables';
+import { TablesStore } from './game/tables.store';
 
 describe('App', () => {
   beforeEach(() => localStorage.clear());
@@ -43,6 +45,30 @@ describe('App', () => {
     expect(header?.querySelector('.status')?.textContent?.trim()).toBe(
       copy.tournament.status(null, 1, false),
     );
+  });
+
+  it('names the mesa in the menu and above the board', async () => {
+    const fixture = TestBed.createComponent(App);
+    await fixture.whenStable();
+    const page = fixture.nativeElement as HTMLElement;
+    expect(page.querySelector('app-menu-sheet')?.textContent).toContain(copy.menu.mesa(null));
+    expect(page.querySelector('app-target-header .status')).toBeNull();
+
+    TestBed.inject(TablesStore).change((tables) => addTable(tables, 'm1', 'Casa'));
+    await fixture.whenStable();
+    expect(page.querySelector('app-menu-sheet')?.textContent).toContain(copy.menu.mesa('Casa'));
+    expect(page.querySelector('app-target-header .status')?.textContent?.trim()).toBe(
+      copy.tables.status('Casa'),
+    );
+  });
+
+  it('leads from a match won at a mesa to choosing the next teams', () => {
+    const store = TestBed.inject(GameStore);
+    store.addPoints('a', 200);
+    expect(store.closeLabel()).toBe(copy.winner.close);
+
+    TestBed.inject(TablesStore).change((tables) => addTable(tables, 'm1', 'Casa'));
+    expect(store.closeLabel()).toBe(copy.tournament.next);
   });
 
   it('shows the players under their team', async () => {

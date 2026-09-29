@@ -1,11 +1,13 @@
 import { History, emptyHistory, parseHistory } from './history';
 import { State, parseState } from './state';
+import { Tables, noTables, parseTables } from './tables';
 import { Tournament, parseTournament } from './tournament';
 
 export const STORAGE_KEY = 'domino/state/v1';
 export const UNDO_KEY = 'domino/undo/v1';
 export const TOURNAMENT_KEY = 'domino/tournament/v1';
 export const HISTORY_KEY = 'domino/history/v1';
+export const TABLES_KEY = 'domino/tables/v1';
 
 /** History entries written by a change, which go when the change is taken back. */
 export type Recorded = { matches: string[]; tournaments: string[] };
@@ -42,6 +44,10 @@ export function readTournament(raw: string | null): Tournament | null {
 
 export function readHistory(raw: string | null): History {
   return raw === null ? emptyHistory : parseHistory(parse(raw));
+}
+
+export function readTables(raw: string | null): Tables {
+  return raw === null ? noTables : parseTables(parse(raw));
 }
 
 function readIds(value: unknown): string[] {
@@ -113,6 +119,15 @@ export function loadHistory(): History {
 export function saveHistory(history: History): void {
   const empty = history.matches.length === 0 && history.tournaments.length === 0;
   write(HISTORY_KEY, empty ? null : JSON.stringify(history));
+}
+
+export function loadTables(): Tables {
+  return readTables(read(TABLES_KEY));
+}
+
+export function saveTables(tables: Tables): void {
+  const empty = tables.tables.length === 0;
+  write(TABLES_KEY, empty ? null : JSON.stringify(tables));
 }
 
 /** Asks the browser not to evict the saved match when storage runs low. */

@@ -6,26 +6,27 @@ import {
   effect,
   inject,
   output,
-  signal,
   viewChild,
 } from '@angular/core';
 
 import { copy } from '../copy';
 import { FitText } from '../directives/fit-text';
 import { GameStore } from '../game/game.store';
-import { TEAM_IDS, TeamId } from '../game/state';
+import { TEAM_IDS, TeamId, sharedPlayer } from '../game/state';
 import { available, standings, teamOf } from '../game/tournament';
 import { PlayerPair } from './player-pair';
 import { Screen } from './screen';
-import { Sheet } from './sheet';
+import { SeatSheet } from './seat-sheet';
+import { TeamEdit } from './team-sheet';
 
 /**
- * Between two matches of a tournament: the winner stays and the team that has
- * waited longest comes in. Either side can be given to another team.
+ * Before a match: between two matches of a tournament, where the winner stays
+ * and the team that has waited longest comes in, or at a mesa, where any team
+ * can sit and any player can change. Tapping a side changes it.
  */
 @Component({
   selector: 'app-next-match-screen',
-  imports: [Screen, Sheet, FitText, PlayerPair],
+  imports: [Screen, SeatSheet, FitText, PlayerPair],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <app-screen [heading]="heading()" [locked]="true" (closed)="reopen()">
@@ -37,9 +38,9 @@ import { Sheet } from './sheet';
             type="button"
             class="seat lean"
             [class]="'seat--' + seat.side"
-            [disabled]="waiting().length === 0"
+            [disabled]="fixed()"
             [attr.aria-label]="
-              waiting().length === 0
+              fixed()
                 ? copy.tournament.seatFixedA11y(seat.name, seat.players, seat.won)
                 : copy.tournament.seatA11y(seat.name, seat.players, seat.won)
             "
@@ -56,7 +57,7 @@ import { Sheet } from './sheet';
                 }}</span>
               </span>
             </span>
-            @if (waiting().length > 0) {
+            @if (!fixed()) {
               <!-- Two arrows passing each other: this team can be swapped. -->
               <svg viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M4 8h14l-3.5-3.5M20 16H6l3.5 3.5" />
@@ -65,6 +66,10 @@ import { Sheet } from './sheet';
           </button>
         }
       </div>
+
+      @if (shared(); as player) {
+        <p class="shared" role="status">{{ copy.tournament.shared(player) }}</p>
+      }
 
       @if (waiting().length > 0) {
         <section class="queue">
@@ -91,18 +96,25 @@ import { Sheet } from './sheet';
               }}</span>
             </button>
           }
-          <button
-            type="button"
-            class="slab slab--compact lean"
-            [attr.aria-label]="copy.tournament.tableA11y"
-            (click)="table.emit()"
-          >
-            <span class="slab__label" [appFitText]="copy.tournament.table">{{
-              copy.tournament.table
-            }}</span>
-          </button>
+          @if (inTournament()) {
+            <button
+              type="button"
+              class="slab slab--compact lean"
+              [attr.aria-label]="copy.tournament.tableA11y"
+              (click)="table.emit()"
+            >
+              <span class="slab__label" [appFitText]="copy.tournament.table">{{
+                copy.tournament.table
+              }}</span>
+            </button>
+          }
         </div>
-        <button type="button" class="slab slab--filled lean start" (click)="store.startNextMatch()">
+        <button
+          type="button"
+          class="slab slab--filled lean start"
+          [disabled]="shared() !== null"
+          (click)="start()"
+        >
           <span class="slab__label" [appFitText]="copy.tournament.startMatch">{{
             copy.tournament.startMatch
           }}</span>
@@ -110,32 +122,7 @@ import { Sheet } from './sheet';
       </ng-container>
     </app-screen>
 
-    <app-sheet #picker [accent]="accent()" labelledBy="picker-sheet-title">
-      <h2 class="title" id="picker-sheet-title">{{ pickTitle() }}</h2>
-      <ol class="options">
-        @for (team of waiting(); track team.id) {
-          <li>
-            <button
-              type="button"
-              class="option lean"
-              [attr.aria-label]="copy.tournament.pickA11y(team.name, team.won)"
-              (click)="choose(team.id)"
-            >
-              <span class="who">
-                <span class="option-name" [appFitText]="team.name">{{ team.name }}</span>
-                @if (team.players; as players) {
-                  <app-player-pair class="option-players" [players]="players" />
-                }
-              </span>
-              <span class="option-wins numerals">{{ copy.tournament.wins(team.won) }}</span>
-            </button>
-          </li>
-        }
-      </ol>
-      <button type="button" class="slab slab--compact lean cancel" (click)="picker.close()">
-        <span class="slab__label" [appFitText]="copy.common.cancel">{{ copy.common.cancel }}</span>
-      </button>
-    </app-sheet>
+    <app-seat-sheet (editTeam)="editTeam.emit($event)" />
   `,
   styles: `
     .lead {
@@ -268,78 +255,21 @@ import { Sheet } from './sheet';
       overflow-wrap: anywhere;
     }
 
-    .start {
+    .start:not(:disabled) {
       --fill: var(--c-text);
       --label: var(--c-ground);
     }
 
+    .shared {
+      margin: 0;
+      padding: 0 var(--s-sm);
+      max-width: 40ch;
+      color: var(--c-danger);
+      line-height: 1.35;
+    }
+
     .others {
       padding: 0;
-    }
-
-    .title {
-      margin: 0;
-      font: italic 800 var(--t-title) / 1.15 var(--font);
-      text-transform: uppercase;
-      text-wrap: balance;
-      overflow-wrap: anywhere;
-    }
-
-    .options {
-      display: flex;
-      flex-direction: column;
-      gap: var(--s-sm);
-      margin: 0;
-      padding: 0;
-      list-style: none;
-    }
-
-    .option {
-      --fill: var(--c-surface);
-      --lean-inset: 8px;
-
-      width: 100%;
-      min-height: calc(var(--min-target) + 12px);
-      display: flex;
-      align-items: center;
-      gap: var(--s-md);
-      padding: var(--s-sm) var(--s-xl);
-      border: 0;
-      background: none;
-      color: var(--c-text);
-      text-align: left;
-    }
-
-    .option:active::before {
-      opacity: var(--pressed);
-    }
-
-    @media (hover: hover) {
-      .option:hover::before {
-        filter: brightness(1.12);
-      }
-    }
-
-    .option-name {
-      font: italic 800 var(--t-button) / 1.2 var(--font);
-      text-transform: uppercase;
-    }
-
-    .option-players,
-    .option-wins {
-      color: var(--c-muted);
-      font: italic 600 var(--t-label) / 1.3 var(--font);
-      text-transform: uppercase;
-    }
-
-    .option-wins {
-      flex: none;
-    }
-
-    .cancel {
-      align-self: flex-start;
-      max-width: calc(100% - var(--s-lg));
-      margin: 0 var(--s-sm);
     }
 
     @media (max-height: 36em) {
@@ -375,20 +305,29 @@ export class NextMatchScreen {
   readonly table = output<void>();
   /** The start of the tournament was taken back: its teams are waiting in the setup. */
   readonly setup = output<void>();
+  /** Asks for the team sheet, which the shell owns. */
+  readonly editTeam = output<TeamEdit>();
 
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
   private readonly screen = viewChild.required(Screen);
-  private readonly picker = viewChild.required<Sheet>('picker');
+  private readonly seatSheet = viewChild.required(SeatSheet);
 
-  private readonly visible = computed(() => this.store.tournament()?.phase === 'between');
-  private readonly picking = signal<TeamId>('a');
+  protected readonly inTournament = computed(() => this.store.tournament() !== null);
+  private readonly visible = computed(() => {
+    const tournament = this.store.tournament();
+    if (tournament !== null) return tournament.phase === 'between';
+    return this.store.state().between !== null;
+  });
 
   protected readonly heading = computed(() => {
     const tournament = this.store.tournament();
-    if (tournament?.tieBreak) return copy.tournament.tieBreakTitle;
-    return tournament?.results.length === 0
-      ? copy.tournament.firstTitle
-      : copy.tournament.nextTitle;
+    if (tournament === null) {
+      return this.store.state().between === 'start'
+        ? copy.tournament.firstTitle
+        : copy.tournament.nextTitle;
+    }
+    if (tournament.tieBreak) return copy.tournament.tieBreakTitle;
+    return tournament.results.length === 0 ? copy.tournament.firstTitle : copy.tournament.nextTitle;
   });
 
   private readonly table$ = computed(() => {
@@ -398,7 +337,10 @@ export class NextMatchScreen {
 
   protected readonly seats = computed(() => {
     const tournament = this.store.tournament();
-    if (tournament === null) return [];
+    if (tournament === null) {
+      const { teams } = this.store.state();
+      return TEAM_IDS.map((side) => ({ side, ...teams[side], won: teams[side].roundsWon }));
+    }
     const table = this.table$();
     return TEAM_IDS.map((side) => {
       const team = teamOf(tournament, tournament.seats[side]);
@@ -414,17 +356,21 @@ export class NextMatchScreen {
     return available(tournament).flatMap((id) => table.filter((row) => row.id === id));
   });
 
+  /** Nothing to change: a tournament with no one waiting. */
+  protected readonly fixed = computed(() => this.inTournament() && this.waiting().length === 0);
+
+  /** A player in both teams, who cannot play against themselves. */
+  protected readonly shared = computed(() => {
+    const [a, b] = this.seats();
+    return a === undefined || b === undefined ? null : sharedPlayer(a.players, b.players);
+  });
+
   protected readonly lead = computed(() => {
+    if (!this.inTournament()) return copy.tournament.tableBody;
     if (this.waiting().length === 0) return copy.tournament.nextFixed;
     return this.store.tournament()?.results.length === 0
       ? copy.tournament.firstBody
       : copy.tournament.nextBody;
-  });
-
-  protected readonly accent = computed(() => `var(--c-team-${this.picking()})`);
-  protected readonly pickTitle = computed(() => {
-    const seat = this.seats().find((other) => other.side === this.picking());
-    return copy.tournament.pickTitle(seat?.name ?? '');
   });
 
   constructor() {
@@ -436,25 +382,27 @@ export class NextMatchScreen {
         // The choice on this screen is the two teams, so reading starts there.
         queueMicrotask(() => this.host.querySelector<HTMLElement>('.seat:not(:disabled)')?.focus());
       } else {
-        this.picker().close();
+        this.seatSheet().close();
         screen.close();
       }
     });
   }
 
   protected undo(): void {
+    const inTournament = this.inTournament();
     this.store.restore();
-    if (this.store.tournament() === null) this.setup.emit();
+    // Taking back the start of a tournament returns to its setup.
+    if (inTournament && this.store.tournament() === null) this.setup.emit();
   }
 
   protected pick(side: TeamId): void {
-    this.picking.set(side);
-    this.picker().open();
+    this.seatSheet().open(side);
   }
 
-  protected choose(team: string): void {
-    this.picker().close();
-    this.store.setSeat(this.picking(), team);
+  protected start(): void {
+    if (this.shared() !== null) return;
+    if (this.inTournament()) this.store.startNextMatch();
+    else this.store.startMatch();
   }
 
   // System Back can close a dialog whatever the page says; the step is still owed.

@@ -1,10 +1,11 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  ElementRef,
   computed,
+  inject,
   signal,
   viewChild,
-  viewChildren,
 } from '@angular/core';
 
 import { copy } from '../copy';
@@ -15,7 +16,11 @@ import {
   Players,
   cleanLabel,
   cleanPlayers,
+  sameName,
 } from '../game/state';
+import { MAX_SAVED_TEAMS } from '../game/tables';
+import { TablesStore } from '../game/tables.store';
+import { PlayerPicker } from './player-picker';
 import { Sheet } from './sheet';
 import { TextField } from './text-field';
 
@@ -31,17 +36,22 @@ export type TeamEdit = {
   /** Names of the other teams, which this one may not repeat. */
   taken: string[];
   confirm: string;
-  save: (name: string, players: Players | null) => void;
+  /** The mesa whose players are offered; without one, the players are written. */
+  table?: string | null;
+  /** Players who cannot be picked: those of the team on the other side. */
+  blocked?: string[];
+  /** Whether the team is kept at the mesa; null leaves the choice out. */
+  keep?: boolean | null;
+  /** The mesa's saved team this one is, if any. */
+  savedId?: string | null;
+  save: (name: string, players: Players | null, keep: boolean) => void;
   remove?: () => void;
 };
-
-const same = (one: string, other: string) =>
-  one.localeCompare(other, 'es', { sensitivity: 'base' }) === 0;
 
 /** A team's name and its two players. The players are both written or both left out. */
 @Component({
   selector: 'app-team-sheet',
-  imports: [Sheet, TextField, FitText],
+  imports: [Sheet, TextField, PlayerPicker, FitText],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <app-sheet [accent]="accent() ?? 'var(--c-text)'" labelledBy="team-sheet-title">
@@ -55,18 +65,28 @@ const same = (one: string, other: string) =>
         [invalid]="taken()"
         describedBy="team-sheet-message"
         [(value)]="nameText"
-        (submitted)="fields()[1].focus()"
+        (submitted)="table() === null ? firstField().focus() : submit()"
       />
-      <div class="players">
+      <div #picking class="mode" [hidden]="table() === null">
+        <app-player-picker
+          [table]="table() ?? ''"
+          [blocked]="blocked()"
+          [(first)]="firstText"
+          [(second)]="secondText"
+        />
+      </div>
+      <div #typing class="players mode" [hidden]="table() !== null">
         <app-text-field
+          #first
           [label]="copy.players.first"
           [maxLength]="maxPlayer"
           [invalid]="showIncomplete() && firstText().trim() === ''"
           describedBy="team-sheet-message"
           [(value)]="firstText"
-          (submitted)="fields()[2].focus()"
+          (submitted)="secondField().focus()"
         />
         <app-text-field
+          #second
           [label]="copy.players.second"
           [maxLength]="maxPlayer"
           [invalid]="showIncomplete() && secondText().trim() === ''"
@@ -78,9 +98,33 @@ const same = (one: string, other: string) =>
         />
       </div>
 
+      @if (table() !== null && request()?.keep !== null && request()?.keep !== undefined) {
+        <button
+          type="button"
+          role="switch"
+          class="keep"
+          [attr.aria-checked]="keep()"
+          [disabled]="keepFull()"
+          aria-describedby="team-sheet-keep"
+          (click)="keep.set(!keep())"
+        >
+          <span class="box lean" [class.box--on]="keep()">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7" /></svg>
+          </span>
+          <span class="keep-text">
+            <span class="keep-label">{{ copy.picker.keep }}</span>
+            <span class="keep-help" id="team-sheet-keep">{{ keepHelp() }}</span>
+          </span>
+        </button>
+      }
+
       <!-- Always in the page, so screen readers hear the message arrive. -->
       <p class="message" id="team-sheet-message" role="status" [class.error]="error() !== null">
-        {{ error() ?? limit() ?? copy.players.optional }}
+        {{
+          error() ??
+            limit() ??
+            (table() === null ? copy.players.optional : copy.players.optionalPick)
+        }}
       </p>
 
       @if (canRemove()) {
@@ -131,6 +175,76 @@ const same = (one: string, other: string) =>
       min-width: 0;
     }
 
+    .mode[hidden] {
+      display: none;
+    }
+
+    .keep {
+      display: flex;
+      align-items: center;
+      gap: var(--s-md);
+      min-height: var(--min-target);
+      padding: var(--s-xs) var(--s-sm);
+      border: 0;
+      background: none;
+      color: var(--c-text);
+      text-align: left;
+    }
+
+    .keep:disabled {
+      color: var(--c-muted);
+      cursor: default;
+    }
+
+    .box {
+      --fill: transparent;
+      --edge: var(--c-line);
+      --lean-inset: 3px;
+
+      flex: none;
+      display: grid;
+      place-items: center;
+      width: 40px;
+      height: 32px;
+    }
+
+    .box--on {
+      --fill: var(--c-text);
+      --edge: transparent;
+    }
+
+    .box svg {
+      width: 20px;
+      height: 20px;
+      fill: none;
+      stroke: var(--c-ground);
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      opacity: 0;
+    }
+
+    .box--on svg {
+      opacity: 1;
+    }
+
+    .keep-text {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .keep-label {
+      font: italic 800 var(--t-compact) / 1.2 var(--font);
+      text-transform: uppercase;
+    }
+
+    .keep-help {
+      color: var(--c-muted);
+      font-size: var(--t-meta);
+      line-height: 1.3;
+    }
+
     .message {
       margin: 0;
       color: var(--c-muted);
@@ -159,14 +273,39 @@ export class TeamSheet {
   protected readonly maxPlayer = MAX_PLAYER_LENGTH;
 
   protected readonly sheet = viewChild.required(Sheet);
-  protected readonly fields = viewChildren(TextField);
+  private readonly nameField = viewChild.required<TextField>('name');
+  protected readonly firstField = viewChild.required<TextField>('first');
+  protected readonly secondField = viewChild.required<TextField>('second');
+  private readonly picker = viewChild.required(PlayerPicker);
+  private readonly picking = viewChild.required<ElementRef<HTMLElement>>('picking');
+  private readonly typing = viewChild.required<ElementRef<HTMLElement>>('typing');
+  private readonly tables = inject(TablesStore);
 
-  private readonly request = signal<TeamEdit | null>(null);
+  protected readonly request = signal<TeamEdit | null>(null);
   protected readonly title = computed(() => this.request()?.title ?? copy.players.title);
   protected readonly accent = computed(() => this.request()?.accent ?? null);
   protected readonly fallback = computed(() => this.request()?.fallback ?? '');
   protected readonly confirm = computed(() => this.request()?.confirm ?? copy.players.save);
   protected readonly canRemove = computed(() => this.request()?.remove !== undefined);
+  protected readonly table = computed(() => this.request()?.table ?? null);
+  protected readonly blocked = computed(() => this.request()?.blocked ?? []);
+  protected readonly keep = signal(false);
+
+  private readonly mesa = computed(() => {
+    const id = this.table();
+    return this.tables.tables().tables.find((table) => table.id === id) ?? null;
+  });
+  private readonly savedHere = computed(() => {
+    const id = this.request()?.savedId ?? null;
+    return this.mesa()?.teams.some((team) => team.id === id) ? id : null;
+  });
+  protected readonly keepFull = computed(
+    () => this.savedHere() === null && (this.mesa()?.teams.length ?? 0) >= MAX_SAVED_TEAMS,
+  );
+  protected readonly keepHelp = computed(() => {
+    if (this.keepFull()) return copy.picker.keepFull;
+    return this.keep() ? copy.picker.keepOn : copy.picker.keepOff;
+  });
 
   protected readonly nameText = signal('');
   protected readonly firstText = signal('');
@@ -175,16 +314,25 @@ export class TeamSheet {
   private readonly name = computed(() => cleanLabel(this.nameText(), this.fallback()));
   private readonly players = computed(() => cleanPlayers(this.firstText(), this.secondText()));
 
-  protected readonly taken = computed(() =>
-    (this.request()?.taken ?? []).some((other) => same(other, this.name())),
-  );
+  // A team kept at the mesa may not repeat the name of another team kept there.
+  protected readonly taken = computed(() => {
+    const saved = this.keep()
+      ? (this.mesa()?.teams ?? [])
+          .filter((team) => team.id !== this.savedHere())
+          .map((team) => team.name)
+      : [];
+    return [...(this.request()?.taken ?? []), ...saved].some((other) =>
+      sameName(other, this.name()),
+    );
+  });
   protected readonly incomplete = computed(() => this.players() === 'incomplete');
   // Nobody has made a mistake by writing the first of two names.
   protected readonly secondVisited = signal(false);
   protected readonly showIncomplete = computed(() => this.incomplete() && this.secondVisited());
   protected readonly error = computed(() => {
     if (this.taken()) return copy.players.taken;
-    return this.showIncomplete() ? copy.players.incomplete : null;
+    if (!this.showIncomplete()) return null;
+    return this.table() === null ? copy.players.incomplete : copy.players.incompletePick;
   });
 
   /** A name that fills its field may have been cut, as when it is pasted. */
@@ -199,14 +347,22 @@ export class TeamSheet {
 
   /** Called straight from the tap, so the keyboard opens with the sheet. */
   open(request: TeamEdit): void {
+    const picking = (request.table ?? null) !== null;
     this.request.set(request);
-    this.secondVisited.set(request.players !== null);
-    const [name, first, second] = this.fields();
-    name.write(request.name);
-    first.write(request.players?.[0] ?? '');
-    second.write(request.players?.[1] ?? '');
+    this.keep.set(request.keep === true);
+    // With a mesa, a missing player is visible in its empty place; no need to wait.
+    this.secondVisited.set(request.players !== null || picking);
+    this.nameField().write(request.name);
+    this.firstField().write(request.players?.[0] ?? '');
+    this.secondField().write(request.players?.[1] ?? '');
+    this.picker().reset();
+    // Shown now, not at the next render, so focus can land in the same tap.
+    this.picking().nativeElement.hidden = !picking;
+    this.typing().nativeElement.hidden = picking;
     this.sheet().open();
-    name.focus();
+    // Picking starts on the list, so the keyboard does not cover it.
+    if (picking) this.picker().focus();
+    else this.nameField().focus();
   }
 
   protected submit(): void {
@@ -214,8 +370,9 @@ export class TeamSheet {
     if (players === 'incomplete' || this.taken()) return;
     const request = this.request();
     const name = this.name();
+    const keep = this.keep() && !this.keepFull();
     this.sheet().close();
-    request?.save(name, players);
+    request?.save(name, players, keep);
   }
 
   protected remove(): void {
