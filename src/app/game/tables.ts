@@ -43,14 +43,14 @@ export function tableNameTaken(tables: Tables, name: string, except: string | nu
   return tables.tables.some((table) => table.id !== except && sameName(table.name, name));
 }
 
-/** A new mesa, which becomes the one being played at. */
+/** A new mesa. It is played at only once it is chosen. */
 export function addTable(tables: Tables, id: string, name: string): Tables {
   const clean = cleanLabel(name, '');
   if (clean === '' || tables.tables.length >= MAX_TABLES || tableNameTaken(tables, clean)) {
     return tables;
   }
   const table: Table = { id, name: clean, players: [], teams: [] };
-  return { tables: [...tables.tables, table], active: id };
+  return { ...tables, tables: [...tables.tables, table] };
 }
 
 export function renameTable(tables: Tables, id: string, name: string): Tables {

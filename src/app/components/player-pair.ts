@@ -9,9 +9,10 @@ import { Players } from '../game/state';
 @Component({
   selector: 'app-player-pair',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: { '[class.wrap]': 'wrap()' },
   template: `
     <!-- The dot belongs to the first name, so a wrapped line never starts with it. -->
-    <span class="player">{{ players()[0] }} ·</span>&ngsp;
+    <span class="player">{{ players()[0] }}&nbsp;·</span>&ngsp;
     <span class="player">{{ players()[1] }}</span>
   `,
   styles: `
@@ -30,8 +31,15 @@ import { Players } from '../game/state';
       text-overflow: ellipsis;
       white-space: nowrap;
     }
+
+    /* Where the names are the content, a long one breaks instead of ending in an ellipsis. */
+    :host(.wrap) .player {
+      white-space: normal;
+      overflow-wrap: break-word;
+    }
   `,
 })
 export class PlayerPair {
   readonly players = input.required<Players>();
+  readonly wrap = input(false);
 }

@@ -99,6 +99,8 @@ export const copy = {
     restoreTarget: (target: number) => `Volver a meta ${target}`,
     undoEdit: 'Deshacer la corrección',
     changeTarget: 'Cambiar la meta',
+    rotate: 'Cambiar equipos',
+    rotateA11y: 'Contar la victoria y elegir otros equipos o jugadores',
   },
   undo: {
     handDeleted: (hand: number) => `Mano ${hand} eliminada`,
@@ -149,9 +151,12 @@ export const copy = {
     table: 'Tabla del torneo',
     history: 'Historial',
     stats: 'Estadísticas',
-    mesa: (name: string | null) => (name === null ? 'Mesa: ninguna' : `Mesa: ${name}`),
+    mesas: 'Mesas',
+    mesa: (name: string | null) => (name === null ? 'Ninguna en uso' : `En uso: ${name}`),
     mesaA11y: (name: string | null) =>
-      name === null ? 'Mesa: ninguna. Elegir una mesa' : `Mesa: ${name}. Cambiar de mesa`,
+      name === null
+        ? 'Mesas: los jugadores y equipos de cada lugar. Ninguna en uso'
+        : `Mesas. En uso: ${name}`,
     teams: 'Equipos y jugadores',
     teamA11y: (name: string) => `Cambiar el equipo ${name} y sus jugadores`,
     reset: 'Borrar',
@@ -349,13 +354,17 @@ export const copy = {
     intro:
       'Una mesa guarda a quienes suelen jugar en un lugar y los equipos que forman. Al jugar en ella, eliges a los jugadores de una lista.',
     none: 'Sin mesa',
-    noneHelp: 'Los jugadores se escriben a mano.',
+    playingAt: (name: string) => `Juegas en ${name}.`,
+    playingNone: 'Juegas sin mesa: los jugadores se escriben a mano.',
+    leave: 'Jugar sin mesa',
+    play: 'Jugar en esta mesa',
+    playA11y: (name: string) => `Jugar en la mesa ${name}`,
+    rename: 'Cambiar nombre',
     summary: (playerCount: number, teamCount: number) =>
       `${players(playerCount)} · ${teams(teamCount)}`,
     inUse: 'En uso',
-    chooseA11y: (name: string, summary: string) => `${name}, ${summary}. Jugar en esta mesa`,
-    noneA11y: 'Sin mesa. Escribir los jugadores a mano',
-    editA11y: (name: string) => `Editar la mesa ${name}`,
+    openA11y: (name: string, summary: string, inUse: boolean) =>
+      `${name}, ${summary}${inUse ? ', en uso' : ''}. Abrir`,
     add: 'Mesa nueva',
     full: `Hay ${MAX_TABLES} mesas como máximo.`,
     newTitle: 'Mesa nueva',
@@ -367,6 +376,8 @@ export const copy = {
     nameA11y: (name: string) => `Nombre: ${name}. Cambiar`,
     create: 'Crear',
     players: (count: number) => `Jugadores (${count})`,
+    showAll: (count: number) => `Ver los ${count}`,
+    showFewer: 'Ver menos',
     noPlayers: 'Todavía no hay jugadores. Añade a quienes suelen jugar aquí.',
     addPlayer: 'Añadir jugador',
     playersFull: `Una mesa tiene ${MAX_TABLE_PLAYERS} jugadores como máximo.`,
@@ -381,8 +392,7 @@ export const copy = {
     removePlayer: 'Eliminar jugador',
     playerAdded: (name: string) => `${name} está en la mesa`,
     teams: (count: number) => `Equipos guardados (${count})`,
-    noTeams:
-      'Sin equipos guardados. Añade uno aquí, o marca «Guardar en la mesa» al cambiar un equipo en la partida.',
+    noTeams: 'Sin equipos guardados. Añade uno aquí o márcalo en la partida.',
     addTeam: 'Añadir equipo',
     teamsFull: `Una mesa guarda ${MAX_SAVED_TEAMS} equipos como máximo.`,
     teamA11y: (name: string, pair: Players | null, won: number) =>
@@ -393,6 +403,7 @@ export const copy = {
       `Se borran ${players(playerCount)} y ${teams(teamCount)} guardados. El historial se conserva.`,
     removeUndo: `Se puede deshacer durante ${UNDO_SECONDS} segundos.`,
     status: (name: string) => `Mesa: ${name}`,
+    withTournament: (status: string, name: string) => `${status} · ${name}`,
     statusA11y: (name: string) => `Mesa: ${name}. Cambiar de mesa`,
     announce: (name: string | null) => (name === null ? 'Sin mesa' : `Mesa: ${name}`),
   },
@@ -401,7 +412,7 @@ export const copy = {
     slotA11y: (label: string, name: string | null) =>
       name === null ? `${label}: sin elegir` : `${label}: ${name}. Quitar`,
     search: 'Buscar o añadir jugador',
-    list: 'Jugadores de la mesa',
+    list: (count: number) => `Jugadores de la mesa (${count})`,
     add: (name: string) => `Añadir «${name}» a la mesa`,
     addA11y: (name: string) => `Añadir a ${name} a la mesa y elegirlo`,
     blocked: 'En el otro equipo',
@@ -433,13 +444,13 @@ export const copy = {
     noTable: 'Sin mesa',
     tableTitle: 'Mesa',
     datesTitle: 'Fechas',
-    all: 'Todo',
+    all: 'Siempre',
     today: 'Hoy',
     week: '7 días',
     month: '30 días',
     custom: 'Fechas…',
     range: (from: number | null, to: number | null) => {
-      if (from === null && to === null) return 'Todo';
+      if (from === null && to === null) return 'Siempre';
       if (from === null) return `hasta ${dayFormat.format(to as number)}`;
       if (to === null) return `desde ${dayFormat.format(from)}`;
       const one = dayFormat.format(from);
@@ -455,16 +466,21 @@ export const copy = {
       `${matches(played)} · ${
         kind === 'players' ? players(count) : count === 1 ? '1 pareja' : `${count} parejas`
       }`,
-    record: (won: number, played: number) => `${won} de ${played} ganadas`,
-    detail: (won: number, lost: number, played: number) =>
-      `${won === 1 ? '1 ganada' : `${won} ganadas`} · ${
-        lost === 1 ? '1 perdida' : `${lost} perdidas`
-      } · ${played === 1 ? '1 jugada' : `${played} jugadas`}`,
+    record: (won: number, played: number) =>
+      played === 1 ? `${won} de 1 ganada` : `${won} de ${played} ganadas`,
+    detail: (won: number, lost: number) =>
+      `${won === 1 ? '1 ganada' : `${won} ganadas`} · ${lost === 1 ? '1 perdida' : `${lost} perdidas`}`,
+    few: (min: number) => `Menos de ${min} partidas`,
+    fewNote: 'Con pocas partidas un porcentaje dice poco, así que van aparte y sin puesto.',
+    playerMissingTitle: 'Sin partidas con estos filtros',
+    playerMissingBody: (name: string) =>
+      `${name} no jugó ninguna partida en esa mesa y esas fechas.`,
     partners: 'Con cada pareja',
-    rowA11y: (place: number, name: string, rate: number, won: number, played: number) =>
-      `Puesto ${place}: ${name}, ${percentFormat.format(rate)}, ${won} de ${played} ganadas`,
-    playerA11y: (place: number, name: string, rate: number, won: number, played: number) =>
-      `Puesto ${place}: ${name}, ${percentFormat.format(rate)}, ${won} de ${played} ganadas. Ver sus parejas`,
+    rowA11y: (place: string, name: string, rate: number, won: number, played: number) =>
+      `${place}${name}, ${percentFormat.format(rate)}, ${won} de ${played} ${played === 1 ? 'ganada' : 'ganadas'}`,
+    place: (place: number | null, shared: boolean) =>
+      place === null ? '' : `Puesto ${place}${shared ? ', empatado' : ''}: `,
+    open: 'Ver sus parejas',
     emptyTitle: 'Sin partidas terminadas',
     emptyBody:
       'Las estadísticas salen del historial. Cuando termines una partida con jugadores, aparecen aquí.',

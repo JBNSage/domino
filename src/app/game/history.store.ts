@@ -10,6 +10,7 @@ import {
   emptyHistory,
   merge,
   remove,
+  renamePlayer,
 } from './history';
 import { HISTORY_KEY, loadHistory, readHistory, saveHistory } from './storage';
 
@@ -42,6 +43,10 @@ export class HistoryStore {
     const removed = this.history();
     this.history.set(emptyHistory);
     return removed;
+  }
+
+  renamePlayer(at: (match: MatchRecord) => boolean, from: string, to: string): void {
+    this.history.update((history) => renamePlayer(history, at, from, to));
   }
 
   restore(removed: History): void {

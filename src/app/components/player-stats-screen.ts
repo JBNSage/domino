@@ -9,7 +9,7 @@ import {
 
 import { copy } from '../copy';
 import { FitText } from '../directives/fit-text';
-import { PlayerStat, partnersOf, places } from '../game/stats';
+import { MIN_MATCHES, PlayerStat, partnersOf, places, sharedPlaces, split } from '../game/stats';
 import { Screen } from './screen';
 import { StatRow } from './stat-row';
 import { StatsView } from './stats-view';
@@ -20,15 +20,13 @@ import { StatsView } from './stats-view';
   imports: [Screen, StatRow, FitText],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <app-screen [heading]="stat()?.name ?? copy.stats.title">
+    <app-screen [heading]="stat()?.name ?? name()">
       @if (stat(); as stat) {
         <p class="facts">{{ copy.stats.filtered(view.tableLabel(), view.datesLabel()) }}</p>
 
         <div class="total lean">
           <span class="rate numerals" [appFitText]="percent()">{{ percent() }}</span>
-          <span class="detail numerals">{{
-            copy.stats.detail(stat.won, stat.lost, stat.played)
-          }}</span>
+          <span class="detail numerals">{{ copy.stats.detail(stat.won, stat.lost) }}</span>
           <span class="meter lean" aria-hidden="true">
             <span class="fill" [style.width.%]="stat.rate * 100"></span>
           </span>
@@ -36,20 +34,44 @@ import { StatsView } from './stats-view';
 
         <section class="part">
           <h3 class="heading">{{ copy.stats.partners }}</h3>
-          <ol class="rows">
-            @for (partner of partners(); track partner.key; let index = $index) {
-              <li>
-                <app-stat-row
-                  [place]="partnerPlaces()[index]"
-                  [name]="partner.name"
-                  [won]="partner.won"
-                  [played]="partner.played"
-                  [rate]="partner.rate"
-                />
-              </li>
-            }
-          </ol>
+          @if (partners().ranked.length > 0) {
+            <ol class="rows">
+              @for (partner of partners().ranked; track partner.key; let index = $index) {
+                <li>
+                  <app-stat-row
+                    [place]="partners().places[index]"
+                    [shared]="partners().shared[index]"
+                    [name]="partner.name"
+                    [won]="partner.won"
+                    [played]="partner.played"
+                    [rate]="partner.rate"
+                  />
+                </li>
+              }
+            </ol>
+          }
+          @if (partners().few.length > 0) {
+            <h3 class="heading">{{ copy.stats.few(minMatches) }}</h3>
+            <ol class="rows">
+              @for (partner of partners().few; track partner.key) {
+                <li>
+                  <app-stat-row
+                    [place]="null"
+                    [name]="partner.name"
+                    [won]="partner.won"
+                    [played]="partner.played"
+                    [rate]="partner.rate"
+                  />
+                </li>
+              }
+            </ol>
+          }
         </section>
+      } @else {
+        <div class="empty">
+          <h3 class="empty-title">{{ copy.stats.playerMissingTitle }}</h3>
+          <p class="empty-body">{{ copy.stats.playerMissingBody(name()) }}</p>
+        </div>
       }
     </app-screen>
   `,
@@ -112,6 +134,28 @@ import { StatsView } from './stats-view';
       transform-origin: bottom left;
     }
 
+    .empty {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: var(--s-sm);
+      padding: var(--s-lg);
+    }
+
+    .empty-title {
+      margin: 0;
+      font: italic 800 var(--t-title) / 1.15 var(--font);
+      text-transform: uppercase;
+      text-wrap: balance;
+    }
+
+    .empty-body {
+      margin: 0;
+      max-width: 34ch;
+      color: var(--c-muted);
+    }
+
     .part {
       display: flex;
       flex-direction: column;
@@ -146,6 +190,9 @@ export class PlayerStatsScreen {
 
   private readonly screen = viewChild.required(Screen);
   private readonly key = signal<string | null>(null);
+  /** The name as it was opened, for when the filters leave the player out. */
+  protected readonly name = signal('');
+  protected readonly minMatches = MIN_MATCHES;
 
   /** The player under the current filters; gone if the filters leave them out. */
   protected readonly stat = computed(
@@ -154,12 +201,13 @@ export class PlayerStatsScreen {
   protected readonly percent = computed(() => copy.stats.percent(this.stat()?.rate ?? 0));
   protected readonly partners = computed(() => {
     const key = this.key();
-    return key === null ? [] : partnersOf(this.view.matches(), key);
+    const { ranked, few } = split(key === null ? [] : partnersOf(this.view.matches(), key));
+    return { ranked, few, places: places(ranked), shared: sharedPlaces(ranked) };
   });
-  protected readonly partnerPlaces = computed(() => places(this.partners()));
 
   open(player: PlayerStat): void {
     this.key.set(player.key);
+    this.name.set(player.name);
     this.screen().open();
   }
 }

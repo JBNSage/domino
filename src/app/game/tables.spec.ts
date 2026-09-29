@@ -24,10 +24,11 @@ const table = (players: string[] = [], teams: Table['teams'] = []): Table => ({
 });
 
 describe('mesas', () => {
-  it('become the one in use when created', () => {
+  it('are not in use until chosen', () => {
     const tables = addTable(noTables, 'm1', '  Casa   de Ana ');
     expect(tables.tables).toEqual([table()]);
-    expect(tables.active).toBe('m1');
+    expect(tables.active).toBeNull();
+    expect(setActive(tables, 'm1').active).toBe('m1');
   });
 
   it('refuse a name already used, whatever the accents or case', () => {
@@ -44,12 +45,12 @@ describe('mesas', () => {
   });
 
   it('leave no mesa in use when the one in use is removed', () => {
-    const tables = addTable(noTables, 'm1', 'Casa');
+    const tables = setActive(addTable(noTables, 'm1', 'Casa'), 'm1');
     expect(removeTable(tables, 'm1')).toEqual(noTables);
   });
 
   it('can be put down, and only known mesas can be picked up', () => {
-    const tables = addTable(noTables, 'm1', 'Casa');
+    const tables = setActive(addTable(noTables, 'm1', 'Casa'), 'm1');
     expect(setActive(tables, null).active).toBeNull();
     expect(setActive(tables, 'nope')).toBe(tables);
   });

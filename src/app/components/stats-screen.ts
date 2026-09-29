@@ -9,7 +9,15 @@ import {
 
 import { copy } from '../copy';
 import { FitText } from '../directives/fit-text';
-import { PlayerStat, places } from '../game/stats';
+import { Players } from '../game/state';
+import { MIN_MATCHES, PlayerStat, Tally, places, sharedPlaces, split } from '../game/stats';
+
+type Row = Tally & {
+  key: string;
+  name: string;
+  players: Players | null;
+  player: PlayerStat | null;
+};
 import { Choice, ChoiceGroup } from './choice-group';
 import { Screen } from './screen';
 import { Slashes } from './slashes';
@@ -35,32 +43,34 @@ import { StatsTab, StatsView } from './stats-view';
           </p>
         </div>
       } @else {
-        <div class="filters">
-          <button
-            type="button"
-            class="slab slab--compact lean filter"
-            [class.filter--on]="view.filter().table.kind !== 'all'"
-            [attr.aria-label]="copy.stats.tableA11y(view.tableLabel())"
-            (click)="filters.open('table')"
-          >
-            <span class="slab__label" [appFitText]="copy.stats.table(view.tableLabel())">{{
-              copy.stats.table(view.tableLabel())
-            }}</span>
-          </button>
-          <button
-            type="button"
-            class="slab slab--compact lean filter"
-            [class.filter--on]="view.filter().from !== null || view.filter().to !== null"
-            [attr.aria-label]="copy.stats.datesA11y(view.datesLabel())"
-            (click)="filters.open('dates')"
-          >
-            <span class="slab__label" [appFitText]="copy.stats.dates(view.datesLabel())">{{
-              copy.stats.dates(view.datesLabel())
-            }}</span>
-          </button>
-        </div>
+        <div class="controls">
+          <div class="filters">
+            <button
+              type="button"
+              class="slab slab--compact lean filter"
+              [class.filter--on]="view.filter().table.kind !== 'all'"
+              [attr.aria-label]="copy.stats.tableA11y(view.tableLabel())"
+              (click)="filters.open('table')"
+            >
+              <span class="slab__label" [appFitText]="copy.stats.table(view.tableLabel())">{{
+                copy.stats.table(view.tableLabel())
+              }}</span>
+            </button>
+            <button
+              type="button"
+              class="slab slab--compact lean filter"
+              [class.filter--on]="view.filter().from !== null || view.filter().to !== null"
+              [attr.aria-label]="copy.stats.datesA11y(view.datesLabel())"
+              (click)="filters.open('dates')"
+            >
+              <span class="slab__label" [appFitText]="copy.stats.dates(view.datesLabel())">{{
+                copy.stats.dates(view.datesLabel())
+              }}</span>
+            </button>
+          </div>
 
-        <app-choice-group [label]="copy.stats.view" [options]="tabs" [(value)]="view.tab" />
+          <app-choice-group [label]="copy.stats.view" [options]="tabs" [(value)]="view.tab" />
+        </div>
 
         @if (rows().length === 0) {
           <div class="empty">
@@ -74,35 +84,47 @@ import { StatsTab, StatsView } from './stats-view';
           </div>
         } @else {
           <p class="facts numerals">{{ facts() }}</p>
-          <ol class="rows">
-            @if (view.tab() === 'players') {
-              @for (player of view.players(); track player.key; let index = $index) {
+          @if (sections().ranked.length > 0) {
+            <ol class="rows">
+              @for (row of sections().ranked; track row.key; let index = $index) {
                 <li>
                   <app-stat-row
-                    [place]="playerPlaces()[index]"
-                    [name]="player.name"
-                    [won]="player.won"
-                    [played]="player.played"
-                    [rate]="player.rate"
-                    [action]="true"
-                    (open)="openPlayer.emit(player)"
+                    [place]="sections().places[index]"
+                    [shared]="sections().shared[index]"
+                    [name]="row.name"
+                    [players]="row.players"
+                    [won]="row.won"
+                    [played]="row.played"
+                    [rate]="row.rate"
+                    [action]="row.player !== null"
+                    (open)="row.player && openPlayer.emit(row.player)"
                   />
                 </li>
               }
-            } @else {
-              @for (couple of view.couples(); track couple.key; let index = $index) {
-                <li>
-                  <app-stat-row
-                    [place]="couplePlaces()[index]"
-                    [players]="couple.players"
-                    [won]="couple.won"
-                    [played]="couple.played"
-                    [rate]="couple.rate"
-                  />
-                </li>
-              }
-            }
-          </ol>
+            </ol>
+          }
+          @if (sections().few.length > 0) {
+            <section class="few">
+              <h3 class="heading">{{ copy.stats.few(minMatches) }}</h3>
+              <p class="note">{{ copy.stats.fewNote }}</p>
+              <ol class="rows">
+                @for (row of sections().few; track row.key) {
+                  <li>
+                    <app-stat-row
+                      [place]="null"
+                      [name]="row.name"
+                      [players]="row.players"
+                      [won]="row.won"
+                      [played]="row.played"
+                      [rate]="row.rate"
+                      [action]="row.player !== null"
+                      (open)="row.player && openPlayer.emit(row.player)"
+                    />
+                  </li>
+                }
+              </ol>
+            </section>
+          }
         }
       }
     </app-screen>
@@ -135,8 +157,50 @@ import { StatsTab, StatsView } from './stats-view';
       padding: 0 var(--s-sm);
     }
 
+    .controls {
+      display: flex;
+      flex-direction: column;
+      gap: var(--s-xl);
+    }
+
+    /* Short and wide: filters and the toggle share one row, leaving room for the list. */
+    @media (max-height: 36em) and (min-width: 30em) {
+      .controls {
+        flex-direction: row;
+        align-items: flex-end;
+        gap: var(--s-md);
+      }
+
+      .controls > * {
+        flex: 1 1 0;
+        min-width: 0;
+      }
+    }
+
+    .few {
+      display: flex;
+      flex-direction: column;
+      gap: var(--s-sm);
+    }
+
+    .heading {
+      margin: var(--s-md) 0 0;
+      padding: 0 var(--s-sm);
+      color: var(--c-muted);
+      font: italic 600 var(--t-label) / 1.3 var(--font);
+      text-transform: uppercase;
+    }
+
+    .note {
+      margin: 0 0 var(--s-xs);
+      padding: 0 var(--s-sm);
+      max-width: 40ch;
+      color: var(--c-muted);
+      line-height: 1.35;
+    }
+
     .facts {
-      margin: 0 0 calc(var(--s-md) * -1);
+      margin: 0 0 calc(var(--s-lg) * -1);
       padding: 0 var(--s-sm);
       color: var(--c-muted);
       font: italic 600 var(--t-label) / 1.3 var(--font);
@@ -194,8 +258,17 @@ export class StatsScreen {
 
   private readonly screen = viewChild.required(Screen);
 
-  protected readonly playerPlaces = computed(() => places(this.view.players()));
-  protected readonly couplePlaces = computed(() => places(this.view.couples()));
+  protected readonly minMatches = MIN_MATCHES;
+
+  /** The rows of the chosen list: those with enough matches to rank, then the rest. */
+  protected readonly sections = computed(() => {
+    const rows: Row[] =
+      this.view.tab() === 'players'
+        ? this.view.players().map((player) => ({ ...player, players: null, player }))
+        : this.view.couples().map((couple) => ({ ...couple, name: '', player: null }));
+    const { ranked, few } = split(rows);
+    return { ranked, few, places: places(ranked), shared: sharedPlaces(ranked) };
+  });
 
   protected readonly rows = computed(() =>
     this.view.tab() === 'players' ? this.view.players() : this.view.couples(),

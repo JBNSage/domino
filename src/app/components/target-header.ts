@@ -190,11 +190,14 @@ export class TargetHeader {
         a11y: copy.tables.statusA11y(mesa.name),
       };
     }
-    const text = copy.tournament.status(
+    const status = copy.tournament.status(
       winsNeeded(tournament.rule),
       tournament.results.length + 1,
       tournament.tieBreak !== null,
     );
+    // The mesa stays named during a tournament played there.
+    const mesa = this.mesas.active();
+    const text = mesa === null ? status : copy.tables.withTournament(status, mesa.name);
     return { tournament: true, text, a11y: copy.tournament.statusA11y(text) };
   });
 

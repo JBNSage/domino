@@ -16,11 +16,11 @@ import { PlayerPair } from './player-pair';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <ng-template #content>
-      <span class="place numerals" aria-hidden="true">{{ place() }}</span>
+      <span class="place numerals" aria-hidden="true">{{ place() ?? '' }}</span>
       <span class="who">
         <span class="head">
           @if (players(); as pair) {
-            <app-player-pair class="name" [players]="pair" />
+            <app-player-pair class="name couple" [players]="pair" [wrap]="true" />
           } @else {
             <span class="name" [appFitText]="name()">{{ name() }}</span>
           }
@@ -38,7 +38,7 @@ import { PlayerPair } from './player-pair';
         type="button"
         class="row lean"
         [class.row--lead]="lead()"
-        [attr.aria-label]="copy.stats.playerA11y(place(), label(), rate(), won(), played())"
+        [attr.aria-label]="spoken() + '. ' + copy.stats.open"
         (click)="open.emit()"
       >
         <ng-container *ngTemplateOutlet="content" />
@@ -48,9 +48,7 @@ import { PlayerPair } from './player-pair';
       </button>
     } @else {
       <div class="row lean" [class.row--lead]="lead()">
-        <span class="sr-only">{{
-          copy.stats.rowA11y(place(), label(), rate(), won(), played())
-        }}</span>
+        <span class="sr-only">{{ spoken() }}</span>
         <span class="shown" aria-hidden="true">
           <ng-container *ngTemplateOutlet="content" />
         </span>
@@ -122,19 +120,29 @@ import { PlayerPair } from './player-pair';
     .head {
       width: 100%;
       display: flex;
+      flex-wrap: wrap;
       align-items: baseline;
-      justify-content: space-between;
-      gap: var(--s-md);
+      gap: 0 var(--s-md);
     }
 
+    /* With little room the rate moves under the name, which never breaks mid-word. */
     .head .name {
-      flex: 1 1 auto;
+      flex: 1 1 9rem;
       min-width: 0;
+    }
+
+    .head .rate {
+      margin-left: auto;
     }
 
     .name {
       font: italic 800 var(--t-button) / 1.2 var(--font);
       text-transform: uppercase;
+    }
+
+    /* Two names share the line, so a couple is set one step smaller. */
+    .couple {
+      font-size: var(--t-compact);
     }
 
     .record {
@@ -202,7 +210,10 @@ import { PlayerPair } from './player-pair';
 export class StatRow {
   protected readonly copy = copy;
 
-  readonly place = input.required<number>();
+  /** The place in the ranking; null for a row with too few matches to rank. */
+  readonly place = input.required<number | null>();
+  /** Whether another row has the same place. */
+  readonly shared = input(false);
   /** A player's name; a couple gives its players instead. */
   readonly name = input('');
   readonly players = input<Players | null>(null);
@@ -214,6 +225,15 @@ export class StatRow {
   readonly open = output<void>();
 
   protected readonly lead = computed(() => this.place() === 1 && this.won() > 0);
+  protected readonly spoken = computed(() =>
+    copy.stats.rowA11y(
+      copy.stats.place(this.place(), this.shared()),
+      this.label(),
+      this.rate(),
+      this.won(),
+      this.played(),
+    ),
+  );
   protected readonly percent = computed(() => copy.stats.percent(this.rate()));
   protected readonly label = computed(() => {
     const pair = this.players();

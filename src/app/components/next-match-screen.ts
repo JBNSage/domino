@@ -30,7 +30,7 @@ import { TeamEdit } from './team-sheet';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <app-screen [heading]="heading()" [locked]="true" (closed)="reopen()">
-      <p class="lead">{{ lead() }}</p>
+      <p class="lead" id="next-match-lead">{{ lead() }}</p>
 
       <div class="seats">
         @for (seat of seats(); track seat.side) {
@@ -39,6 +39,7 @@ import { TeamEdit } from './team-sheet';
             class="seat lean"
             [class]="'seat--' + seat.side"
             [disabled]="fixed()"
+            aria-describedby="next-match-lead"
             [attr.aria-label]="
               fixed()
                 ? copy.tournament.seatFixedA11y(seat.name, seat.players, seat.won)
@@ -47,7 +48,7 @@ import { TeamEdit } from './team-sheet';
             (click)="pick(seat.side)"
           >
             <span class="who">
-              <span class="name" [appFitText]="seat.name">{{ seat.name }}</span>
+              <span class="name">{{ seat.name }}</span>
               @if (seat.players; as players) {
                 <app-player-pair class="players" [players]="players" />
               }
@@ -199,9 +200,12 @@ import { TeamEdit } from './team-sheet';
       max-width: 100%;
     }
 
+    /* A long name wraps rather than losing its last letters. */
     .name {
       font: italic 800 var(--t-title) / 1.15 var(--font);
       text-transform: uppercase;
+      overflow-wrap: break-word;
+      hyphens: auto;
     }
 
     .players {

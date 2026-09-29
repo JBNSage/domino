@@ -75,11 +75,26 @@ import { Slashes } from './slashes';
           </div>
 
           <div class="actions">
-            <button type="button" class="slab slab--compact lean correct" (click)="correct()">
-              <span class="slab__label" [appFitText]="store.correctLabel()">
-                {{ store.correctLabel() }}
-              </span>
-            </button>
+            <div class="others">
+              <button type="button" class="slab slab--compact lean correct" (click)="correct()">
+                <span class="slab__label" [appFitText]="store.correctLabel()">
+                  {{ store.correctLabel() }}
+                </span>
+              </button>
+              <!-- At a mesa the same teams play on; changing them is a choice. -->
+              @if (store.canRotate()) {
+                <button
+                  type="button"
+                  class="slab slab--compact lean correct"
+                  [attr.aria-label]="copy.winner.rotateA11y"
+                  (click)="store.closeRound(true)"
+                >
+                  <span class="slab__label" [appFitText]="copy.winner.rotate">{{
+                    copy.winner.rotate
+                  }}</span>
+                </button>
+              }
+            </div>
             <button type="button" class="slab lean next" (click)="store.closeRound()">
               <span class="slab__label" [appFitText]="store.closeLabel()">{{
                 store.closeLabel()
@@ -251,6 +266,18 @@ import { Slashes } from './slashes';
       flex-direction: column;
       gap: var(--s-md);
       margin: 0 var(--s-md);
+    }
+
+    .others {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--s-md);
+    }
+
+    /* Side by side only when both labels fit whole. */
+    .others .slab {
+      flex: 1 1 12rem;
+      padding: 0 var(--s-md);
     }
 
     .correct {

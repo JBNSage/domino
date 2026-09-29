@@ -6,7 +6,7 @@ import { HistoryStore } from './history.store';
 import { initialState } from './state';
 import { STORAGE_KEY, TOURNAMENT_KEY, loadTournament } from './storage';
 import { standings } from './tournament';
-import { addTable } from './tables';
+import { addTable, addPlayer, saveTeam, setActive, updateTable } from './tables';
 import { TablesStore } from './tables.store';
 import { TournamentDraft } from './tournament-draft';
 
@@ -572,14 +572,14 @@ describe('GameStore at a mesa', () => {
     vi.useFakeTimers();
     store = TestBed.inject(GameStore);
     tables = TestBed.inject(TablesStore);
-    tables.change((current) => addTable(current, 'm1', 'Casa'));
+    tables.change((current) => setActive(addTable(current, 'm1', 'Casa'), 'm1'));
   });
 
   afterEach(() => vi.useRealTimers());
 
-  it('asks for the next teams after a match, and records the mesa', () => {
+  it('asks for the next teams when asked to rotate, and records the mesa', () => {
     store.addPoints('a', 200);
-    store.closeRound();
+    store.closeRound(true);
     expect(store.state().between).toBe('next');
     expect(TestBed.inject(HistoryStore).history().matches[0].table).toBe('Casa');
     expect(TestBed.inject(HistoryStore).history().matches[0].tableId).toBe('m1');
@@ -588,11 +588,28 @@ describe('GameStore at a mesa', () => {
     expect(store.state().between).toBeNull();
   });
 
-  it('goes straight on without a mesa', () => {
-    store.chooseTable(null);
+  it('keeps the same teams unless asked to rotate', () => {
     store.addPoints('a', 200);
     store.closeRound();
     expect(store.state().between).toBeNull();
+  });
+
+  it('goes straight on without a mesa', () => {
+    store.chooseTable(null);
+    store.addPoints('a', 200);
+    store.closeRound(true);
+    expect(store.state().between).toBeNull();
+  });
+
+  it('asks for the first teams when the mesa in use is chosen again at a clean board', () => {
+    store.chooseTable('m1');
+    expect(store.state().between).toBe('start');
+  });
+
+  it('records no mesa when played at none', () => {
+    store.chooseTable(null);
+    store.addPoints('a', 200);
+    store.closeRound();
     expect(TestBed.inject(HistoryStore).history().matches[0].table).toBeNull();
   });
 
@@ -616,7 +633,7 @@ describe('GameStore at a mesa', () => {
 
   it('keeps the closed match on offer while the next teams are chosen', () => {
     store.addPoints('a', 200);
-    store.closeRound();
+    store.closeRound(true);
     store.setTeam('b', 'Tías', ['Rosa', 'Marta']);
     expect(store.canGoBack()).toBe(true);
   });
@@ -650,6 +667,40 @@ describe('GameStore at a mesa', () => {
     expect(tables.tables().tables).toEqual([]);
     store.restore();
     expect(tables.active()?.name).toBe('Casa');
+  });
+
+  it('renames a player in the saved teams, at the board and in the matches of the mesa', () => {
+    tables.changeTable('m1', (current) => addPlayer(current, 'Jo'));
+    store.setTeam('a', 'Primos', ['Jo', 'Ana']);
+    store.addPoints('a', 200);
+    store.closeRound();
+
+    store.renameTablePlayer('m1', 'Jo', 'José');
+    expect(tables.active()?.players).toContain('José');
+    expect(store.state().teams.a.players).toEqual(['José', 'Ana']);
+    expect(TestBed.inject(HistoryStore).history().matches[0].teams.a.players).toEqual([
+      'José',
+      'Ana',
+    ]);
+  });
+
+  it('unlinks the board from a removed mesa, and links it again on undo', () => {
+    tables.change((current) =>
+      updateTable(current, 'm1', (mesa) =>
+        saveTeam(mesa, { id: 's1', name: 'Primos', players: null }),
+      ),
+    );
+    store.seatTeam('a', { name: 'Primos', players: null, saved: 's1' });
+    store.removeTable('m1');
+    expect(store.state().teams.a.saved).toBeNull();
+    store.restore();
+    expect(store.state().teams.a.saved).toBe('s1');
+  });
+
+  it('drops an offer to bring back an entry once another screen opens', () => {
+    store.removeTable('m1');
+    store.dismissScreenUndo();
+    expect(store.undo()).toBeNull();
   });
 
   it('stops offering an old mesa back once the mesas change again', () => {

@@ -18,7 +18,6 @@ import {
   SavedTeam,
   addPlayer,
   playerNamed,
-  renamePlayer,
   renameTable,
   teamsUsing,
 } from '../game/tables';
@@ -40,18 +39,17 @@ import { TeamEdits } from './team-edits';
       @if (mesa(); as mesa) {
         <button
           type="button"
-          class="rename lean"
+          class="slab slab--compact lean rename"
           [attr.aria-label]="copy.tables.nameA11y(mesa.name)"
           (click)="rename()"
         >
-          <span class="who">
-            <span class="label">{{ copy.tables.nameLabel }}</span>
-            <span class="value" [appFitText]="mesa.name">{{ mesa.name }}</span>
-          </span>
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <path d="M4 20l1-4.5L16.5 4 20 7.5 8.5 19z" />
             <path d="M14 6.5l3.5 3.5" />
           </svg>
+          <span class="slab__label" [appFitText]="copy.tables.rename">{{
+            copy.tables.rename
+          }}</span>
         </button>
 
         <section class="part">
@@ -60,7 +58,7 @@ import { TeamEdits } from './team-edits';
             <p class="note">{{ copy.tables.noPlayers }}</p>
           } @else {
             <ul class="chips">
-              @for (player of mesa.players; track player) {
+              @for (player of shownPlayers(); track player) {
                 <li>
                   <button
                     type="button"
@@ -73,6 +71,17 @@ import { TeamEdits } from './team-edits';
                 </li>
               }
             </ul>
+            <!-- A long list is shortened, so the teams stay within reach. -->
+            @if (mesa.players.length > collapseAt) {
+              <button
+                type="button"
+                class="slab slab--compact lean more"
+                [attr.aria-expanded]="allPlayers()"
+                (click)="allPlayers.set(!allPlayers())"
+              >
+                <span class="slab__label" [appFitText]="moreLabel()">{{ moreLabel() }}</span>
+              </button>
+            }
           }
 
           @if (playersFull()) {
@@ -136,9 +145,9 @@ import { TeamEdits } from './team-edits';
                     (click)="editTeam.emit(edits.saved(mesa.id, team, team.name))"
                   >
                     <span class="who">
-                      <span class="team-name" [appFitText]="team.name">{{ team.name }}</span>
+                      <span class="team-name">{{ team.name }}</span>
                       @if (team.players; as players) {
-                        <app-player-pair class="team-players" [players]="players" />
+                        <app-player-pair class="team-players" [players]="players" [wrap]="true" />
                       } @else {
                         <span class="team-players">{{ copy.players.none }}</span>
                       }
@@ -170,6 +179,15 @@ import { TeamEdits } from './team-edits';
       >
         <span class="slab__label" [appFitText]="copy.tables.remove">{{ copy.tables.remove }}</span>
       </button>
+      <button
+        screenFooter
+        type="button"
+        class="slab slab--filled lean play"
+        [attr.aria-label]="copy.tables.playA11y(mesa()?.name ?? '')"
+        (click)="play()"
+      >
+        <span class="slab__label" [appFitText]="copy.tables.play">{{ copy.tables.play }}</span>
+      </button>
     </app-screen>
 
     <app-name-sheet />
@@ -199,30 +217,24 @@ import { TeamEdits } from './team-edits';
     </app-sheet>
   `,
   styles: `
-    .rename {
-      --fill: var(--c-surface);
-      --lean-inset: 8px;
-
-      width: 100%;
-      min-height: calc(var(--min-target) + 16px);
-      display: flex;
-      align-items: center;
-      gap: var(--s-md);
-      padding: var(--s-sm) min(var(--s-xl), 6vw);
-      border: 0;
-      background: none;
-      color: var(--c-text);
-      text-align: left;
+    .rename,
+    .more {
+      align-self: flex-start;
+      max-width: calc(100% - var(--s-lg));
+      margin: 0 var(--s-sm);
     }
 
-    .rename:active::before,
+    .play {
+      --fill: var(--c-text);
+      --label: var(--c-ground);
+    }
+
     .team:active::before,
     .chip:active::before {
       opacity: var(--pressed);
     }
 
     @media (hover: hover) {
-      .rename:hover::before,
       .team:hover::before,
       .chip:hover::before {
         filter: brightness(1.12);
@@ -248,11 +260,6 @@ import { TeamEdits } from './team-edits';
       padding: 0 var(--s-sm);
     }
 
-    .value {
-      font: italic 800 var(--t-button) / 1.2 var(--font);
-      text-transform: uppercase;
-    }
-
     svg {
       flex: none;
       width: 20px;
@@ -262,10 +269,6 @@ import { TeamEdits } from './team-edits';
       stroke-width: 2;
       stroke-linecap: round;
       stroke-linejoin: round;
-    }
-
-    .rename svg {
-      stroke: var(--c-muted);
     }
 
     .part {
@@ -393,6 +396,7 @@ import { TeamEdits } from './team-edits';
     .team-name {
       font: italic 800 var(--t-button) / 1.2 var(--font);
       text-transform: uppercase;
+      overflow-wrap: break-word;
     }
 
     .team-players,
@@ -452,6 +456,12 @@ export class TableScreen {
 
   /** Asks for the team sheet, which the shell owns. */
   readonly editTeam = output<TeamEdit>();
+  /** The mesa is now played at: the screens above the board close. */
+  readonly played = output<void>();
+
+  /** Longer lists of players show 12 until asked for all. */
+  protected readonly collapseAt = 16;
+  protected readonly allPlayers = signal(false);
 
   private readonly store = inject(GameStore);
   private readonly tables = inject(TablesStore);
@@ -464,6 +474,16 @@ export class TableScreen {
 
   protected readonly mesa = computed(
     () => this.tables.tables().tables.find((table) => table.id === this.id()) ?? null,
+  );
+
+  protected readonly shownPlayers = computed(() => {
+    const players = this.mesa()?.players ?? [];
+    return this.allPlayers() || players.length <= this.collapseAt ? players : players.slice(0, 12);
+  });
+  protected readonly moreLabel = computed(() =>
+    this.allPlayers()
+      ? copy.tables.showFewer
+      : copy.tables.showAll(this.mesa()?.players.length ?? 0),
   );
 
   protected readonly teams = computed(() => {
@@ -488,6 +508,7 @@ export class TableScreen {
   open(id: string): void {
     this.id.set(id);
     this.newPlayer.set('');
+    this.allPlayers.set(false);
     this.screen().open();
   }
 
@@ -532,14 +553,23 @@ export class TableScreen {
       takenMessage: copy.tables.playerTaken,
       emptyMessage: copy.tables.playerEmpty,
       confirm: copy.players.save,
-      save: (name) =>
-        this.tables.changeTable(mesa.id, (table) => renamePlayer(table, player, name)),
+      save: (name) => this.store.renameTablePlayer(mesa.id, player, name),
       remove: {
         label: copy.tables.removePlayer,
         run: () => this.store.removeTablePlayer(mesa.id, player),
       },
       kept: using.length > 0 ? copy.tables.playerInUse(using) : null,
     });
+  }
+
+  /** Plays at this mesa; at a clean board its first two teams are chosen next. */
+  protected play(): void {
+    const mesa = this.mesa();
+    if (mesa === null) return;
+    this.screen().close();
+    this.store.chooseTable(mesa.id);
+    this.store.announce(copy.tables.announce(mesa.name));
+    this.played.emit();
   }
 
   protected addTeam(): void {

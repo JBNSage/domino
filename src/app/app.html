@@ -40,7 +40,7 @@
 <app-player-stats-screen #playerStats />
 
 <app-tables-screen #tables (edit)="mesa.open($event)" />
-<app-table-screen #mesa (editTeam)="team.open($event)" />
+<app-table-screen #mesa (editTeam)="team.open($event)" (played)="tables.close()" />
 
 <app-tournament-setup-screen #setup (editTeam)="team.open($event)" />
 <app-next-match-screen

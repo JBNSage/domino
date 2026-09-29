@@ -96,7 +96,8 @@ type Option = { id: string; name: string; players: Players | null; won: number }
       font: italic 800 var(--t-title) / 1.15 var(--font);
       text-transform: uppercase;
       text-wrap: balance;
-      overflow-wrap: anywhere;
+      overflow-wrap: break-word;
+      hyphens: auto;
     }
 
     .players {
@@ -182,15 +183,17 @@ type Option = { id: string; name: string; players: Players | null; won: number }
       text-transform: uppercase;
     }
 
-    .option-players,
-    .option-wins {
+    .option-players {
       color: var(--c-muted);
       font: italic 600 var(--t-label) / 1.3 var(--font);
       text-transform: uppercase;
     }
 
+    /* The wins are why a team is picked, so they read first after the name. */
     .option-wins {
       flex: none;
+      font: italic 800 var(--t-meta) / 1.3 var(--font);
+      text-transform: uppercase;
     }
   `,
 })
@@ -226,9 +229,14 @@ export class SeatSheet {
     }
     const { teams, tally } = this.store.state();
     const seated = [teams.a.saved, teams.b.saved];
+    // Most wins first: the teams that play most come to hand first.
     return (this.tables.active()?.teams ?? [])
       .filter((team) => !seated.includes(team.id))
-      .map((team) => ({ ...team, won: tally[team.id] ?? 0 }));
+      .map((team) => ({ ...team, won: tally[team.id] ?? 0 }))
+      .sort(
+        (one, other) =>
+          other.won - one.won || one.name.localeCompare(other.name, 'es', { sensitivity: 'base' }),
+      );
   });
 
   /** Called straight from the tap. */

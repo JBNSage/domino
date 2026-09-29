@@ -67,6 +67,27 @@ export type TeamEdit = {
         [(value)]="nameText"
         (submitted)="table() === null ? firstField().focus() : submit()"
       />
+      <!-- Above the players, so a long list never pushes it out of reach. -->
+      @if (table() !== null && request()?.keep !== null && request()?.keep !== undefined) {
+        <button
+          type="button"
+          role="switch"
+          class="keep"
+          [attr.aria-checked]="keep()"
+          [disabled]="keepFull()"
+          aria-describedby="team-sheet-keep"
+          (click)="keep.set(!keep())"
+        >
+          <span class="box lean" [class.box--on]="keep()">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7" /></svg>
+          </span>
+          <span class="keep-text">
+            <span class="keep-label">{{ copy.picker.keep }}</span>
+            <span class="keep-help" id="team-sheet-keep">{{ keepHelp() }}</span>
+          </span>
+        </button>
+      }
+
       <div #picking class="mode" [hidden]="table() === null">
         <app-player-picker
           [table]="table() ?? ''"
@@ -97,26 +118,6 @@ export type TeamEdit = {
           (submitted)="submit()"
         />
       </div>
-
-      @if (table() !== null && request()?.keep !== null && request()?.keep !== undefined) {
-        <button
-          type="button"
-          role="switch"
-          class="keep"
-          [attr.aria-checked]="keep()"
-          [disabled]="keepFull()"
-          aria-describedby="team-sheet-keep"
-          (click)="keep.set(!keep())"
-        >
-          <span class="box lean" [class.box--on]="keep()">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7" /></svg>
-          </span>
-          <span class="keep-text">
-            <span class="keep-label">{{ copy.picker.keep }}</span>
-            <span class="keep-help" id="team-sheet-keep">{{ keepHelp() }}</span>
-          </span>
-        </button>
-      }
 
       <!-- Always in the page, so screen readers hear the message arrive. -->
       <p class="message" id="team-sheet-message" role="status" [class.error]="error() !== null">

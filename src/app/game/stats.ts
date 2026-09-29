@@ -148,12 +148,31 @@ function tally(count: Count): Tally {
   };
 }
 
-/** Best rate first; then more matches played, then by name. */
+/** Fewer matches than this and a rate says little; those rows are listed apart. */
+export const MIN_MATCHES = 5;
+
+/**
+ * The rate used for ordering: one win and one loss are added to every record,
+ * so 1 won of 1 does not rank above 8 won of 11.
+ */
+export function orderRate(tally: Pick<Tally, 'won' | 'played'>): number {
+  return (tally.won + 1) / (tally.played + 2);
+}
+
+/** Best corrected rate first; then more matches played, then by name. */
 function byRate<T extends Tally>(label: (item: T) => string) {
   return (one: T, other: T) =>
-    other.rate - one.rate ||
+    orderRate(other) - orderRate(one) ||
     other.played - one.played ||
     label(one).localeCompare(label(other), 'es', { sensitivity: 'base' });
+}
+
+/** The rows with enough matches to rank, and the rest. */
+export function split<T extends Tally>(list: T[]): { ranked: T[]; few: T[] } {
+  return {
+    ranked: list.filter((stat) => stat.played >= MIN_MATCHES),
+    few: list.filter((stat) => stat.played < MIN_MATCHES),
+  };
 }
 
 /** Each team with players in each match: its side, its pair, and whether it won. */
@@ -225,17 +244,25 @@ export function partnersOf(matches: MatchRecord[], key: string): PlayerStat[] {
     .sort(byRate((stat) => stat.name));
 }
 
-/** Places in an ordered list; the same rate over the same matches shares a place. */
+/** Places in an ordered list; the same record shares a place. */
 export function places(list: Tally[]): number[] {
   return list.map((stat, index) => {
     let first = index;
     while (
       first > 0 &&
-      list[first - 1].rate === stat.rate &&
+      list[first - 1].won === stat.won &&
       list[first - 1].played === stat.played
     ) {
       first -= 1;
     }
     return first + 1;
   });
+}
+
+/** Whether a place is shared with the row before or after it. */
+export function sharedPlaces(list: Tally[]): boolean[] {
+  const numbers = places(list);
+  return numbers.map(
+    (place, index) => numbers[index - 1] === place || numbers[index + 1] === place,
+  );
 }

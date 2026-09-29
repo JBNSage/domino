@@ -3,7 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { App } from './app';
 import { copy } from './copy';
 import { GameStore } from './game/game.store';
-import { addTable } from './game/tables';
+import { addTable, setActive } from './game/tables';
 import { TablesStore } from './game/tables.store';
 
 describe('App', () => {
@@ -55,7 +55,7 @@ describe('App', () => {
     expect(page.querySelector('app-menu-sheet')?.textContent).toContain(copy.menu.mesa(null));
     expect(page.querySelector('app-target-header .status')).toBeNull();
 
-    TestBed.inject(TablesStore).change((tables) => addTable(tables, 'm1', 'Casa'));
+    TestBed.inject(TablesStore).change((tables) => setActive(addTable(tables, 'm1', 'Casa'), 'm1'));
     await fixture.whenStable();
     expect(page.querySelector('app-menu-sheet')?.textContent).toContain(copy.menu.mesa('Casa'));
     expect(page.querySelector('app-target-header .status')?.textContent?.trim()).toBe(
@@ -63,13 +63,15 @@ describe('App', () => {
     );
   });
 
-  it('leads from a match won at a mesa to choosing the next teams', () => {
+  it('offers other teams after a match only at a mesa', () => {
     const store = TestBed.inject(GameStore);
     store.addPoints('a', 200);
     expect(store.closeLabel()).toBe(copy.winner.close);
+    expect(store.canRotate()).toBe(false);
 
-    TestBed.inject(TablesStore).change((tables) => addTable(tables, 'm1', 'Casa'));
-    expect(store.closeLabel()).toBe(copy.tournament.next);
+    TestBed.inject(TablesStore).change((tables) => setActive(addTable(tables, 'm1', 'Casa'), 'm1'));
+    expect(store.closeLabel()).toBe(copy.winner.close);
+    expect(store.canRotate()).toBe(true);
   });
 
   it('shows the players under their team', async () => {

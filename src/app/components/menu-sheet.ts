@@ -45,9 +45,10 @@ import { Sheet } from './sheet';
           [attr.aria-label]="copy.menu.mesaA11y(mesa())"
           (click)="go(tables)"
         >
-          <span class="slab__label" [appFitText]="copy.menu.mesa(mesa())">{{
-            copy.menu.mesa(mesa())
-          }}</span>
+          <span class="entry-text">
+            <span class="slab__label">{{ copy.menu.mesas }}</span>
+            <span class="entry-meta">{{ copy.menu.mesa(mesa()) }}</span>
+          </span>
         </button>
       </div>
 
@@ -109,6 +110,23 @@ import { Sheet } from './sheet';
       margin: 0 var(--s-sm);
     }
 
+    .entry-text {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      padding: var(--s-xs) 0;
+      white-space: normal;
+      text-align: left;
+    }
+
+    /* The mesa in use, which may be long: it wraps, never cut. */
+    .entry-meta {
+      color: var(--c-muted);
+      font: italic 600 var(--t-label) / 1.3 var(--font);
+      overflow-wrap: break-word;
+    }
+
     .group {
       display: flex;
       flex-direction: column;
@@ -121,15 +139,17 @@ import { Sheet } from './sheet';
       text-transform: uppercase;
     }
 
+    /* Side by side; one above the other once large text needs the room. */
     .teams {
       display: flex;
+      flex-wrap: wrap;
       gap: var(--s-sm);
     }
 
     .team {
       --lean-inset: 5px;
 
-      flex: 1 1 0;
+      flex: 1 1 9rem;
       padding: 0 var(--s-md);
     }
 

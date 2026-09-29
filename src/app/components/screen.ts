@@ -57,7 +57,7 @@ let nextId = 0;
           <h2 class="title" [id]="id" [appFitText]="heading()">{{ heading() }}</h2>
         </header>
 
-        <div class="body">
+        <div class="body" role="region" [attr.aria-labelledby]="id">
           <ng-content />
         </div>
 
@@ -317,6 +317,8 @@ export class Screen {
   open(): void {
     const dialog = this.dialog().nativeElement;
     if (dialog.open) return;
+    // An offer to bring back what was removed belongs to the screen it was removed on.
+    this.store.dismissScreenUndo();
     dialog.showModal();
     this.overlays.opened();
   }

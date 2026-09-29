@@ -1,4 +1,13 @@
-import { Players, Row, TeamId, cleanName, isTarget, parsePlayers, parseRows } from './state';
+import {
+  Players,
+  Row,
+  TeamId,
+  cleanName,
+  isTarget,
+  parsePlayers,
+  parseRows,
+  sameName,
+} from './state';
 import {
   Result,
   Rule,
@@ -105,6 +114,33 @@ export function remove(history: History, goes: Removal): { kept: History; remove
       tournaments: history.tournaments.filter((entry) => records.includes(entry.id)),
     },
   };
+}
+
+/** Renames a player in the matches `at` picks, such as those of one mesa. */
+export function renamePlayer(
+  history: History,
+  at: (match: MatchRecord) => boolean,
+  from: string,
+  to: string,
+): History {
+  let changed = false;
+  const matches = history.matches.map((match) => {
+    if (!at(match)) return match;
+    let renamed = false;
+    const teams = { ...match.teams };
+    for (const side of ['a', 'b'] as const) {
+      const players = teams[side].players;
+      if (players === null || !players.some((player) => sameName(player, from))) continue;
+      teams[side] = {
+        ...teams[side],
+        players: players.map((player) => (sameName(player, from) ? to : player)) as Players,
+      };
+      renamed = true;
+    }
+    changed ||= renamed;
+    return renamed ? { ...match, teams } : match;
+  });
+  return changed ? { ...history, matches } : history;
 }
 
 export function matchesOf(history: History, tournament: string): MatchRecord[] {

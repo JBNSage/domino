@@ -72,7 +72,7 @@ import { TablesStore } from '../game/tables.store';
     </div>
 
     @if (shown().length > 0) {
-      <ul class="list" [attr.aria-label]="copy.picker.list">
+      <ul class="list" [attr.aria-label]="copy.picker.list(shown().length)">
         @for (player of shown(); track player.name) {
           <li>
             <button

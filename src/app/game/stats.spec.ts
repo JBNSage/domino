@@ -7,8 +7,11 @@ import {
   noFilter,
   parseDay,
   partnersOf,
+  orderRate,
   places,
   playerStats,
+  sharedPlaces,
+  split,
   presetOf,
   rangeOf,
   tablesIn,
@@ -79,6 +82,30 @@ describe('player statistics', () => {
       match(['Ana', 'Luis'], null, 'a', { tournament: 't1', tieBreak: true }),
     ]);
     expect(stats[0].played).toBe(1);
+  });
+});
+
+describe('small samples', () => {
+  it('rank 8 won of 11 above 1 won of 1', () => {
+    const matches = [
+      match(['Ana', 'Luis'], ['Rosa', 'Marta'], 'a'),
+      ...Array.from({ length: 11 }, (_, index) =>
+        match(['Toño', 'Pepe'], null, index < 8 ? 'a' : 'b'),
+      ),
+    ];
+    expect(orderRate({ won: 8, played: 11 })).toBeGreaterThan(orderRate({ won: 1, played: 1 }));
+    expect(playerStats(matches)[0].name).toBe('Pepe');
+  });
+
+  it('are listed apart below five matches', () => {
+    const stats = playerStats([
+      ...Array.from({ length: 5 }, () => match(['Ana', 'Luis'], null, 'a')),
+      match(['Rosa', 'Marta'], null, 'a'),
+    ]);
+    const { ranked, few } = split(stats);
+    expect(ranked.map((stat) => stat.name)).toEqual(['Ana', 'Luis']);
+    expect(few.map((stat) => stat.name)).toEqual(['Marta', 'Rosa']);
+    expect(sharedPlaces(ranked)).toEqual([true, true]);
   });
 });
 
