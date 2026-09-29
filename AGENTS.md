@@ -20,7 +20,7 @@ Run lint, typecheck and tests before declaring any task done. The service worker
 
 ## Structure
 
-- `src/app/game/`: the rules of a match (`state.ts`, a pure reducer), of a tournament (`tournament.ts`), of the history (`history.ts`) and of the mesas (`tables.ts`, the saved players and teams of a place); persistence (`storage.ts`); and the signals stores (`game.store.ts` for the board and the tournament, `history.store.ts` for finished matches, `tables.store.ts` for the mesas). No DOM access in `state.ts`, `tournament.ts`, `history.ts` or `tables.ts`.
+- `src/app/game/`: the rules of a match (`state.ts`, a pure reducer), of a tournament (`tournament.ts`), of the history (`history.ts`) and of the mesas (`tables.ts`, the saved players and teams of a place) and of the statistics (`stats.ts`, worked out from the history); persistence (`storage.ts`); and the signals stores (`game.store.ts` for the board and the tournament, `history.store.ts` for finished matches, `tables.store.ts` for the mesas). No DOM access in `state.ts`, `tournament.ts`, `history.ts`, `tables.ts` or `stats.ts`.
 - `src/app/components/`: one file per component, template and styles inline. `sheet.ts` is the bottom sheet for a short task; `screen.ts` is the full screen for the history, the mesas and the tournament. `team-edits.ts` builds the requests for the team sheet from each place a team can change. There is no router.
 - `src/app/directives/`: `appFitText` (shrinks one line of text to fit) and `appLongPress`.
 - `src/app/platform/`: browser features that may be missing (wake lock, vibration).

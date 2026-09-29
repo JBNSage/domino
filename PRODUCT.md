@@ -38,6 +38,7 @@ Opens directly on the live scoreboard. Two teams, one running list, one target; 
 - A team has two named players or none. One team may have players while the other has none.
 - Up to 12 mesas, each with up to 40 players and 20 saved teams. One mesa is in use at a time, or none ("Sin mesa"), which keeps the players written by hand. A player cannot be in both teams of a match.
 - At a mesa, a saved team's matches won follow the team: it keeps them while it sits out, and changing only its players keeps them. Tournament matches do not add to them. "Borrar > Todo" sets them back to 0.
+- Statistics, worked out from the history: each player's and each couple's win rate, ordered best first, and each player's rate with every partner. Single and tournament matches count; a team without named players is left out. A name is the same person at every mesa, ignoring accents and capitals. They can be narrowed to one mesa (or matches at none) and to today, 7 days, 30 days or chosen dates.
 - Mesas, players and saved teams can be removed with undo; a player in a saved team stays until that team changes. The history records the mesa of each match.
 - The history keeps finished matches (teams, players, every hand) and finished tournaments (ranking, champion, matches), filtered by "Todo", "Partidas" or "Torneos". Entries can be removed one by one or all at once, and both can be undone. It holds the 500 most recent matches.
 - A tournament has 2 to 12 teams. Its table orders them by matches won; teams level on wins share a place.
@@ -49,7 +50,7 @@ Opens directly on the live scoreboard. Two teams, one running list, one target; 
 - Follows the system light/dark setting unless the reader chooses light or dark.
 - Portrait phone is the target; tablets are not a design target.
 - Everything stays on the device: no accounts, no sync, no sharing of results.
-- Undecided: variants where both teams score in one hand; statistics per player; brackets or fixed fixtures.
+- Undecided: variants where both teams score in one hand; brackets or fixed fixtures.
 
 ## Brand Commitments
 
