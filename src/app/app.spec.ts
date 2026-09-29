@@ -35,12 +35,14 @@ describe('App', () => {
     const fixture = TestBed.createComponent(App);
     await fixture.whenStable();
     const header = (fixture.nativeElement as HTMLElement).querySelector('app-target-header');
-    expect(header?.textContent).not.toContain(copy.tournament.table);
+    expect(header?.querySelector('.status')).toBeNull();
 
     const teams = ['Uno', 'Dos'].map((name, index) => ({ id: `t${index}`, name, players: null }));
     TestBed.inject(GameStore).startTournament(teams, { kind: 'free' });
     await fixture.whenStable();
-    expect(header?.textContent).toContain(copy.tournament.table);
+    expect(header?.querySelector('.status')?.textContent?.trim()).toBe(
+      copy.tournament.status(null, 1, false),
+    );
   });
 
   it('shows the players under their team', async () => {
@@ -50,7 +52,8 @@ describe('App', () => {
     const panels = (fixture.nativeElement as HTMLElement).querySelectorAll(
       'app-team-lockup .panel',
     );
-    expect(panels[0].querySelector('.players')?.textContent?.trim()).toBe('Ana · Luis');
+    const players = panels[0].querySelector('.players')?.textContent ?? '';
+    expect(players.replace(/\s+/g, ' ').trim()).toBe('Ana · Luis');
     expect(panels[1].querySelector('.players')).toBeNull();
   });
 

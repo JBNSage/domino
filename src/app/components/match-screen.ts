@@ -13,12 +13,13 @@ import { GameStore } from '../game/game.store';
 import { MatchRecord } from '../game/history';
 import { TEAM_IDS, totalsOf } from '../game/state';
 import { HandTable } from './hand-table';
+import { PlayerPair } from './player-pair';
 import { Screen } from './screen';
 
 /** One finished match: who played, the score, and every hand in order. */
 @Component({
   selector: 'app-match-screen',
-  imports: [Screen, HandTable, FitText],
+  imports: [Screen, HandTable, FitText, PlayerPair],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <app-screen [heading]="copy.history.matchTitle">
@@ -37,9 +38,7 @@ import { Screen } from './screen';
             <div class="side lean" [class]="'side--' + team.id">
               <span class="name" [appFitText]="team.name">{{ team.name }}</span>
               @if (team.players; as players) {
-                <span class="players" [appFitText]="copy.players.pair(players)">{{
-                  copy.players.pair(players)
-                }}</span>
+                <app-player-pair class="players" [players]="players" />
               }
               <span class="total numerals" [appFitText]="team.total">{{ team.total }}</span>
               <span class="won lean" [class.hidden]="!team.won">
@@ -57,7 +56,7 @@ import { Screen } from './screen';
         <button
           screenFooter
           type="button"
-          class="slab slab--compact slab--danger lean"
+          class="slab slab--compact slab--warn lean"
           (click)="remove()"
         >
           <span class="slab__label" [appFitText]="copy.history.delete">{{

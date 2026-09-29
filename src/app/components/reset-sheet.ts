@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, output, viewChild } from '@angular/core';
 
 import { copy } from '../copy';
 import { FitText } from '../directives/fit-text';
@@ -47,7 +47,14 @@ import { Sheet } from './sheet';
         {{ store.tournament() === null ? copy.reset.undoNote : copy.reset.undoNoteOne }}
       </p>
       @if (store.tournament() !== null) {
-        <p class="help">{{ copy.reset.tournament }}</p>
+        <div class="choice">
+          <p class="help">{{ copy.reset.tournament }}</p>
+          <button type="button" class="slab slab--compact lean" (click)="openTable()">
+            <span class="slab__label" [appFitText]="copy.reset.openTable">{{
+              copy.reset.openTable
+            }}</span>
+          </button>
+        </div>
       }
 
       <button type="button" class="slab slab--compact lean cancel" (click)="sheet().close()">
@@ -93,11 +100,19 @@ import { Sheet } from './sheet';
 export class ResetSheet {
   protected readonly copy = copy;
 
+  /** Asks for the table of the tournament, where it can be ended. */
+  readonly table = output<void>();
+
   protected readonly store = inject(GameStore);
   protected readonly sheet = viewChild.required(Sheet);
 
   open(): void {
     this.sheet().open();
+  }
+
+  protected openTable(): void {
+    this.sheet().close();
+    this.table.emit();
   }
 
   protected hands(): void {

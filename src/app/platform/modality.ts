@@ -5,6 +5,10 @@
  */
 export function followModality(): () => void {
   const root = document.documentElement;
+  // A screen can open by itself on launch, before anything was touched.
+  if (typeof matchMedia === 'function' && matchMedia('(pointer: coarse)').matches) {
+    root.dataset['input'] = 'touch';
+  }
   const onPointer = (event: PointerEvent) => {
     if (event.pointerType === 'touch') root.dataset['input'] = 'touch';
   };

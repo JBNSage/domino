@@ -4,6 +4,7 @@ import { copy } from '../copy';
 import { haptics } from '../platform/haptics';
 import { History } from './history';
 import { HistoryStore } from './history.store';
+import { TournamentDraft } from './tournament-draft';
 import {
   Action,
   Players,
@@ -147,6 +148,7 @@ export class GameStore {
   readonly canGoBack = computed(() => this.undo()?.reversal.kind === 'snapshot');
 
   private readonly history = inject(HistoryStore);
+  private readonly draft = inject(TournamentDraft);
   private readonly lastChange = signal<LastChange>({ kind: 'hand' });
   private undoTimer: ReturnType<typeof setTimeout> | null = null;
   private nextId = 0;
@@ -357,12 +359,12 @@ export class GameStore {
   }
 
   deleteMatch(id: string): void {
-    this.offerHistory(copy.undo.matchDeleted, this.history.remove({ matches: [id] }), false);
+    this.offerHistory(copy.undo.matchDeleted, this.history.remove({ matches: [id] }), true);
   }
 
   deleteTournament(id: string): void {
     const removed = this.history.remove({ tournaments: [id] });
-    this.offerHistory(copy.undo.tournamentDeleted, removed, false);
+    this.offerHistory(copy.undo.tournamentDeleted, removed, true);
   }
 
   clearHistory(): void {
@@ -497,6 +499,8 @@ export class GameStore {
   /** Back to single matches: the last two teams stay, their count starts again. */
   private leaveTournament(): void {
     const { a, b } = this.state().teams;
+    const tournament = this.tournament();
+    if (tournament !== null) this.draft.keepTeams(tournament.teams);
     this.tournament.set(null);
     this.dispatch({
       type: 'seat',

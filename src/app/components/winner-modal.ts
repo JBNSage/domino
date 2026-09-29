@@ -11,6 +11,7 @@ import {
 
 import { copy } from '../copy';
 import { FitText } from '../directives/fit-text';
+import { PlayerPair } from './player-pair';
 import { GameStore } from '../game/game.store';
 import { otherTeam } from '../game/state';
 import { Overlays } from './overlays';
@@ -23,7 +24,7 @@ import { Slashes } from './slashes';
  */
 @Component({
   selector: 'app-winner-modal',
-  imports: [Slashes, FitText],
+  imports: [Slashes, FitText, PlayerPair],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <dialog #dialog class="winner" aria-labelledby="winner-title" (cancel)="correct()">
@@ -48,9 +49,7 @@ import { Slashes } from './slashes';
                     {{ result.names[result.winner] }}
                   </span>
                   @if (result.players[result.winner]; as players) {
-                    <span class="players" [appFitText]="copy.players.pair(players)">{{
-                      copy.players.pair(players)
-                    }}</span>
+                    <app-player-pair class="players" [players]="players" />
                   }
                 </span>
                 <span
@@ -67,9 +66,7 @@ import { Slashes } from './slashes';
                     {{ result.names[loser()] }}
                   </span>
                   @if (result.players[loser()]; as players) {
-                    <span class="players" [appFitText]="copy.players.pair(players)">{{
-                      copy.players.pair(players)
-                    }}</span>
+                    <app-player-pair class="players" [players]="players" />
                   }
                 </span>
                 <span class="loser-total numerals">{{ result.totals[loser()] }}</span>

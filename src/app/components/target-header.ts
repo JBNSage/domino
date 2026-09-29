@@ -1,14 +1,14 @@
-import { ChangeDetectionStrategy, Component, inject, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
 
 import { copy } from '../copy';
 import { FitText } from '../directives/fit-text';
 import { GameStore } from '../game/game.store';
+import { winsNeeded } from '../game/tournament';
 
 @Component({
   selector: 'app-target-header',
   imports: [FitText],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { '[class.in-tournament]': 'store.tournament() !== null' },
   template: `
     <button
       type="button"
@@ -25,30 +25,31 @@ import { GameStore } from '../game/game.store';
         <path d="M14 6.5l3.5 3.5" />
       </svg>
     </button>
-    <div class="tools">
-      @if (store.tournament() !== null) {
-        <button
-          type="button"
-          class="slab slab--compact lean table"
-          [attr.aria-label]="copy.tournament.tableA11y"
-          (click)="table.emit()"
-        >
-          <span class="slab__label" [appFitText]="copy.tournament.table">{{
-            copy.tournament.table
-          }}</span>
-        </button>
-      }
-      <button type="button" class="tool" [attr.aria-label]="copy.menu.a11y" (click)="menu.emit()">
-        <!-- Three bars that lean like everything else. -->
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M6.5 6.5h14M5 12h14M3.5 17.5h14" />
+    <button type="button" class="tool" [attr.aria-label]="copy.menu.a11y" (click)="menu.emit()">
+      <!-- Three bars that lean like everything else. -->
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M6.5 6.5h14M5 12h14M3.5 17.5h14" />
+      </svg>
+    </button>
+    @if (status(); as status) {
+      <!-- What is being played for, always in sight; it opens the table. -->
+      <button
+        type="button"
+        class="status lean"
+        [attr.aria-label]="copy.tournament.statusA11y(status)"
+        (click)="table.emit()"
+      >
+        <span class="status__text numerals" [appFitText]="status">{{ status }}</span>
+        <svg class="chevron" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M10 5l6 7-6 7" />
         </svg>
       </button>
-    </div>
+    }
   `,
   styles: `
     :host {
       display: flex;
+      flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
       gap: var(--s-sm);
@@ -91,31 +92,59 @@ import { GameStore } from '../game/game.store';
       height: 16px;
     }
 
-    .tools {
-      flex: 0 1 auto;
-      min-width: 0;
-      display: flex;
-      align-items: center;
-      gap: var(--s-xs);
-    }
-
-    .table {
+    .status {
+      --fill: var(--c-surface);
       --lean-inset: 5px;
 
-      flex: none;
-      padding: 0 min(var(--s-lg), 4vw);
-      font-size: min(var(--t-compact), 5.5vw);
+      order: 3;
+      flex: 1 1 100%;
+      min-width: 0;
+      min-height: var(--min-target);
+      display: flex;
+      align-items: center;
+      gap: var(--s-sm);
+      margin-right: var(--s-lg);
+      padding: 0 var(--s-lg);
+      border: 0;
+      background: none;
+      color: var(--c-text);
+      text-align: left;
     }
 
-    /* Three controls on a narrow screen: the value speaks for itself. */
-    @media (max-width: 24em) {
-      /* The fitting directive sets its own display on the element. */
-      :host(.in-tournament) .label {
-        display: none !important;
+    .status__text {
+      flex: 1;
+      min-width: 0;
+      font: italic 600 var(--t-meta) / 1.3 var(--font);
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+    }
+
+    .chevron {
+      width: 20px;
+      height: 20px;
+    }
+
+    .status:active::before {
+      opacity: var(--pressed);
+    }
+
+    @media (hover: hover) {
+      .status:hover::before {
+        filter: brightness(1.12);
+      }
+    }
+
+    /* Short and wide: the status sits between the target and the menu. */
+    @media (max-height: 36em) and (min-width: 30em) {
+      .status {
+        order: 1;
+        flex: 1 1 0;
+        margin-right: 0;
       }
     }
 
     .tool {
+      order: 2;
       flex: none;
       display: grid;
       place-items: center;
@@ -145,7 +174,17 @@ import { GameStore } from '../game/game.store';
 export class TargetHeader {
   protected readonly copy = copy;
 
-  protected readonly store = inject(GameStore);
+  private readonly store = inject(GameStore);
+
+  protected readonly status = computed(() => {
+    const tournament = this.store.tournament();
+    if (tournament === null) return null;
+    return copy.tournament.status(
+      winsNeeded(tournament.rule),
+      tournament.results.length + 1,
+      tournament.tieBreak !== null,
+    );
+  });
 
   readonly target = input.required<number>();
   readonly editTarget = output<void>();

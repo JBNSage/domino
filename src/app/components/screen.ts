@@ -154,7 +154,7 @@ let nextId = 0;
       height: 24px;
       fill: none;
       stroke: currentColor;
-      stroke-width: 2.5;
+      stroke-width: 2;
       stroke-linecap: round;
       stroke-linejoin: round;
     }

@@ -23,10 +23,15 @@ import { Sheet } from './sheet';
         @if (tied(); as tied) {
           <p class="note">{{ copy.tournament.tieBreakNote(tied) }}</p>
         }
-        <app-ranking-list [standings]="table()" />
+        <app-ranking-list [standings]="table()" [playing]="playing()" />
       }
 
-      <button screenFooter type="button" class="slab slab--compact lean end" (click)="ask.open()">
+      <button
+        screenFooter
+        type="button"
+        class="slab slab--compact slab--warn lean"
+        (click)="ask.open()"
+      >
         <span class="slab__label" [appFitText]="copy.tournament.end">{{
           copy.tournament.end
         }}</span>
@@ -45,6 +50,13 @@ import { Sheet } from './sheet';
 
       <div class="actions">
         @switch (outcome().kind) {
+          @case ('stillTied') {
+            <button type="button" class="slab slab--danger lean" (click)="end()">
+              <span class="slab__label" [appFitText]="copy.tournament.endWithout">{{
+                copy.tournament.endWithout
+              }}</span>
+            </button>
+          }
           @case ('tie') {
             <button type="button" class="slab slab--filled lean primary" (click)="tieBreak()">
               <span class="slab__label" [appFitText]="copy.tournament.playTieBreak">{{
@@ -96,11 +108,6 @@ import { Sheet } from './sheet';
       margin: 0;
       padding: 0 var(--s-sm);
       max-width: 40ch;
-    }
-
-    .end {
-      --edge: var(--c-danger);
-      --label: var(--c-danger);
     }
 
     .title {
@@ -166,9 +173,20 @@ export class StandingsScreen {
       return { kind: 'empty' as const, text: copy.tournament.endEmpty };
     }
     const first = leaders(tournament);
-    return first.length > 1
-      ? { kind: 'tie' as const, text: copy.tournament.endTie(first.map((team) => team.name)) }
-      : { kind: 'leader' as const, text: copy.tournament.endLeader(first[0].name) };
+    const names = first.map((team) => team.name);
+    if (first.length === 1) {
+      return { kind: 'leader' as const, text: copy.tournament.endLeader(names[0]) };
+    }
+    // Already breaking the tie: playing on is the way to a champion.
+    return tournament.tieBreak !== null
+      ? { kind: 'stillTied' as const, text: copy.tournament.endStillTied(names) }
+      : { kind: 'tie' as const, text: copy.tournament.endTie(names) };
+  });
+
+  protected readonly playing = computed(() => {
+    const tournament = this.store.tournament();
+    if (tournament === null || tournament.phase !== 'playing') return [];
+    return [tournament.seats.a, tournament.seats.b];
   });
 
   protected readonly discards = computed(() => this.store.state().rows.length > 0);

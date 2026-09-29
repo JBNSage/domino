@@ -2,16 +2,18 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
   inject,
   output,
   signal,
+  untracked,
   viewChild,
 } from '@angular/core';
 
 import { copy } from '../copy';
 import { FitText } from '../directives/fit-text';
 import { GameStore } from '../game/game.store';
-import { TEAM_IDS } from '../game/state';
+import { TEAM_IDS, parseAmount } from '../game/state';
 import {
   MAX_COUNT,
   MAX_TEAMS,
@@ -20,7 +22,7 @@ import {
   TournamentTeam,
   winsNeeded,
 } from '../game/tournament';
-import { parseAmount } from '../game/state';
+import { TournamentDraft } from '../game/tournament-draft';
 import { Choice, ChoiceGroup } from './choice-group';
 import { NumberField } from './number-field';
 import { Screen } from './screen';
@@ -28,7 +30,10 @@ import { TeamEdit } from './team-sheet';
 
 type RuleKind = Rule['kind'];
 
-/** Who plays the tournament and how it ends. Nothing is kept until it starts. */
+/**
+ * Who plays the tournament and how it ends. What is written here is kept, so
+ * closing the screen by accident loses nothing.
+ */
 @Component({
   selector: 'app-tournament-setup-screen',
   imports: [Screen, ChoiceGroup, NumberField, FitText],
@@ -59,6 +64,9 @@ type RuleKind = Rule['kind'];
             </li>
           }
         </ol>
+        @if (teams().length > 2) {
+          <p class="note">{{ copy.tournament.rotation }}</p>
+        }
         @if (full()) {
           <p class="note">{{ copy.tournament.full }}</p>
         } @else {
@@ -242,9 +250,11 @@ export class TournamentSetupScreen {
   private readonly store = inject(GameStore);
   private readonly screen = viewChild.required(Screen);
 
-  protected readonly teams = signal<TournamentTeam[]>([]);
-  protected readonly kind = signal<RuleKind>('firstTo');
-  protected readonly countText = signal('3');
+  private readonly drafts = inject(TournamentDraft);
+
+  protected readonly teams = computed(() => this.drafts.draft()?.teams ?? []);
+  protected readonly kind = signal<RuleKind>(this.drafts.draft()?.kind ?? 'firstTo');
+  protected readonly countText = signal(String(this.drafts.draft()?.count ?? 3));
   private nextTeam = 0;
 
   protected readonly full = computed(() => this.teams().length >= MAX_TEAMS);
@@ -265,7 +275,10 @@ export class TournamentSetupScreen {
   protected readonly notice = computed(() => {
     const rule = this.rule();
     const needed = rule === null ? null : winsNeeded(rule);
-    return needed === null ? null : copy.tournament.needs(needed);
+    if (rule === null || needed === null) return null;
+    return rule.kind === 'bestOf'
+      ? copy.tournament.needsMajority(needed, rule.count, this.teams().length)
+      : copy.tournament.needs(needed);
   });
 
   // The board is swept when the tournament starts; say so when there is something on it.
@@ -274,19 +287,47 @@ export class TournamentSetupScreen {
     return rows.length > 0 || teams.a.roundsWon > 0 || teams.b.roundsWon > 0;
   });
 
-  /** Starts from the two teams at the board. */
+  constructor() {
+    // The rule is kept as it is chosen; a number being typed is kept once it is valid.
+    effect(() => {
+      const kind = this.kind();
+      const count = this.count();
+      untracked(() =>
+        this.drafts.draft.update((draft) =>
+          draft === null || (draft.kind === kind && (count === null || draft.count === count))
+            ? draft
+            : { ...draft, kind, count: count ?? draft.count, touched: true },
+        ),
+      );
+    });
+  }
+
+  /** Continues with what was being prepared, or starts from the two teams at the board. */
   open(): void {
-    const { teams } = this.store.state();
-    this.teams.set(
-      TEAM_IDS.map((id) => ({
-        id: this.newId(),
-        name: teams[id].name,
-        players: teams[id].players,
-      })),
-    );
-    this.kind.set('firstTo');
-    this.countText.set('3');
+    const draft = this.drafts.draft();
+    if (draft === null || !draft.touched) {
+      const { teams } = this.store.state();
+      this.drafts.draft.set({
+        teams: TEAM_IDS.map((id) => ({
+          id: this.newId(),
+          name: teams[id].name,
+          players: teams[id].players,
+        })),
+        kind: 'firstTo',
+        count: 3,
+        touched: false,
+      });
+    }
+    const current = this.drafts.draft();
+    this.kind.set(current?.kind ?? 'firstTo');
+    this.countText.set(String(current?.count ?? 3));
     this.screen().open();
+  }
+
+  private setTeams(change: (teams: TournamentTeam[]) => TournamentTeam[]): void {
+    this.drafts.draft.update((draft) =>
+      draft === null ? null : { ...draft, teams: change(draft.teams), touched: true },
+    );
   }
 
   protected players(team: TournamentTeam): string {
@@ -304,12 +345,12 @@ export class TournamentSetupScreen {
       taken: others.map((other) => other.name),
       confirm: copy.players.save,
       save: (name, players) =>
-        this.teams.update((teams) =>
+        this.setTeams((teams) =>
           teams.map((other) => (other.id === team.id ? { ...other, name, players } : other)),
         ),
       remove:
         this.teams().length > MIN_TEAMS
-          ? () => this.teams.update((teams) => teams.filter((other) => other.id !== team.id))
+          ? () => this.setTeams((teams) => teams.filter((other) => other.id !== team.id))
           : undefined,
     });
   }
@@ -325,7 +366,7 @@ export class TournamentSetupScreen {
       taken: teams.map((team) => team.name),
       confirm: copy.players.add,
       save: (name, players) =>
-        this.teams.update((current) => [...current, { id: this.newId(), name, players }]),
+        this.setTeams((current) => [...current, { id: this.newId(), name, players }]),
     });
   }
 
@@ -338,7 +379,7 @@ export class TournamentSetupScreen {
 
   private newId(): string {
     this.nextTeam += 1;
-    return `t${this.nextTeam}`;
+    return `t${Date.now()}-${this.nextTeam}`;
   }
 
   /** "Equipo 3", or the next number that no other team is using. */

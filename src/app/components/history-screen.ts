@@ -17,6 +17,7 @@ import { TeamId } from '../game/state';
 import { Choice, ChoiceGroup } from './choice-group';
 import { MatchEntry } from './match-entry';
 import { Screen } from './screen';
+import { Sheet } from './sheet';
 import { Slashes } from './slashes';
 
 type Filter = 'all' | 'matches' | 'tournaments';
@@ -37,7 +38,7 @@ type Entry =
 /** Finished matches and tournaments, newest first. */
 @Component({
   selector: 'app-history-screen',
-  imports: [Screen, ChoiceGroup, MatchEntry, Slashes, FitText],
+  imports: [Screen, Sheet, ChoiceGroup, MatchEntry, Slashes, FitText],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <app-screen [heading]="copy.history.title">
@@ -65,6 +66,9 @@ type Entry =
                   (click)="openTournament.emit(entry.record)"
                 >
                   <span class="when numerals">{{ entry.date }}</span>
+                  <svg class="chevron" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M10 5l6 7-6 7" />
+                  </svg>
                   <span class="line">
                     <app-slashes class="mark" [size]="14" />
                     <span class="kind">{{ copy.history.tournamentTitle }}</span>
@@ -88,13 +92,33 @@ type Entry =
           }
         </ol>
 
-        <button type="button" class="slab slab--compact lean clear" (click)="store.clearHistory()">
+        <button type="button" class="slab slab--compact slab--warn lean clear" (click)="ask.open()">
           <span class="slab__label" [appFitText]="copy.history.clear">{{
             copy.history.clear
           }}</span>
         </button>
       }
     </app-screen>
+
+    <app-sheet #ask accent="var(--c-danger)" labelledBy="clear-sheet-title">
+      <h2 class="title" id="clear-sheet-title">{{ copy.history.clearTitle }}</h2>
+      <div class="facts">
+        <p>{{ clearBody() }}</p>
+        <p class="strong">{{ copy.history.clearUndo }}</p>
+      </div>
+      <div class="actions">
+        <button type="button" class="slab slab--danger lean" (click)="clear()">
+          <span class="slab__label" [appFitText]="copy.history.clear">{{
+            copy.history.clear
+          }}</span>
+        </button>
+        <button type="button" class="slab slab--compact lean" (click)="ask.close()">
+          <span class="slab__label" [appFitText]="copy.common.cancel">{{
+            copy.common.cancel
+          }}</span>
+        </button>
+      </div>
+    </app-sheet>
   `,
   styles: `
     app-choice-group {
@@ -137,11 +161,12 @@ type Entry =
       --fill: var(--c-raised);
       --lean-inset: 8px;
 
+      position: relative;
       width: 100%;
       display: flex;
       flex-direction: column;
       gap: var(--s-xs);
-      padding: var(--s-md) var(--s-xl);
+      padding: var(--s-md) calc(var(--s-xl) + 28px) var(--s-md) var(--s-xl);
       border: 0;
       background: none;
       color: var(--c-text);
@@ -217,10 +242,52 @@ type Entry =
       text-transform: uppercase;
     }
 
-    .clear {
-      --edge: var(--c-danger);
-      --label: var(--c-danger);
+    .chevron {
+      position: absolute;
+      top: 50%;
+      right: var(--s-lg);
+      width: 20px;
+      height: 20px;
+      margin-top: -10px;
+      fill: none;
+      stroke: var(--c-muted);
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
 
+    .title {
+      margin: 0;
+      font: italic 800 var(--t-title) / 1.15 var(--font);
+      text-transform: uppercase;
+      text-wrap: balance;
+    }
+
+    .facts {
+      display: flex;
+      flex-direction: column;
+      gap: var(--s-sm);
+      max-width: 65ch;
+      color: var(--c-muted);
+      line-height: 1.35;
+    }
+
+    .facts p {
+      margin: 0;
+    }
+
+    .facts .strong {
+      color: var(--c-text);
+    }
+
+    .actions {
+      display: flex;
+      flex-direction: column;
+      gap: var(--s-md);
+      padding: 0 var(--s-sm);
+    }
+
+    .clear {
       align-self: flex-start;
       max-width: calc(100% - var(--s-lg));
       margin: 0 var(--s-sm);
@@ -241,6 +308,7 @@ export class HistoryScreen {
 
   private readonly history = inject(HistoryStore);
   private readonly screen = viewChild.required(Screen);
+  private readonly ask = viewChild.required<Sheet>('ask');
 
   protected readonly filter = signal<Filter>('all');
   protected readonly empty = computed(() => isEmpty(this.history.history()));
@@ -289,8 +357,19 @@ export class HistoryScreen {
       : { title: history.noMatchesTitle, body: history.noMatchesBody };
   });
 
+  protected readonly clearBody = computed(() => {
+    const { matches, tournaments } = this.history.history();
+    const single = matches.filter((match) => match.tournament === null).length;
+    return copy.history.clearBody(single, tournaments.length);
+  });
+
   open(): void {
     this.filter.set('all');
     this.screen().open();
+  }
+
+  protected clear(): void {
+    this.ask().close();
+    this.store.clearHistory();
   }
 }

@@ -33,7 +33,7 @@ let nextId = 0;
       [attr.aria-invalid]="invalid() ? 'true' : null"
       [attr.aria-describedby]="describedBy()"
       (input)="value.set(field.value)"
-      (focus)="field.select()"
+      (focus)="field.select(); entered.emit()"
       (keydown.enter)="enter($event)"
     />
   `,
@@ -44,6 +44,7 @@ let nextId = 0;
     }
 
     .label {
+      margin-bottom: var(--s-xs);
       color: var(--c-muted);
       font: italic 600 var(--t-label) / 1.3 var(--font);
       text-transform: uppercase;
@@ -76,8 +77,9 @@ let nextId = 0;
       border-bottom-color: var(--c-danger);
     }
 
+    /* Drawn on the field's own edge, so it never covers the label above. */
     .input:focus-visible {
-      outline-offset: 2px;
+      outline-offset: 0;
     }
   `,
 })
@@ -92,6 +94,7 @@ export class TextField {
   /** The last field of its form: Enter sends the form instead of moving on. */
   readonly last = input(false);
   readonly submitted = output<void>();
+  readonly entered = output<void>();
 
   protected readonly id = `text-field-${nextId++}`;
 

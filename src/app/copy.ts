@@ -32,7 +32,7 @@ export const copy = {
     quickLabel: 'Puntos rápidos: el botón +',
     quickError: `Escribe un número entre 1 y ${MAX_POINTS}.`,
     endsRound: (name: string, total: number) =>
-      `${name} ya tiene ${total}: al guardar, gana la partida.`,
+      `${name} ya tiene ${total}: al guardar, la partida termina a su favor.`,
     save: 'Guardar',
     saveAndEnd: 'Terminar partida',
   },
@@ -58,8 +58,7 @@ export const copy = {
   list: {
     emptyTitle: 'Sin manos anotadas',
     emptyBody: 'Toca Anotar, abajo, para apuntar la primera mano.',
-    rowA11y: (hand: number, team: string, points: number) =>
-      `Mano ${hand}: ${team} anotó ${points}`,
+    rowA11y: (hand: number, team: string, points: number) => `Mano ${hand}: ${points} para ${team}`,
     rowHint: 'Opciones',
     edit: 'Corregir',
     editA11y: (hand: number) => `Corregir mano ${hand}`,
@@ -81,7 +80,8 @@ export const copy = {
   },
   winner: {
     title: '¡Felicidades!',
-    body: (name: string) => `${name} gana la partida`,
+    // A team name can be singular or plural, so no verb depends on it.
+    body: (name: string) => `Victoria de ${name}`,
     winsAfter: (count: number) =>
       count === 1 ? 'Primera partida ganada' : `${count} partidas ganadas`,
     close: 'Nueva partida',
@@ -118,7 +118,8 @@ export const copy = {
       'También vuelve a Equipo A y Equipo B sin jugadores, 0 victorias, meta 200 y +30. El historial se conserva.',
     undoNote: 'Las dos opciones se pueden deshacer.',
     undoNoteOne: 'Se puede deshacer.',
-    tournament: 'Estás en un torneo. Para terminarlo, abre la tabla.',
+    tournament: 'Estás en un torneo. Se termina desde la tabla.',
+    openTable: 'Abrir la tabla',
     cancel: 'Cancelar',
   },
   appearance: {
@@ -126,8 +127,6 @@ export const copy = {
     system: 'Sistema',
     light: 'Claro',
     dark: 'Oscuro',
-    toLight: 'Cambiar a modo claro',
-    toDark: 'Cambiar a modo oscuro',
     announce: (name: string) => `Apariencia: ${name}`,
   },
   menu: {
@@ -149,10 +148,11 @@ export const copy = {
     second: 'Jugador 2',
     optional: 'Los jugadores son opcionales: escribe los dos o ninguno.',
     incomplete: 'Falta un jugador. Escribe los dos, o deja los dos en blanco.',
+    limit: (length: number) => `Los nombres tienen ${length} caracteres como máximo.`,
     taken: 'Ya hay un equipo con ese nombre.',
     save: 'Guardar',
     add: 'Añadir',
-    remove: 'Quitar equipo',
+    remove: 'Eliminar equipo',
     pair: (players: Players) => `${players[0]} · ${players[1]}`,
     none: 'Sin jugadores',
   },
@@ -169,6 +169,22 @@ export const copy = {
     noTournamentsTitle: 'Sin torneos terminados',
     noTournamentsBody: 'Empieza uno desde el menú, con «Torneo nuevo».',
     clear: 'Borrar historial',
+    clearTitle: '¿Borrar el historial?',
+    clearBody: (single: number, tournaments: number) => {
+      const parts = [
+        ...(single > 0 ? [matches(single)] : []),
+        ...(tournaments > 0
+          ? [
+              tournaments === 1
+                ? '1 torneo con sus partidas'
+                : `${tournaments} torneos con sus partidas`,
+            ]
+          : []),
+      ];
+      return `Se borra todo: ${joinNames(parts)}.`;
+    },
+    clearUndo: 'Se puede deshacer mientras no cierres la aplicación.',
+    matchNumber: (position: number) => `Partida ${position}`,
     matchTitle: 'Partida',
     tournamentTitle: 'Torneo',
     target: (target: number) => `Meta ${target}`,
@@ -189,7 +205,8 @@ export const copy = {
       winnerTotal: number,
       loser: string,
       loserTotal: number,
-    ) => `${date}. ${winner} ganó ${winnerTotal} a ${loserTotal} contra ${loser}. Ver la partida`,
+    ) =>
+      `${date}. Victoria de ${winner}, ${winnerTotal} a ${loserTotal}, contra ${loser}. Ver la partida`,
     tournamentA11y: (date: string, teams: number, played: number, champion: string | null) =>
       [
         `${date}. Torneo de ${teams} equipos, ${matches(played)}`,
@@ -197,7 +214,7 @@ export const copy = {
         'Ver el torneo',
       ].join('. '),
     handA11y: (hand: number, team: string, points: number) =>
-      `Mano ${hand}: ${team} anotó ${points}`,
+      `Mano ${hand}: ${points} para ${team}`,
   },
   tournament: {
     setupTitle: 'Torneo nuevo',
@@ -212,12 +229,25 @@ export const copy = {
     bestOf: 'Mejor de',
     free: 'Libre',
     firstToLabel: 'Victorias para ganar',
-    bestOfLabel: 'Partidas en total',
+    bestOfLabel: 'Al mejor de cuántas partidas',
     countError: `Escribe un número entre 1 y ${MAX_COUNT}.`,
     needs: (count: number) =>
       count === 1
         ? 'Gana el primer equipo que gane una partida.'
         : `Gana el primer equipo que llegue a ${count} victorias.`,
+    // With three teams or more the wins are shared out, so the count of matches is not fixed.
+    needsMajority: (count: number, of: number, teams: number) =>
+      teams > 2
+        ? `Gana el primer equipo que llegue a ${wins(count)}, la mayoría de ${of}. Con ${teams} equipos pueden hacer falta más de ${of} partidas.`
+        : `Gana el primer equipo que llegue a ${wins(count)}, la mayoría de ${of}.`,
+    rotation:
+      'En cada partida el ganador se queda y entra el equipo que más ha esperado. Antes de empezar cada una puedes cambiar quién juega.',
+    status: (needed: number | null, match: number, tieBreak: boolean) => {
+      const goal = needed === null ? 'Torneo libre' : `Gana con ${wins(needed)}`;
+      return `${tieBreak ? 'Desempate' : goal} · Partida ${match}`;
+    },
+    statusA11y: (status: string) => `${status}. Ver la tabla del torneo`,
+    playing: 'En juego',
     freeNote: 'Sin límite: el torneo sigue hasta que lo termines desde la tabla.',
     clears: 'Al empezar, el marcador vuelve a cero. Se puede deshacer.',
     start: 'Empezar torneo',
@@ -235,16 +265,27 @@ export const copy = {
     columnWon: 'G',
     columnLost: 'P',
     columnsA11y: 'G: partidas ganadas. P: partidas perdidas.',
-    rankA11y: (position: number, name: string, won: number, lost: number) =>
+    rankA11y: (
+      position: number,
+      name: string,
+      players: Players | null,
+      won: number,
+      lost: number,
+      playing: boolean,
+    ) =>
       [
         `Puesto ${position}: ${name}`,
+        ...(players ? [joinNames(players)] : []),
         won === 1 ? '1 ganada' : `${won} ganadas`,
         lost === 1 ? '1 perdida' : `${lost} perdidas`,
+        ...(playing ? ['en juego'] : []),
       ].join(', '),
     wins,
     end: 'Terminar torneo',
     endTitle: '¿Terminar el torneo?',
-    endLeader: (name: string) => `${name} va primero y queda campeón.`,
+    endLeader: (name: string) => `Si termina ahora, el campeón es ${name}.`,
+    endStillTied: (names: string[]) =>
+      `El desempate sigue igualado entre ${joinNames(names)}. Si termina ahora, no hay campeón.`,
     endTie: (names: string[]) =>
       `Hay empate en el primer lugar: ${joinNames(names)}. Un desempate decide el campeón.`,
     endEmpty: 'No se ha jugado ninguna partida. El torneo se cancela y no se guarda.',
@@ -274,9 +315,9 @@ export const copy = {
     endedTitle: 'Torneo terminado',
     tied: (names: string[]) => `Sin campeón: empate entre ${joinNames(names)}.`,
     finish: 'Guardar y salir',
-    goBack: 'Volver atrás',
+    undoA11y: (message: string) => `Deshacer: ${message}`,
     tieBreakNote: (names: string[]) => `Desempate entre ${joinNames(names)}.`,
-    announceChampion: (name: string) => `${name} gana el torneo`,
+    announceChampion: (name: string) => `Campeón del torneo: ${name}`,
   },
   install: {
     prompt: 'Instálala para abrirla desde la pantalla de inicio, también sin conexión.',

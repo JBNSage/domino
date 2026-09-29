@@ -61,7 +61,7 @@ const same = (one: string, other: string) =>
         <app-text-field
           [label]="copy.players.first"
           [maxLength]="maxPlayer"
-          [invalid]="incomplete() && firstText().trim() === ''"
+          [invalid]="showIncomplete() && firstText().trim() === ''"
           describedBy="team-sheet-message"
           [(value)]="firstText"
           (submitted)="fields()[2].focus()"
@@ -69,21 +69,22 @@ const same = (one: string, other: string) =>
         <app-text-field
           [label]="copy.players.second"
           [maxLength]="maxPlayer"
-          [invalid]="incomplete() && secondText().trim() === ''"
+          [invalid]="showIncomplete() && secondText().trim() === ''"
           [last]="true"
           describedBy="team-sheet-message"
           [(value)]="secondText"
+          (entered)="secondVisited.set(true)"
           (submitted)="submit()"
         />
       </div>
 
       <!-- Always in the page, so screen readers hear the message arrive. -->
       <p class="message" id="team-sheet-message" role="status" [class.error]="error() !== null">
-        {{ error() ?? copy.players.optional }}
+        {{ error() ?? limit() ?? copy.players.optional }}
       </p>
 
       @if (canRemove()) {
-        <button type="button" class="slab slab--compact lean remove" (click)="remove()">
+        <button type="button" class="slab slab--compact slab--warn lean remove" (click)="remove()">
           <span class="slab__label" [appFitText]="copy.players.remove">{{
             copy.players.remove
           }}</span>
@@ -101,7 +102,7 @@ const same = (one: string, other: string) =>
           class="slab slab--primary lean confirm"
           [class.slab--team]="accent() !== null"
           [style.--fill]="accent() ?? 'var(--c-text)'"
-          [disabled]="error() !== null"
+          [disabled]="taken() || incomplete()"
           (click)="submit()"
         >
           <span class="slab__label" [appFitText]="confirm()">{{ confirm() }}</span>
@@ -141,9 +142,6 @@ const same = (one: string, other: string) =>
     }
 
     .remove {
-      --edge: var(--c-danger);
-      --label: var(--c-danger);
-
       align-self: flex-start;
       max-width: calc(100% - var(--s-lg));
       margin: 0 var(--s-sm);
@@ -181,14 +179,28 @@ export class TeamSheet {
     (this.request()?.taken ?? []).some((other) => same(other, this.name())),
   );
   protected readonly incomplete = computed(() => this.players() === 'incomplete');
+  // Nobody has made a mistake by writing the first of two names.
+  protected readonly secondVisited = signal(false);
+  protected readonly showIncomplete = computed(() => this.incomplete() && this.secondVisited());
   protected readonly error = computed(() => {
     if (this.taken()) return copy.players.taken;
-    return this.incomplete() ? copy.players.incomplete : null;
+    return this.showIncomplete() ? copy.players.incomplete : null;
+  });
+
+  /** A name that fills its field may have been cut, as when it is pasted. */
+  protected readonly limit = computed(() => {
+    const full =
+      Array.from(this.nameText()).length >= MAX_NAME_LENGTH ||
+      [this.firstText(), this.secondText()].some(
+        (text) => Array.from(text).length >= MAX_PLAYER_LENGTH,
+      );
+    return full ? copy.players.limit(MAX_NAME_LENGTH) : null;
   });
 
   /** Called straight from the tap, so the keyboard opens with the sheet. */
   open(request: TeamEdit): void {
     this.request.set(request);
+    this.secondVisited.set(request.players !== null);
     const [name, first, second] = this.fields();
     name.write(request.name);
     first.write(request.players?.[0] ?? '');

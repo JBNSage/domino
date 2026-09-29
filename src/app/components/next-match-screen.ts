@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  ElementRef,
   computed,
   effect,
   inject,
@@ -14,6 +15,7 @@ import { FitText } from '../directives/fit-text';
 import { GameStore } from '../game/game.store';
 import { TEAM_IDS, TeamId } from '../game/state';
 import { available, standings, teamOf } from '../game/tournament';
+import { PlayerPair } from './player-pair';
 import { Screen } from './screen';
 import { Sheet } from './sheet';
 
@@ -23,7 +25,7 @@ import { Sheet } from './sheet';
  */
 @Component({
   selector: 'app-next-match-screen',
-  imports: [Screen, Sheet, FitText],
+  imports: [Screen, Sheet, FitText, PlayerPair],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <app-screen [heading]="heading()" [locked]="true" (closed)="reopen()">
@@ -46,9 +48,7 @@ import { Sheet } from './sheet';
             <span class="who">
               <span class="name" [appFitText]="seat.name">{{ seat.name }}</span>
               @if (seat.players; as players) {
-                <span class="players" [appFitText]="copy.players.pair(players)">{{
-                  copy.players.pair(players)
-                }}</span>
+                <app-player-pair class="players" [players]="players" />
               }
               <span class="wins lean numerals">
                 <span [appFitText]="copy.tournament.wins(seat.won)">{{
@@ -80,9 +80,14 @@ import { Sheet } from './sheet';
       <ng-container screenFooter>
         <div class="slab-row others">
           @if (store.canGoBack()) {
-            <button type="button" class="slab slab--compact lean" (click)="store.restore()">
-              <span class="slab__label" [appFitText]="copy.tournament.goBack">{{
-                copy.tournament.goBack
+            <button
+              type="button"
+              class="slab slab--compact lean"
+              [attr.aria-label]="copy.tournament.undoA11y(store.undo()?.message ?? '')"
+              (click)="undo()"
+            >
+              <span class="slab__label" [appFitText]="copy.undo.action">{{
+                copy.undo.action
               }}</span>
             </button>
           }
@@ -119,9 +124,7 @@ import { Sheet } from './sheet';
               <span class="who">
                 <span class="option-name" [appFitText]="team.name">{{ team.name }}</span>
                 @if (team.players; as players) {
-                  <span class="option-players" [appFitText]="copy.players.pair(players)">{{
-                    copy.players.pair(players)
-                  }}</span>
+                  <app-player-pair class="option-players" [players]="players" />
                 }
               </span>
               <span class="option-wins numerals">{{ copy.tournament.wins(team.won) }}</span>
@@ -234,7 +237,7 @@ import { Sheet } from './sheet';
       height: 28px;
       fill: none;
       stroke: var(--c-ink);
-      stroke-width: 2.5;
+      stroke-width: 2;
       stroke-linecap: round;
       stroke-linejoin: round;
     }
@@ -370,7 +373,10 @@ export class NextMatchScreen {
 
   /** Asks for the tournament's table. */
   readonly table = output<void>();
+  /** The start of the tournament was taken back: its teams are waiting in the setup. */
+  readonly setup = output<void>();
 
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
   private readonly screen = viewChild.required(Screen);
   private readonly picker = viewChild.required<Sheet>('picker');
 
@@ -424,12 +430,21 @@ export class NextMatchScreen {
   constructor() {
     effect(() => {
       const screen = this.screen();
-      if (this.visible()) screen.open();
-      else {
+      if (this.visible()) {
+        if (screen.isOpen) return;
+        screen.open();
+        // The choice on this screen is the two teams, so reading starts there.
+        queueMicrotask(() => this.host.querySelector<HTMLElement>('.seat:not(:disabled)')?.focus());
+      } else {
         this.picker().close();
         screen.close();
       }
     });
+  }
+
+  protected undo(): void {
+    this.store.restore();
+    if (this.store.tournament() === null) this.setup.emit();
   }
 
   protected pick(side: TeamId): void {

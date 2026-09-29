@@ -50,8 +50,12 @@ import { Screen } from './screen';
 
         <section class="part">
           <h3 class="heading">{{ copy.history.matchesHeading }}</h3>
-          @for (match of matches(); track match.id) {
-            <app-match-entry [match]="match" (open)="openMatch.emit(match)" />
+          @for (match of matches(); track match.id; let index = $index) {
+            <app-match-entry
+              [match]="match"
+              [heading]="copy.history.matchNumber(index + 1)"
+              (open)="openMatch.emit(match)"
+            />
           } @empty {
             <p class="missing">{{ copy.history.missing }}</p>
           }
@@ -61,7 +65,7 @@ import { Screen } from './screen';
       <button
         screenFooter
         type="button"
-        class="slab slab--compact slab--danger lean"
+        class="slab slab--compact slab--warn lean"
         (click)="remove()"
       >
         <span class="slab__label" [appFitText]="copy.history.delete">{{

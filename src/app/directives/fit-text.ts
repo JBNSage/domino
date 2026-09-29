@@ -2,10 +2,14 @@ import { DestroyRef, Directive, ElementRef, afterRenderEffect, inject, input } f
 
 /**
  * Keeps one line of text inside its box by shrinking the type, never below
- * `minScale` of its designed size. The host needs a bounded width. Only the
- * width is clipped, so tall glyphs such as an opening exclamation mark stay whole.
+ * `minScale` of its designed size nor below `MIN_SIZE`. The host needs a
+ * bounded width. Only the width is
+ * clipped, so tall glyphs such as an opening exclamation mark stay whole.
  */
 const SLACK = 0.96;
+
+/** The smallest type that can still be read at the table, in pixels. */
+const MIN_SIZE = 12;
 
 @Directive({
   selector: '[appFitText]',
@@ -55,6 +59,6 @@ export class FitText {
     const designed = parseFloat(getComputedStyle(element).fontSize);
     // Letter spacing does not shrink with the type, so the fit leaves a little slack.
     const scale = Math.max(this.minScale(), (available / needed) * SLACK);
-    element.style.fontSize = `${designed * scale}px`;
+    element.style.fontSize = `${Math.min(designed, Math.max(MIN_SIZE, designed * scale))}px`;
   }
 }

@@ -2,12 +2,13 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 
 import { copy } from '../copy';
 import { FitText } from '../directives/fit-text';
+import { PlayerPair } from './player-pair';
 import { Players, TeamId } from '../game/state';
 
 /** The team that won a tournament, in the colour of the side it last won on. */
 @Component({
   selector: 'app-champion-slab',
-  imports: [FitText],
+  imports: [FitText, PlayerPair],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { '[class]': '"tone--" + (tone() ?? "none")', '[class.on-flood]': 'onFlood()' },
   template: `
@@ -17,9 +18,7 @@ import { Players, TeamId } from '../game/state';
       }
       <span class="name" [appFitText]="name()">{{ name() }}</span>
       @if (players(); as players) {
-        <span class="players" [appFitText]="copy.players.pair(players)">{{
-          copy.players.pair(players)
-        }}</span>
+        <app-player-pair class="players" [players]="players" />
       }
       <span class="wins numerals">{{ copy.tournament.wins(won()) }}</span>
     </div>

@@ -36,7 +36,9 @@ Opens directly on the live scoreboard. Two teams, one running list, one target; 
 - Two teams, default names "Equipo A" and "Equipo B", renamable from the points input or from the menu.
 - A team has two named players or none. One team may have players while the other has none.
 - The history keeps finished matches (teams, players, every hand) and finished tournaments (ranking, champion, matches), filtered by "Todo", "Partidas" or "Torneos". Entries can be removed one by one or all at once, and both can be undone. It holds the 500 most recent matches.
-- A tournament has 2 to 12 teams. Its table orders them by matches won.
+- A tournament has 2 to 12 teams. Its table orders them by matches won; teams level on wins share a place.
+- The teams and rule being prepared for a tournament are kept, and the next tournament starts from the teams of the last one.
+- While a tournament is played, the board states what it is played for and which match it is.
 - Rows can be deleted to fix mistakes.
 - Changing the target re-evaluates the match; if a team already meets the new target, the winner is shown.
 - Works offline once opened, and everything persists across app restarts: rows, teams and players, target, quick value, matches won, the tournament under way and the history.

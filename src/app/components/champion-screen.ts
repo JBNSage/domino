@@ -17,7 +17,7 @@ import { Screen } from './screen';
 
 /**
  * The end of a tournament: the champion in its colour and the final order.
- * "Guardar y salir" keeps it in the history; "Volver atrás" undoes what ended it.
+ * "Guardar y salir" keeps it in the history; "Deshacer" takes back what ended it.
  */
 @Component({
   selector: 'app-champion-screen',
@@ -46,10 +46,13 @@ import { Screen } from './screen';
 
       <ng-container screenFooter>
         @if (store.canGoBack()) {
-          <button type="button" class="slab slab--compact lean back" (click)="store.restore()">
-            <span class="slab__label" [appFitText]="copy.tournament.goBack">{{
-              copy.tournament.goBack
-            }}</span>
+          <button
+            type="button"
+            class="slab slab--compact lean back"
+            [attr.aria-label]="copy.tournament.undoA11y(store.undo()?.message ?? '')"
+            (click)="store.restore()"
+          >
+            <span class="slab__label" [appFitText]="copy.undo.action">{{ copy.undo.action }}</span>
           </button>
         }
         <button type="button" class="slab lean finish" (click)="store.finishTournament()">

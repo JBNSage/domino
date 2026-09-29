@@ -2,25 +2,31 @@ import { ChangeDetectionStrategy, Component, computed, input, output } from '@an
 
 import { copy } from '../copy';
 import { FitText } from '../directives/fit-text';
+import { PlayerPair } from './player-pair';
 import { MatchRecord } from '../game/history';
 import { TEAM_IDS, otherTeam, totalsOf } from '../game/state';
 
 /** One finished match in a list: who played, the score, and who won it. */
 @Component({
   selector: 'app-match-entry',
-  imports: [FitText],
+  imports: [FitText, PlayerPair],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <button type="button" class="entry lean" [attr.aria-label]="label()" (click)="open.emit()">
       <span class="when numerals">
-        <span>{{ date() }}</span>
+        <span>{{ heading() ?? date() }}</span>
         @if (match().tieBreak) {
           <span class="flag">{{ copy.history.tieBreak }}</span>
         }
       </span>
       @for (team of teams(); track team.id) {
         <span class="line" [class.line--won]="team.won">
-          <span class="name" [appFitText]="team.name">{{ team.name }}</span>
+          <span class="who">
+            <span class="name" [appFitText]="team.name">{{ team.name }}</span>
+            @if (team.players; as players) {
+              <app-player-pair class="players" [players]="players" />
+            }
+          </span>
           @if (team.won) {
             <span class="total chip lean numerals" [class]="'chip--' + team.id">{{
               team.total
@@ -30,6 +36,9 @@ import { TEAM_IDS, otherTeam, totalsOf } from '../game/state';
           }
         </span>
       }
+      <svg class="chevron" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M10 5l6 7-6 7" />
+      </svg>
     </button>
   `,
   styles: `
@@ -41,11 +50,12 @@ import { TEAM_IDS, otherTeam, totalsOf } from '../game/state';
       --fill: var(--c-surface);
       --lean-inset: 8px;
 
+      position: relative;
       width: 100%;
       display: flex;
       flex-direction: column;
       gap: var(--s-xs);
-      padding: var(--s-md) var(--s-xl);
+      padding: var(--s-md) calc(var(--s-xl) + 28px) var(--s-md) var(--s-xl);
       border: 0;
       background: none;
       color: var(--c-text);
@@ -88,9 +98,34 @@ import { TEAM_IDS, otherTeam, totalsOf } from '../game/state';
       color: var(--c-text);
     }
 
-    .name {
+    /* Says the entry opens. */
+    .chevron {
+      position: absolute;
+      top: 50%;
+      right: var(--s-lg);
+      width: 20px;
+      height: 20px;
+      margin-top: -10px;
+      fill: none;
+      stroke: var(--c-muted);
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .who {
       flex: 1;
       min-width: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .players {
+      font: italic 600 var(--t-label) / 1.3 var(--font);
+      text-transform: uppercase;
+    }
+
+    .name {
       font: italic 800 var(--t-button) / 1.2 var(--font);
       text-transform: uppercase;
     }
@@ -124,6 +159,8 @@ export class MatchEntry {
   protected readonly copy = copy;
 
   readonly match = input.required<MatchRecord>();
+  /** Shown in place of the date, such as the match's number in its tournament. */
+  readonly heading = input<string | null>(null);
   readonly open = output<void>();
 
   protected readonly date = computed(() => copy.date(this.match().endedAt));
@@ -134,6 +171,7 @@ export class MatchEntry {
     return TEAM_IDS.map((id) => ({
       id,
       name: match.teams[id].name,
+      players: match.teams[id].players,
       total: totals[id],
       won: match.winner === id,
     }));
@@ -144,7 +182,7 @@ export class MatchEntry {
     const totals = totalsOf(rows);
     const loser = otherTeam(winner);
     return copy.history.matchA11y(
-      this.date(),
+      this.heading() ?? this.date(),
       teams[winner].name,
       totals[winner],
       teams[loser].name,

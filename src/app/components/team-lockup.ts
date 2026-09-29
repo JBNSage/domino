@@ -11,6 +11,7 @@ import {
 
 import { copy } from '../copy';
 import { FitText } from '../directives/fit-text';
+import { PlayerPair } from './player-pair';
 import { GameStore } from '../game/game.store';
 import { TEAM_IDS, TeamId } from '../game/state';
 import { prefersReducedMotion } from '../platform/motion';
@@ -18,7 +19,7 @@ import { prefersReducedMotion } from '../platform/motion';
 /** Both liveries meeting on one diagonal seam. */
 @Component({
   selector: 'app-team-lockup',
-  imports: [FitText],
+  imports: [FitText, PlayerPair],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @for (team of teams(); track team.id) {
@@ -32,9 +33,7 @@ import { prefersReducedMotion } from '../platform/motion';
         <span class="who">
           <span class="name" [appFitText]="team.name">{{ team.name }}</span>
           @if (team.players; as players) {
-            <span class="players" [appFitText]="copy.players.pair(players)">{{
-              copy.players.pair(players)
-            }}</span>
+            <app-player-pair class="players" [players]="players" />
           }
         </span>
         <span #total class="total numerals" [class.total--long]="long()" [appFitText]="team.total">

@@ -23,7 +23,7 @@
 />
 <app-points-sheet #points />
 <app-settings-sheet #settings />
-<app-reset-sheet #reset />
+<app-reset-sheet #reset (table)="standings.open()" />
 
 <app-history-screen
   #history
@@ -34,7 +34,7 @@
 <app-match-screen #match />
 
 <app-tournament-setup-screen #setup (editTeam)="team.open($event)" />
-<app-next-match-screen (table)="standings.open()" />
+<app-next-match-screen (table)="standings.open()" (setup)="setup.open()" />
 <app-standings-screen #standings />
 <app-champion-screen />
 

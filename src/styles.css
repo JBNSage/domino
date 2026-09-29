@@ -207,6 +207,12 @@ main:focus {
   --label: var(--c-on-danger);
 }
 
+/* Leads to something that deletes or ends; the filled one does it. */
+.slab--warn {
+  --edge: var(--c-danger);
+  --label: var(--c-danger);
+}
+
 .slab:disabled {
   --fill: var(--c-raised);
   --edge: transparent;

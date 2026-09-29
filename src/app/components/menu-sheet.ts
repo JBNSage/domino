@@ -65,7 +65,7 @@ import { Sheet } from './sheet';
         <button type="button" class="slab slab--compact lean" (click)="sheet().close()">
           <span class="slab__label" [appFitText]="copy.menu.close">{{ copy.menu.close }}</span>
         </button>
-        <button type="button" class="slab slab--compact lean clear" (click)="go(reset)">
+        <button type="button" class="slab slab--compact slab--warn lean clear" (click)="go(reset)">
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <path d="M4 7h16" />
             <path d="M9 7V4h6v3" />
@@ -117,11 +117,6 @@ import { Sheet } from './sheet';
 
       flex: 1 1 0;
       padding: 0 var(--s-md);
-    }
-
-    .clear {
-      --edge: var(--c-danger);
-      --label: var(--c-danger);
     }
 
     @media (max-height: 36em) and (min-width: 30em) {

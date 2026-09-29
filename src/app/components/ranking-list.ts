@@ -1,13 +1,14 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 
 import { copy } from '../copy';
 import { FitText } from '../directives/fit-text';
+import { PlayerPair } from './player-pair';
 import { Standing } from '../game/tournament';
 
 /** A tournament's teams in order: most matches won first. */
 @Component({
   selector: 'app-ranking-list',
-  imports: [FitText],
+  imports: [FitText, PlayerPair],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="head" aria-hidden="true">
@@ -17,19 +18,29 @@ import { Standing } from '../game/tournament';
     </div>
     <p class="sr-only">{{ copy.tournament.columnsA11y }}</p>
     <ol class="rows">
-      @for (team of standings(); track team.id; let index = $index) {
+      @for (team of rows(); track team.id) {
         <li
           class="row lean"
-          [class.row--first]="team.won > 0 && team.won === standings()[0].won"
-          [attr.aria-label]="copy.tournament.rankA11y(index + 1, team.name, team.won, team.lost)"
+          [class.row--first]="team.won > 0 && team.position === 1"
+          [attr.aria-label]="
+            copy.tournament.rankA11y(
+              team.position,
+              team.name,
+              team.players,
+              team.won,
+              team.lost,
+              team.playing
+            )
+          "
         >
-          <span class="position numerals" aria-hidden="true">{{ index + 1 }}</span>
+          <span class="position numerals" aria-hidden="true">{{ team.position }}</span>
           <span class="who" aria-hidden="true">
             <span class="name" [appFitText]="team.name">{{ team.name }}</span>
             @if (team.players; as players) {
-              <span class="players" [appFitText]="copy.players.pair(players)">{{
-                copy.players.pair(players)
-              }}</span>
+              <app-player-pair class="players" [players]="players" />
+            }
+            @if (team.playing) {
+              <span class="playing">{{ copy.tournament.playing }}</span>
             }
           </span>
           <span class="count won numerals" aria-hidden="true">{{ team.won }}</span>
@@ -122,6 +133,11 @@ import { Standing } from '../game/tournament';
       text-transform: uppercase;
     }
 
+    .playing {
+      font: italic 800 var(--t-label) / 1.3 var(--font);
+      text-transform: uppercase;
+    }
+
     .count {
       flex: none;
       width: var(--count);
@@ -143,4 +159,17 @@ export class RankingList {
   protected readonly copy = copy;
 
   readonly standings = input.required<Standing[]>();
+  /** The teams at the board right now. */
+  readonly playing = input<string[]>([]);
+
+  // Teams level on wins share a place, as they do when a champion is decided.
+  protected readonly rows = computed(() => {
+    const table = this.standings();
+    const playing = this.playing();
+    return table.map((team) => ({
+      ...team,
+      position: 1 + table.filter((other) => other.won > team.won).length,
+      playing: playing.includes(team.id),
+    }));
+  });
 }

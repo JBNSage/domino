@@ -6,6 +6,7 @@ import { HistoryStore } from './history.store';
 import { initialState } from './state';
 import { STORAGE_KEY, TOURNAMENT_KEY, UNDO_KEY, loadTournament, loadUndo } from './storage';
 import { standings } from './tournament';
+import { TournamentDraft } from './tournament-draft';
 
 describe('GameStore', () => {
   let store: GameStore;
@@ -482,6 +483,29 @@ describe('GameStore', () => {
         'Tres',
         'Las Tías',
       ]);
+    });
+
+    it('leaves its teams ready for the next one, with the names they ended with', () => {
+      store.startTournament(teams.slice(0, 2), { kind: 'firstTo', count: 1 });
+      store.setTeam('b', 'Las Tías', null);
+      win('a');
+      store.finishTournament();
+      const draft = TestBed.inject(TournamentDraft).draft();
+      expect(draft?.teams.map((team) => team.name)).toEqual(['Uno', 'Las Tías']);
+      expect(draft?.touched).toBe(true);
+    });
+
+    it('keeps a deleted tournament on offer with no time limit', () => {
+      store.startTournament(teams.slice(0, 2), { kind: 'firstTo', count: 1 });
+      win('a');
+      store.finishTournament();
+      store.deleteTournament(history().tournaments[0].id);
+      expect(history()).toEqual({ matches: [], tournaments: [] });
+
+      vi.advanceTimersByTime(UNDO_MS * 10);
+      store.restore();
+      expect(history().tournaments).toHaveLength(1);
+      expect(history().matches).toHaveLength(1);
     });
 
     it('is not swept away by a full reset', () => {
