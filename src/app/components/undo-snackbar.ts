@@ -1,9 +1,14 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, output } from '@angular/core';
 
 import { copy } from '../copy';
 import { GameStore } from '../game/game.store';
+import { Update } from '../platform/update';
 
-/** Inverse surface, so it reads as a transient layer in both appearances. */
+/**
+ * The board's one transient bar, on an inverse surface so it reads as a layer
+ * in both appearances. It offers to undo; with nothing to undo and no round
+ * under way, it can say that a new version is waiting.
+ */
 @Component({
   selector: 'app-undo-snackbar',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -21,9 +26,16 @@ import { GameStore } from '../game/game.store';
           type="button"
           class="action"
           [attr.aria-label]="copy.undo.action + ': ' + undo.message"
-          (click)="store.restore()"
+          (click)="restore()"
         >
           {{ copy.undo.action }}
+        </button>
+      </div>
+    } @else if (offerUpdate()) {
+      <div class="bar lean">
+        <span class="message">{{ copy.update.ready }}</span>
+        <button type="button" class="action" (click)="update.apply()">
+          {{ copy.update.action }}
         </button>
       </div>
     }
@@ -43,22 +55,19 @@ import { GameStore } from '../game/game.store';
       display: flex;
       align-items: center;
       min-height: calc(var(--min-target) + 4px);
-      padding: 0 var(--s-sm) 0 var(--s-xl);
+      padding: var(--s-xs) var(--s-sm) var(--s-xs) var(--s-xl);
       color: var(--c-ground);
     }
 
     .message {
       flex: 1;
       min-width: 0;
-      display: -webkit-box;
-      -webkit-box-orient: vertical;
-      -webkit-line-clamp: 2;
-      line-clamp: 2;
-      overflow: hidden;
       line-height: 1.25;
+      overflow-wrap: anywhere;
     }
 
     .action {
+      flex: none;
       min-height: var(--min-target);
       padding: 0 var(--s-lg);
       border: 0;
@@ -68,6 +77,11 @@ import { GameStore } from '../game/game.store';
       text-transform: uppercase;
       text-decoration: underline;
       text-underline-offset: 0.2em;
+    }
+
+    /* Drawn inside the button, so the whole ring sits on the bar's own fill. */
+    .action:focus-visible {
+      outline-offset: -5px;
     }
 
     .action:active {
@@ -91,4 +105,17 @@ import { GameStore } from '../game/game.store';
 export class UndoSnackbar {
   protected readonly copy = copy;
   protected readonly store = inject(GameStore);
+  protected readonly update = inject(Update);
+
+  /** Undo is done; carries the hand that came back, or null to return to the board. */
+  readonly restored = output<string | null>();
+
+  // Reloading mid-round would interrupt the game, so the notice waits for a clean board.
+  protected readonly offerUpdate = computed(
+    () => this.update.ready() && this.store.state().rows.length === 0,
+  );
+
+  protected restore(): void {
+    this.restored.emit(this.store.restore());
+  }
 }

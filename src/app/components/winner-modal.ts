@@ -28,42 +28,39 @@ import { Slashes } from './slashes';
   template: `
     <dialog #dialog class="winner" aria-labelledby="winner-title" (cancel)="correct()">
       @if (result(); as result) {
-        <div
-          class="flood"
-          [class]="'flood--' + result.winner"
-          [style.--team]="'var(--c-team-' + result.winner + ')'"
-        ></div>
-        <div class="content" [style.--team]="'var(--c-team-' + result.winner + ')'">
-          <div class="heading">
-            <app-slashes class="mark" [size]="40" />
-            <h2 class="title" id="winner-title" [appFitText]="copy.winner.title">
-              {{ copy.winner.title }}
-            </h2>
-            <p class="body">{{ copy.winner.body(result.names[result.winner]) }}</p>
-            <p class="rounds">{{ copy.winner.roundsAfter(result.roundsAfter) }}</p>
-          </div>
+        <div class="flood" [class]="'flood--' + result.winner"></div>
+        <div class="content" [class]="'content--' + result.winner">
+          <!-- The scores scroll when the screen is short; the two actions never leave it. -->
+          <div class="scroll">
+            <div class="heading">
+              <app-slashes class="mark" [size]="40" />
+              <h2 class="title" id="winner-title" [appFitText]="copy.winner.title">
+                {{ copy.winner.title }}
+              </h2>
+              <p class="body">{{ copy.winner.body(result.names[result.winner]) }}</p>
+              <p class="rounds">{{ copy.winner.roundsAfter(result.roundsAfter) }}</p>
+            </div>
 
-          <div class="scores">
-            <p class="winner-slab lean">
-              <span class="name" [appFitText]="result.names[result.winner]">
-                {{ result.names[result.winner] }}
-              </span>
-              <span
-                class="winner-total numerals"
-                [appFitText]="result.totals[result.winner]"
-                [minScale]="0.4"
-              >
-                {{ result.totals[result.winner] }}
-              </span>
-            </p>
-            <p class="loser-slab lean">
-              <span class="name loser-name" [appFitText]="result.names[loser()]">
-                {{ result.names[loser()] }}
-              </span>
-              <span class="loser-total numerals">
-                {{ result.totals[loser()] }}
-              </span>
-            </p>
+            <div class="scores">
+              <p class="winner-slab lean">
+                <span class="name" [appFitText]="result.names[result.winner]">
+                  {{ result.names[result.winner] }}
+                </span>
+                <span
+                  class="winner-total numerals"
+                  [appFitText]="result.totals[result.winner]"
+                  [minScale]="0.4"
+                >
+                  {{ result.totals[result.winner] }}
+                </span>
+              </p>
+              <p class="loser-slab lean">
+                <span class="name loser-name" [appFitText]="result.names[loser()]">
+                  {{ result.names[loser()] }}
+                </span>
+                <span class="loser-total numerals">{{ result.totals[loser()] }}</span>
+              </p>
+            </div>
           </div>
 
           <div class="actions">
@@ -104,6 +101,16 @@ import { Slashes } from './slashes';
       background: var(--c-ground);
     }
 
+    .flood--a,
+    .content--a {
+      --team: var(--c-team-a);
+    }
+
+    .flood--b,
+    .content--b {
+      --team: var(--c-team-b);
+    }
+
     .flood {
       position: absolute;
       inset: 0 -60%;
@@ -118,9 +125,20 @@ import { Slashes } from './slashes';
       margin: 0 auto;
       display: flex;
       flex-direction: column;
+      gap: var(--s-lg);
       padding: calc(env(safe-area-inset-top) + var(--s-xxl)) var(--s-xl)
         calc(max(env(safe-area-inset-bottom), var(--s-lg)) + var(--s-lg));
+    }
+
+    .scroll {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
       overflow-y: auto;
+      overscroll-behavior: contain;
+      scrollbar-width: thin;
+      scrollbar-color: var(--c-ink) transparent;
     }
 
     .heading {
@@ -150,6 +168,7 @@ import { Slashes } from './slashes';
       font: italic 800 var(--t-title) / 1.2 var(--font);
       text-transform: uppercase;
       text-wrap: balance;
+      overflow-wrap: anywhere;
     }
 
     .rounds {
@@ -206,6 +225,7 @@ import { Slashes } from './slashes';
     }
 
     .actions {
+      flex: none;
       display: flex;
       flex-direction: column;
       gap: var(--s-md);
@@ -222,6 +242,76 @@ import { Slashes } from './slashes';
       --fill: var(--c-ink);
       --edge: transparent;
       --label: var(--c-on-ink);
+    }
+
+    /* Short screens: a phone on its side, or large text on a small phone. */
+    @media (max-height: 36em) {
+      .content {
+        gap: var(--s-md);
+        padding-top: calc(env(safe-area-inset-top) + var(--s-lg));
+        padding-bottom: max(env(safe-area-inset-bottom), var(--s-md));
+      }
+
+      .mark {
+        display: none;
+      }
+
+      .title {
+        margin-top: 0;
+        font-size: var(--t-title);
+      }
+
+      .body {
+        font-size: var(--t-button);
+      }
+
+      .scores {
+        justify-content: flex-start;
+        padding: var(--s-md) var(--s-sm);
+      }
+
+      .winner-slab {
+        --lean-inset: 12px;
+
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--s-lg);
+        padding: var(--s-sm) var(--s-xxl);
+      }
+
+      .winner-slab .name {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .winner-total {
+        font-size: var(--t-display);
+      }
+
+      .loser-total {
+        font-size: var(--t-title);
+      }
+
+      .actions {
+        gap: var(--s-sm);
+      }
+
+      .actions .slab {
+        min-height: var(--min-target);
+      }
+    }
+
+    @media (max-height: 36em) and (min-width: 30em) {
+      .actions {
+        flex-direction: row;
+        gap: var(--s-md);
+      }
+
+      .actions .slab {
+        flex: 1 1 0;
+        padding: 0 var(--s-md);
+      }
     }
 
     @media (prefers-reduced-motion: no-preference) {

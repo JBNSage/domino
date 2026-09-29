@@ -1,4 +1,4 @@
-<main class="board">
+<main #board class="board" tabindex="-1">
   <h1 class="sr-only">Dominó</h1>
   <app-target-header
     [target]="store.state().target"
@@ -7,8 +7,8 @@
   />
   <app-team-lockup (pressTeam)="points.open($event)" />
   <div class="body">
-    <app-score-list />
-    <app-undo-snackbar />
+    <app-score-list (edit)="points.openEdit($event.row, $event.index)" />
+    <app-undo-snackbar (restored)="afterUndo($event)" />
   </div>
   <app-quick-add-bar (enter)="points.open($event)" (editQuick)="settings.open('quick')" />
 </main>

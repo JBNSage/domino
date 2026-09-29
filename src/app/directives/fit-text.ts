@@ -2,19 +2,23 @@ import { DestroyRef, Directive, ElementRef, afterRenderEffect, inject, input } f
 
 /**
  * Keeps one line of text inside its box by shrinking the type, never below
- * `minScale` of its designed size. The host needs a bounded width.
+ * `minScale` of its designed size. The host needs a bounded width. Only the
+ * width is clipped, so tall glyphs such as an opening exclamation mark stay whole.
  */
+const SLACK = 0.96;
+
 @Directive({
   selector: '[appFitText]',
   // The end padding keeps the italic overhang of the last letter inside the clip.
   host: {
-    style: 'display: block; white-space: nowrap; overflow: hidden; padding-inline-end: 0.12em;',
+    style:
+      'display: block; white-space: nowrap; overflow-x: clip; overflow-y: visible; padding-inline-end: 0.12em;',
   },
 })
 export class FitText {
   /** The text shown, so the fit runs again when it changes. */
   readonly appFitText = input<string | number>('');
-  readonly minScale = input(0.6);
+  readonly minScale = input(0.5);
 
   private readonly element = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
 
@@ -49,7 +53,8 @@ export class FitText {
     const needed = element.scrollWidth;
     if (available === 0 || needed <= available) return;
     const designed = parseFloat(getComputedStyle(element).fontSize);
-    const scale = Math.max(this.minScale(), available / needed);
+    // Letter spacing does not shrink with the type, so the fit leaves a little slack.
+    const scale = Math.max(this.minScale(), (available / needed) * SLACK);
     element.style.fontSize = `${designed * scale}px`;
   }
 }

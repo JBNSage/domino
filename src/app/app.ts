@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  ElementRef,
+  inject,
+  viewChild,
+} from '@angular/core';
 
 import { PointsSheet } from './components/points-sheet';
 import { QuickAddBar } from './components/quick-add-bar';
@@ -11,6 +18,7 @@ import { UndoSnackbar } from './components/undo-snackbar';
 import { WinnerModal } from './components/winner-modal';
 import { GameStore } from './game/game.store';
 import { keepStorage } from './game/storage';
+import { followModality } from './platform/modality';
 import { keepAwake } from './platform/wake-lock';
 
 @Component({
@@ -33,11 +41,21 @@ import { keepAwake } from './platform/wake-lock';
 export class App {
   protected readonly store = inject(GameStore);
 
+  private readonly board = viewChild.required<ElementRef<HTMLElement>>('board');
+  private readonly list = viewChild.required(ScoreList);
+
   constructor() {
     const destroyRef = inject(DestroyRef);
     destroyRef.onDestroy(keepAwake());
+    destroyRef.onDestroy(followModality());
     keepStorage();
     this.followKeyboard(destroyRef);
+  }
+
+  /** The undo bar is gone once used, so focus goes to what it changed. */
+  protected afterUndo(row: string | null): void {
+    if (row !== null) this.list().focusRow(row);
+    else this.board().nativeElement.focus();
   }
 
   /** Publishes the on-screen keyboard's height, so sheets sit above it. */

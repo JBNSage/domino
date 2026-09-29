@@ -5,7 +5,7 @@ import { FitText } from '../directives/fit-text';
 import { GameStore } from '../game/game.store';
 import { Sheet } from './sheet';
 
-/** Asks how much to clear. Both answers can be undone from the board. */
+/** Asks how much to clear. Each answer says what it keeps, and both can be undone. */
 @Component({
   selector: 'app-reset-sheet',
   imports: [Sheet, FitText],
@@ -13,18 +13,36 @@ import { Sheet } from './sheet';
   template: `
     <app-sheet accent="var(--c-danger)" labelledBy="reset-sheet-title">
       <h2 class="title" id="reset-sheet-title">{{ copy.reset.title }}</h2>
-      <p class="body">{{ copy.reset.body }}</p>
-      <div class="actions">
-        <button type="button" class="slab lean" (click)="hands()">
+
+      <div class="choice">
+        <button
+          type="button"
+          class="slab lean"
+          aria-describedby="reset-sheet-hands"
+          (click)="hands()"
+        >
           <span class="slab__label" [appFitText]="copy.reset.hands">{{ copy.reset.hands }}</span>
         </button>
-        <button type="button" class="slab slab--danger lean" (click)="all()">
+        <p class="help" id="reset-sheet-hands">{{ copy.reset.handsHelp }}</p>
+      </div>
+
+      <div class="choice">
+        <button
+          type="button"
+          class="slab slab--danger lean"
+          aria-describedby="reset-sheet-all"
+          (click)="all()"
+        >
           <span class="slab__label" [appFitText]="copy.reset.all">{{ copy.reset.all }}</span>
         </button>
-        <button type="button" class="slab slab--compact lean" (click)="sheet().close()">
-          <span class="slab__label" [appFitText]="copy.reset.cancel">{{ copy.reset.cancel }}</span>
-        </button>
+        <p class="help" id="reset-sheet-all">{{ copy.reset.allHelp }}</p>
       </div>
+
+      <p class="note">{{ copy.reset.undoNote }}</p>
+
+      <button type="button" class="slab slab--compact lean cancel" (click)="sheet().close()">
+        <span class="slab__label" [appFitText]="copy.reset.cancel">{{ copy.reset.cancel }}</span>
+      </button>
     </app-sheet>
   `,
   styles: `
@@ -35,18 +53,30 @@ import { Sheet } from './sheet';
       text-wrap: balance;
     }
 
-    .body {
+    .choice {
+      display: flex;
+      flex-direction: column;
+      gap: var(--s-sm);
+    }
+
+    .slab {
+      margin: 0 var(--s-sm);
+    }
+
+    .help,
+    .note {
       margin: 0;
       max-width: 65ch;
       color: var(--c-muted);
-      white-space: pre-line;
+      line-height: 1.35;
     }
 
-    .actions {
-      display: flex;
-      flex-direction: column;
-      gap: var(--s-md);
+    .help {
       padding: 0 var(--s-sm);
+    }
+
+    .note {
+      color: var(--c-text);
     }
   `,
 })

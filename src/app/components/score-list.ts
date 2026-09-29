@@ -1,3 +1,4 @@
+import { NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -6,74 +7,124 @@ import {
   computed,
   effect,
   inject,
+  output,
   signal,
-  untracked,
 } from '@angular/core';
 
 import { copy } from '../copy';
 import { FitText } from '../directives/fit-text';
 import { GameStore } from '../game/game.store';
 import { Row } from '../game/state';
+import { Install } from '../platform/install';
 import { prefersReducedMotion } from '../platform/motion';
 import { Slashes } from './slashes';
 
+/** How close to the end still counts as "reading the newest hands". */
+const NEAR_END = 80;
+
 @Component({
   selector: 'app-score-list',
-  imports: [Slashes, FitText],
+  imports: [Slashes, FitText, NgTemplateOutlet],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { '[class.with-undo]': 'store.undo() !== null' },
   template: `
+    <ng-template #cells let-row let-index="index" let-last="last">
+      @for (team of teams; track team) {
+        @if (team === 'b') {
+          <span class="hand numerals" [class.hand--latest]="last">{{ hand(index) }}</span>
+        }
+        <span class="cell">
+          @if (row.team === team) {
+            <span class="chip lean numerals" [class]="'chip--' + team">{{ row.points }}</span>
+          } @else {
+            <span class="zero numerals">0</span>
+          }
+        </span>
+      }
+    </ng-template>
+
     @if (rows().length === 0) {
       <div class="empty">
         <app-slashes [size]="22" />
         <h2 class="empty-title">{{ copy.list.emptyTitle }}</h2>
         <p class="empty-body">{{ copy.list.emptyBody }}</p>
+
+        @if (install.hint(); as hint) {
+          <div class="install">
+            <p class="install-text">
+              {{ hint === 'ios' ? copy.install.ios : copy.install.prompt }}
+            </p>
+            <div class="install-actions">
+              @if (hint === 'prompt') {
+                <button type="button" class="slab slab--compact lean" (click)="install.install()">
+                  <span class="slab__label">{{ copy.install.action }}</span>
+                </button>
+              }
+              <button type="button" class="later" (click)="install.dismiss()">
+                {{ copy.install.dismiss }}
+              </button>
+            </div>
+          </div>
+        }
       </div>
     } @else {
       <ol class="rows">
         @for (row of rows(); track row.id; let index = $index, last = $last) {
           <li [class]="isNew(row) ? 'enter enter--' + row.team : ''" [attr.data-row]="row.id">
             @if (selected() === row.id) {
-              <div class="row selected">
-                <span class="hand hand--latest numerals" aria-hidden="true">{{ hand(index) }}</span>
-                <button type="button" class="slab slab--compact lean keep" (click)="keep(row)">
-                  <span class="slab__label" [appFitText]="copy.list.keep">{{
-                    copy.list.keep
-                  }}</span>
-                </button>
-                <button
-                  type="button"
-                  class="slab slab--compact slab--danger lean"
-                  [attr.aria-label]="copy.list.deleteA11y(index + 1)"
-                  (click)="store.deleteRow(row, index)"
-                >
-                  <span class="slab__label" [appFitText]="copy.list.delete">{{
-                    copy.list.delete
-                  }}</span>
-                </button>
+              <!-- The hand stays in view, so it is clear what is about to change. -->
+              <div
+                class="selected"
+                role="group"
+                [attr.aria-label]="label(row, index)"
+                (keydown.escape)="keep(row)"
+              >
+                <div class="row row--selected lean">
+                  <ng-container
+                    [ngTemplateOutlet]="cells"
+                    [ngTemplateOutletContext]="{ $implicit: row, index: index, last: true }"
+                  />
+                </div>
+                <div class="options">
+                  <button type="button" class="slab slab--compact lean keep" (click)="keep(row)">
+                    <span class="slab__label" [appFitText]="copy.list.keep">{{
+                      copy.list.keep
+                    }}</span>
+                  </button>
+                  <button
+                    type="button"
+                    class="slab slab--compact slab--filled lean edit"
+                    [attr.aria-label]="copy.list.editA11y(index + 1)"
+                    (click)="edit.emit({ row: row, index: index })"
+                  >
+                    <span class="slab__label" [appFitText]="copy.list.edit">{{
+                      copy.list.edit
+                    }}</span>
+                  </button>
+                  <button
+                    type="button"
+                    class="slab slab--compact slab--danger lean"
+                    [attr.aria-label]="copy.list.deleteA11y(index + 1)"
+                    (click)="remove(row, index)"
+                  >
+                    <span class="slab__label" [appFitText]="copy.list.delete">{{
+                      copy.list.delete
+                    }}</span>
+                  </button>
+                </div>
               </div>
             } @else {
               <button
                 type="button"
                 class="row lean"
                 [class.row--latest]="last"
-                [attr.aria-label]="label(row, index)"
+                [attr.aria-label]="label(row, index) + '. ' + copy.list.rowHint"
                 (click)="select(row)"
               >
-                @for (team of ['a', 'b']; track team) {
-                  @if (team === 'b') {
-                    <span class="hand numerals" [class.hand--latest]="last">{{ hand(index) }}</span>
-                  }
-                  <span class="cell">
-                    @if (row.team === team) {
-                      <span class="chip lean numerals" [class]="'chip--' + team">
-                        {{ row.points }}
-                      </span>
-                    } @else {
-                      <span class="zero numerals">0</span>
-                    }
-                  </span>
-                }
+                <ng-container
+                  [ngTemplateOutlet]="cells"
+                  [ngTemplateOutletContext]="{ $implicit: row, index: index, last: last }"
+                />
               </button>
             }
           </li>
@@ -107,10 +158,39 @@ import { Slashes } from './slashes';
       text-transform: uppercase;
     }
 
-    .empty-body {
+    .empty-body,
+    .install-text {
       margin: 0;
       max-width: 34ch;
       color: var(--c-muted);
+    }
+
+    .install {
+      display: flex;
+      flex-direction: column;
+      gap: var(--s-sm);
+      margin-top: var(--s-xl);
+      padding-top: var(--s-lg);
+      border-top: 1px solid var(--c-line);
+    }
+
+    .install-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--s-sm) var(--s-lg);
+    }
+
+    .later {
+      min-height: var(--min-target);
+      padding: 0 var(--s-sm);
+      border: 0;
+      background: none;
+      color: var(--c-text);
+      font: italic 800 var(--t-body) / 1.2 var(--font);
+      text-transform: uppercase;
+      text-decoration: underline;
+      text-underline-offset: 0.2em;
     }
 
     .rows {
@@ -139,8 +219,13 @@ import { Slashes } from './slashes';
       color: inherit;
     }
 
-    .row--latest {
+    .row--latest,
+    .row--selected {
       --fill: var(--c-raised);
+    }
+
+    .row--selected {
+      --edge: var(--c-text);
     }
 
     button.row:active::before {
@@ -154,11 +239,27 @@ import { Slashes } from './slashes';
     }
 
     .selected {
+      display: flex;
+      flex-direction: column;
+      gap: var(--s-sm);
+      padding-bottom: var(--s-sm);
+    }
+
+    .options {
+      display: flex;
       gap: var(--s-sm);
     }
 
-    .selected .slab {
-      flex: 1;
+    .options .slab {
+      --lean-inset: 5px;
+
+      flex: 1 1 0;
+      padding: 0 var(--s-md);
+    }
+
+    .edit {
+      --fill: var(--c-text);
+      --label: var(--c-ground);
     }
 
     .hand {
@@ -172,10 +273,6 @@ import { Slashes } from './slashes';
     .hand--latest {
       color: var(--c-text);
       font-weight: 800;
-    }
-
-    .selected .hand {
-      font-size: var(--t-meta);
     }
 
     .cell {
@@ -231,7 +328,11 @@ import { Slashes } from './slashes';
 })
 export class ScoreList {
   protected readonly copy = copy;
+  protected readonly teams = ['a', 'b'] as const;
   protected readonly store = inject(GameStore);
+  protected readonly install = inject(Install);
+
+  readonly edit = output<{ row: Row; index: number }>();
 
   protected readonly rows = computed(() => this.store.state().rows);
   protected readonly selected = signal<string | null>(null);
@@ -239,6 +340,8 @@ export class ScoreList {
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
   // Hands already on the board at launch arrive without moving.
   private readonly present = new Set(this.rows().map((row) => row.id));
+  private newest: string | null = null;
+  private offering = false;
 
   constructor() {
     // A new hand, or the list changing under a selection, drops the selection.
@@ -249,14 +352,16 @@ export class ScoreList {
 
     afterRenderEffect(() => {
       const rows = this.rows();
-      this.store.undo();
-      if (rows.length === 0) return;
-      untracked(() =>
-        this.host.scrollTo({
-          top: this.host.scrollHeight,
-          behavior: prefersReducedMotion() ? 'auto' : 'smooth',
-        }),
-      );
+      const offering = this.store.undo() !== null;
+      const newest = rows.length > 0 ? rows[rows.length - 1].id : null;
+
+      // Follow a new hand to the end of the list. A change further up stays
+      // where the reader is looking, unless the undo bar would now cover the end.
+      const added = newest !== null && newest !== this.newest;
+      const covered = offering && !this.offering && this.nearEnd();
+      this.newest = newest;
+      this.offering = offering;
+      if (added || covered) this.scrollToEnd();
     });
   }
 
@@ -269,8 +374,7 @@ export class ScoreList {
   }
 
   protected label(row: Row, index: number): string {
-    const name = this.store.state().teams[row.team].name;
-    return `${copy.list.rowA11y(index + 1, name, row.points)}. ${copy.list.rowHint}`;
+    return copy.list.rowA11y(index + 1, this.store.state().teams[row.team].name, row.points);
   }
 
   protected select(row: Row): void {
@@ -283,12 +387,37 @@ export class ScoreList {
     this.focusIn(row, 'button.row');
   }
 
+  protected remove(row: Row, index: number): void {
+    this.store.deleteRow(row, index);
+    // The row is gone; the way back is the next thing within reach.
+    setTimeout(() => document.querySelector<HTMLElement>('app-undo-snackbar .action')?.focus());
+  }
+
+  /** Moves focus to a hand, such as one that an undo just brought back. */
+  focusRow(id: string): void {
+    setTimeout(() =>
+      this.host.querySelector<HTMLElement>(`[data-row="${CSS.escape(id)}"] button`)?.focus(),
+    );
+  }
+
   /** The pressed button is replaced, so focus moves to what took its place. */
   private focusIn(row: Row, selector: string): void {
     setTimeout(() =>
       this.host
         .querySelector<HTMLElement>(`[data-row="${CSS.escape(row.id)}"] ${selector}`)
-        ?.focus({ preventScroll: true }),
+        ?.focus({ preventScroll: selector !== '.keep' }),
     );
+  }
+
+  private nearEnd(): boolean {
+    const { scrollTop, clientHeight, scrollHeight } = this.host;
+    return scrollHeight - scrollTop - clientHeight < NEAR_END;
+  }
+
+  private scrollToEnd(): void {
+    this.host.scrollTo({
+      top: this.host.scrollHeight,
+      behavior: prefersReducedMotion() ? 'auto' : 'smooth',
+    });
   }
 }

@@ -175,6 +175,45 @@ import { prefersReducedMotion } from '../platform/motion';
     .hidden {
       visibility: hidden;
     }
+
+    /* Short screens: the lockup becomes a strip, so the hands keep their room. */
+    @media (max-height: 36em) {
+      .panel {
+        min-height: 0;
+        flex-flow: row wrap;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 0 var(--s-md);
+        padding-block: var(--s-sm);
+      }
+
+      .name {
+        flex: 1 1 100%;
+        font-size: var(--t-meta);
+      }
+
+      .total,
+      .total--long {
+        flex: none;
+        font-size: var(--t-field);
+      }
+
+      /* Under the total on a narrow screen, beside it on a wide one. */
+      .meta {
+        flex: 1 1 100%;
+        min-width: 0;
+      }
+
+      .hidden {
+        display: none;
+      }
+    }
+
+    @media (max-height: 36em) and (min-width: 30em) {
+      .meta {
+        flex: 1;
+      }
+    }
   `,
 })
 export class TeamLockup {

@@ -45,6 +45,12 @@ import { FitText } from '../directives/fit-text';
       flex-shrink: 1;
     }
 
+    @media (max-height: 36em) {
+      :host {
+        padding-block: var(--s-xs);
+      }
+    }
+
     .label {
       min-width: 0;
       color: var(--c-muted);

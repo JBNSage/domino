@@ -22,6 +22,7 @@ export type Action =
   | { type: 'addPoints'; team: TeamId; points: number; id: string }
   | { type: 'deleteRow'; id: string }
   | { type: 'restoreRow'; row: Row; index: number }
+  | { type: 'editRow'; id: string; points: number }
   | { type: 'renameTeam'; team: TeamId; name: string }
   | { type: 'setTarget'; target: number }
   | { type: 'setQuickValue'; value: number }
@@ -70,8 +71,17 @@ function isValidAmount(value: number, max: number): boolean {
   return Number.isInteger(value) && value >= 1 && value <= max;
 }
 
+/** Cuts to a number of visible characters, so an emoji or accented letter is never split. */
+function truncate(text: string, length: number): string {
+  const characters =
+    typeof Intl.Segmenter === 'function'
+      ? Array.from(new Intl.Segmenter().segment(text), (part) => part.segment)
+      : Array.from(text);
+  return characters.slice(0, length).join('');
+}
+
 export function cleanName(name: string, team: TeamId): string {
-  const trimmed = name.trim().replace(/\s+/g, ' ').slice(0, MAX_NAME_LENGTH);
+  const trimmed = truncate(name.trim().replace(/\s+/g, ' '), MAX_NAME_LENGTH).trim();
   return trimmed.length > 0 ? trimmed : DEFAULT_NAMES[team];
 }
 
@@ -93,6 +103,15 @@ export function reducer(state: State, action: Action): State {
       const index = Math.max(0, Math.min(action.index, state.rows.length));
       const rows = [...state.rows];
       rows.splice(index, 0, action.row);
+      return { ...state, rows };
+    }
+    case 'editRow': {
+      if (!isValidAmount(action.points, MAX_POINTS)) return state;
+      const current = state.rows.find((row) => row.id === action.id);
+      if (current === undefined || current.points === action.points) return state;
+      const rows = state.rows.map((row) =>
+        row.id === action.id ? { ...row, points: action.points } : row,
+      );
       return { ...state, rows };
     }
     case 'renameTeam': {

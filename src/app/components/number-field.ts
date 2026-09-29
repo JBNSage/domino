@@ -8,8 +8,6 @@ import {
   viewChild,
 } from '@angular/core';
 
-import { copy } from '../copy';
-
 let nextId = 0;
 
 @Component({
@@ -29,10 +27,9 @@ let nextId = 0;
       [class.invalid]="error()"
       [value]="value()"
       [attr.maxlength]="maxLength()"
-      [attr.placeholder]="placeholder"
       [attr.aria-invalid]="error() ? 'true' : null"
       [attr.aria-describedby]="id + '-message'"
-      (input)="changed(field)"
+      (input)="value.set(field.value)"
       (focus)="field.select()"
       (keydown.enter)="enter($event)"
     />
@@ -45,10 +42,10 @@ let nextId = 0;
     :host {
       display: flex;
       flex-direction: column;
-      gap: var(--s-xs);
     }
 
     .label {
+      margin-bottom: var(--s-xs);
       color: var(--c-muted);
       font: italic 600 var(--t-label) / 1.3 var(--font);
       text-transform: uppercase;
@@ -74,9 +71,11 @@ let nextId = 0;
       }
     }
 
-    .input::placeholder {
-      color: var(--c-muted);
-      opacity: 1;
+    @media (max-height: 36em) {
+      .input {
+        min-height: 56px;
+        font-size: var(--t-title);
+      }
     }
 
     .input.invalid {
@@ -93,10 +92,6 @@ let nextId = 0;
       font: 500 var(--t-body) / 1.35 var(--font);
     }
 
-    .message:empty {
-      display: none;
-    }
-
     .message.error {
       color: var(--c-danger);
     }
@@ -104,6 +99,7 @@ let nextId = 0;
 })
 export class NumberField {
   readonly label = input.required<string>();
+  /** What was typed, untouched: a sign or a decimal is reported, not quietly removed. */
   readonly value = model('');
   readonly maxLength = input.required<number>();
   readonly error = input<string | null>(null);
@@ -112,7 +108,6 @@ export class NumberField {
   readonly submitted = output<void>();
 
   protected readonly id = `number-field-${nextId++}`;
-  protected readonly placeholder = copy.points.placeholder;
 
   private readonly field = viewChild.required<ElementRef<HTMLInputElement>>('field');
 
@@ -129,11 +124,5 @@ export class NumberField {
   protected enter(event: Event): void {
     event.preventDefault();
     this.submitted.emit();
-  }
-
-  protected changed(field: HTMLInputElement): void {
-    const digits = field.value.replace(/\D/g, '');
-    if (digits !== field.value) field.value = digits;
-    this.value.set(digits);
   }
 }

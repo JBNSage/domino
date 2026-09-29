@@ -56,6 +56,30 @@ import { TEAM_IDS, TeamId } from '../game/state';
       flex-direction: column;
       gap: var(--s-sm);
     }
+
+    /* Short screens: the bonus sits beside the main action instead of above it. */
+    @media (max-height: 36em) {
+      :host {
+        gap: var(--s-lg);
+        padding-top: var(--s-sm);
+        padding-bottom: calc(env(safe-area-inset-bottom) + var(--s-sm));
+      }
+
+      .slab {
+        min-height: var(--min-target);
+      }
+    }
+
+    @media (max-height: 36em) and (min-width: 30em) {
+      .column {
+        flex-direction: row;
+      }
+
+      .slab {
+        flex: 1 1 0;
+        padding: 0 var(--s-md);
+      }
+    }
   `,
 })
 export class QuickAddBar {

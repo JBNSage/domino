@@ -1,6 +1,7 @@
 import {
   Action,
   State,
+  cleanName,
   initialState,
   parseAmount,
   parseState,
@@ -166,5 +167,30 @@ describe('parseState', () => {
     expect(parseState({})).toBeNull();
     expect(parseState({ ...initialState, target: 'x' })).toBeNull();
     expect(parseState({ ...initialState, rows: [{ id: '1', team: 'c', points: 5 }] })).toBeNull();
+  });
+});
+
+describe('editRow', () => {
+  it('changes the points of one hand and keeps its place', () => {
+    const state = play([add('a', 10, 'r1'), add('b', 20, 'r2'), add('a', 30, 'r3')]);
+    const next = reducer(state, { type: 'editRow', id: 'r2', points: 25 });
+    expect(next.rows.map((row) => row.id)).toEqual(['r1', 'r2', 'r3']);
+    expect(next.rows[1]).toEqual({ id: 'r2', team: 'b', points: 25 });
+    expect(selectTotals(next)).toEqual({ a: 40, b: 25 });
+  });
+
+  it('ignores an invalid amount, an unknown hand and an unchanged value', () => {
+    const state = play([add('a', 10, 'r1')]);
+    expect(reducer(state, { type: 'editRow', id: 'r1', points: 0 })).toBe(state);
+    expect(reducer(state, { type: 'editRow', id: 'nope', points: 5 })).toBe(state);
+    expect(reducer(state, { type: 'editRow', id: 'r1', points: 10 })).toBe(state);
+  });
+});
+
+describe('cleanName', () => {
+  it('never cuts an emoji in half', () => {
+    const name = cleanName('🁣'.repeat(20), 'a');
+    expect(Array.from(name)).toHaveLength(16);
+    expect(name).toBe('🁣'.repeat(16));
   });
 });

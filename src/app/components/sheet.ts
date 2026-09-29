@@ -26,7 +26,8 @@ import { Slashes } from './slashes';
     <dialog
       #dialog
       class="sheet"
-      [attr.aria-labelledby]="labelledBy()"
+      [attr.aria-label]="label()"
+      [attr.aria-labelledby]="label() ? null : labelledBy()"
       [style.--accent]="accent()"
       (click)="backdrop($event)"
       (close)="onClose()"
@@ -43,7 +44,7 @@ import { Slashes } from './slashes';
       inset: auto 0 var(--keyboard-inset) 0;
       width: 100%;
       max-width: var(--column);
-      max-height: calc(90dvh - var(--keyboard-inset));
+      max-height: calc(92dvh - var(--keyboard-inset));
       margin: 0 auto;
       padding: 0;
       border: 0;
@@ -66,6 +67,24 @@ import { Slashes } from './slashes';
 
     .mark {
       color: var(--accent);
+    }
+
+    /* By day the acid yellow vanishes on the pale ground, so the mark turns ink. */
+    @media (prefers-color-scheme: light) {
+      .mark {
+        color: var(--c-text);
+      }
+    }
+
+    @media (max-height: 36em) {
+      .panel {
+        gap: var(--s-md);
+        padding-top: var(--s-lg);
+      }
+
+      .mark {
+        display: none;
+      }
     }
 
     @media (prefers-reduced-motion: no-preference) {
@@ -109,15 +128,13 @@ import { Slashes } from './slashes';
 })
 export class Sheet {
   readonly accent = input('var(--c-text)');
+  /** The sheet's name for screen readers, when no visible heading says it all. */
+  readonly label = input<string | null>(null);
   readonly labelledBy = input<string | null>(null);
   readonly closed = output<void>();
 
   private readonly overlays = inject(Overlays);
   private readonly dialog = viewChild.required<ElementRef<HTMLDialogElement>>('dialog');
-
-  get isOpen(): boolean {
-    return this.dialog().nativeElement.open;
-  }
 
   open(): void {
     const dialog = this.dialog().nativeElement;
@@ -135,12 +152,9 @@ export class Sheet {
     if (event.target === this.dialog().nativeElement) this.close();
   }
 
+  // The browser hands focus back to the button that opened the sheet, which is
+  // where a keyboard or a screen reader expects to continue.
   protected onClose(): void {
-    // The browser hands focus back to the button that opened the sheet. A keyboard
-    // needs that; on a touch screen it only leaves a focus ring behind.
-    if (matchMedia('(pointer: coarse)').matches) {
-      setTimeout(() => (document.activeElement as HTMLElement | null)?.blur?.());
-    }
     this.overlays.closed();
     this.closed.emit();
   }

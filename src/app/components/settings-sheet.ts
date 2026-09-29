@@ -70,7 +70,7 @@ export type SettingsFocus = 'target' | 'quick';
       --caret: var(--c-text);
     }
 
-    .primary {
+    .primary:not(:disabled) {
       --fill: var(--c-text);
       --label: var(--c-ground);
     }

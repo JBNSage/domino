@@ -120,6 +120,15 @@ button {
   outline-offset: 3px;
 }
 
+/* Focus stays put for screen readers; the ring is for the keyboard. Fields keep it. */
+:root[data-input='touch'] :focus-visible:not(input) {
+  outline: none;
+}
+
+main:focus {
+  outline: none;
+}
+
 .sr-only {
   position: absolute;
   width: 1px;
@@ -207,6 +216,10 @@ button {
 }
 
 /* A fill set inline, such as a team colour, must not survive being disabled. */
+.slab:disabled {
+  color: var(--c-muted);
+}
+
 .slab:disabled::before {
   background: var(--c-raised);
   border-color: transparent;
