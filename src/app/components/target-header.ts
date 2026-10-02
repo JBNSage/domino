@@ -171,6 +171,7 @@ import { Slashes } from './slashes';
     }
 
     .tool {
+      position: relative;
       order: 2;
       flex: none;
       display: grid;
@@ -189,6 +190,24 @@ import { Slashes } from './slashes';
 
     .tool:active {
       opacity: var(--pressed);
+    }
+
+    /* The ring leans like everything else, on a layer of its own. */
+    .tool:focus-visible {
+      outline: none;
+    }
+
+    .tool:focus-visible::after {
+      content: '';
+      position: absolute;
+      inset: 0 5px;
+      border: 3px solid var(--focus, var(--c-text));
+      transform: skewX(-12deg);
+    }
+
+    /* After a touch, as everywhere, the ring waits for the keyboard. */
+    :host-context([data-input='touch']) .tool:focus-visible::after {
+      display: none;
     }
 
     @media (hover: hover) {

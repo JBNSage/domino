@@ -16,7 +16,11 @@ import { GameStore } from '../game/game.store';
   template: `
     <!-- Each moment sits in a one-item list keyed by its number, so a new one replays. -->
     @for (start of start(); track start.seq) {
-      <span class="vs" [class.vs--labelled]="start.label !== null">
+      <span
+        class="vs"
+        [class.vs--labelled]="start.label !== null"
+        [class.vs--late]="start.fromHome"
+      >
         <span class="vs__mark lean">{{ copy.moments.vs }}</span>
         @if (start.label; as label) {
           <span class="vs__label lean numerals">{{ label }}</span>
@@ -134,6 +138,12 @@ import { GameStore } from '../game/game.store';
 
       .vs--labelled {
         animation-duration: 1300ms;
+      }
+
+      /* From Inicio it lands once Inicio has folded onto the liveries. */
+      .vs--late {
+        animation-delay: 200ms;
+        animation-fill-mode: backwards;
       }
 
       @keyframes vs {

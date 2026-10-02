@@ -444,7 +444,8 @@ export class TeamLockup {
       played = moment.seq;
       untracked(() => {
         if (moment.kind === 'hand') this.kick(moment.team);
-        else this.faceOff();
+        // From Inicio the liveries are already in place: Inicio folds up onto them.
+        else if (!moment.fromHome) this.faceOff();
       });
     });
   }

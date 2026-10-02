@@ -46,9 +46,17 @@ export const copy = {
     facts: `Meta ${DEFAULT_TARGET} · Puntos rápidos +${DEFAULT_QUICK_VALUE}`,
     custom: 'Personalizar partida',
     customShort: 'Personalizar',
-    customHelp: 'Equipos, jugadores, meta y puntos rápidos',
+    customHelp: 'Equipos, jugadores y reglas',
+    /** What Personalizar starts with, when it is not the quick match. */
+    prepared: (a: string, b: string, target: number) => `Preparada: ${a} vs ${b} · Meta ${target}`,
+    preparedA11y: (a: string, b: string, target: number) =>
+      `Personalizar partida. Preparada: ${a} contra ${b}, meta ${target}`,
+    rematch: 'Revancha',
+    rematchHelp: (a: string, b: string, target: number) => `${a} vs ${b} · Meta ${target}`,
+    rematchA11y: (a: string, b: string, target: number) =>
+      `Revancha: ${a} contra ${b}, meta ${target}, como la última partida`,
     tournament: 'Torneo',
-    tournamentHelp: 'Varios equipos; quien gana sigue jugando',
+    tournamentHelp: 'Varios equipos, por turnos',
     choices: 'Otras formas de jugar',
   },
   setup: {
@@ -146,7 +154,25 @@ export const copy = {
     handEdited: (hand: number, points: number) => `Mano ${hand} corregida a ${points}`,
     quickAdded: (value: number, team: string) => `+${value} a ${team}`,
     roundClosed: 'Partida cerrada',
-    quickMatch: 'Partida rápida empezada',
+    // What a start from Inicio replaced, named so the offer to undo it is understood.
+    before: ({
+      teams,
+      target,
+      quick,
+    }: {
+      teams: [string, string] | null;
+      target: number | null;
+      quick: number | null;
+    }) =>
+      [
+        teams === null ? null : `${teams[0]} vs ${teams[1]}`,
+        target === null ? null : `meta ${target}`,
+        quick === null ? null : `+${quick}`,
+      ]
+        .filter((part) => part !== null)
+        .join(', ') || 'las victorias',
+    quickMatch: (before: string) => `Partida rápida. Antes: ${before}`,
+    rematch: (before: string) => `Revancha. Antes: ${before}`,
     handsCleared: 'Manos borradas',
     allReset: 'Todo reiniciado',
     matchDeleted: 'Partida eliminada',
@@ -189,7 +215,7 @@ export const copy = {
     title: 'Menú',
     home: 'Inicio',
     homeHelp: 'Elige cómo jugar',
-    tournament: 'Torneo nuevo',
+    tournament: 'Torneo',
     table: 'Tabla del torneo',
     history: 'Historial',
     stats: 'Estadísticas',

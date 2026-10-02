@@ -849,11 +849,73 @@ describe('GameStore at Inicio', () => {
 
     store.startQuickMatch();
     expect(store.state()).toEqual(initialState);
-    expect(store.undo()?.message).toBe(copy.undo.quickMatch);
+    // The offer names what the quick match replaced.
+    expect(store.undo()?.message).toBe(
+      copy.undo.quickMatch(
+        copy.undo.before({ teams: ['Los Primos', 'Equipo B'], target: 150, quick: 25 }),
+      ),
+    );
 
     store.restore();
     expect(store.state()).toEqual(before);
     expect(store.atHome()).toBe(true);
+  });
+
+  it('starts from Inicio without the sideways slam, since Inicio folds onto the board', () => {
+    store.startQuickMatch();
+    const moment = store.moment();
+    expect(moment?.kind === 'start' && moment.fromHome).toBe(true);
+  });
+
+  it('offers the last match again, unless it was the quick match', () => {
+    expect(store.rematch()).toBeNull();
+    store.startQuickMatch();
+    store.addPoints('a', 200);
+    store.closeRound();
+    expect(store.rematch()).toBeNull();
+
+    store.setTeam('a', 'Los Primos', ['Ana', 'Luis']);
+    store.saveSettings(150, 30);
+    store.addPoints('b', 150);
+    store.closeRound();
+    expect(store.rematch()).toEqual({
+      teams: {
+        a: { name: 'Los Primos', players: ['Ana', 'Luis'] },
+        b: { name: 'Equipo B', players: null },
+      },
+      target: 150,
+    });
+  });
+
+  it('plays the last match again from Inicio, and can be taken back to it', () => {
+    store.setTeam('a', 'Los Primos', ['Ana', 'Luis']);
+    store.saveSettings(150, 30);
+    store.startMatch();
+    store.addPoints('b', 150);
+    store.closeRound();
+    store.resetAll();
+    expect(store.atHome()).toBe(true);
+    expect(store.state()).toEqual(initialState);
+
+    store.startRematch();
+    expect(store.atHome()).toBe(false);
+    expect(store.state().teams.a.name).toBe('Los Primos');
+    expect(store.state().teams.a.players).toEqual(['Ana', 'Luis']);
+    expect(store.state().target).toBe(150);
+    // From the defaults nothing is lost, so nothing is offered back.
+    expect(store.undo()).toBeNull();
+
+    store.goHome();
+    store.setTeam('b', 'Los Tíos', null);
+    store.startRematch();
+    expect(store.undo()?.message).toBe(
+      copy.undo.rematch(
+        copy.undo.before({ teams: ['Los Primos', 'Los Tíos'], target: 150, quick: null }),
+      ),
+    );
+    store.restore();
+    expect(store.atHome()).toBe(true);
+    expect(store.state().teams.b.name).toBe('Los Tíos');
   });
 
   it('keeps the mesa in use for a quick match', () => {

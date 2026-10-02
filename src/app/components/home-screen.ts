@@ -1,35 +1,50 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  computed,
+  DestroyRef,
   ElementRef,
+  afterNextRender,
+  computed,
   inject,
   output,
+  signal,
   viewChild,
 } from '@angular/core';
 
 import { copy } from '../copy';
 import { FitText } from '../directives/fit-text';
 import { GameStore } from '../game/game.store';
-import { DEFAULT_NAMES, TEAM_IDS } from '../game/state';
+import { DEFAULT_NAMES, TEAM_IDS, isDefault, samePlayers } from '../game/state';
 import { Update } from '../platform/update';
 import { InstallHint } from './install-hint';
 import { TargetHeader } from './target-header';
 import { UndoSnackbar } from './undo-snackbar';
 
-/** Opening the app shows Inicio as it is; coming back to it later, the two sides slam in. */
+/** Opening the app shows Inicio as it is; coming back to it later, it unfolds from the board. */
 let shown = false;
+
+/** The board's livery seam: a fixed lean across the lockup's height. */
+const SEAM_LEAN = 36;
 
 /**
  * Inicio, the starting grid: shown over the board while nothing is being
- * played. The two liveries are the quick match; under them, the ways to set
- * up a match or a tournament first.
+ * played. The two liveries are the quick match; under them, the ways to play
+ * the last match again, set up a match or start a tournament.
+ *
+ * The grid's seam keeps the board's angle and starts where the board's does,
+ * so the top of the grid is the board's lockup: leaving, Inicio folds up onto
+ * it and the board is already there.
  */
 @Component({
   selector: 'app-home-screen',
   imports: [TargetHeader, UndoSnackbar, InstallHint, FitText],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { '[class.arrive]': 'arrive' },
+  host: {
+    '[class.arrive]': 'arrive',
+    '[class.three]': 'rematch() !== null',
+    '[style.--grid-seam.px]': 'seam()',
+    '[style.--lockup-h.px]': 'lockupHeight()',
+  },
   template: `
     <div class="column">
       <app-target-header
@@ -48,7 +63,7 @@ let shown = false;
       >
         @for (side of sides; track side.id) {
           <span class="panel livery" [class]="'panel--' + side.id + ' livery--' + side.id">
-            <!-- "Equipo" over its letter, set as large as a total on the board. -->
+            <!-- "Equipo" over its letter, the letter at poster scale. -->
             <span class="who">
               <span class="name">{{ side.word }}</span>
               <span class="letter">{{ side.letter }}</span>
@@ -69,27 +84,47 @@ let shown = false;
 
       <app-install-hint class="install" />
 
-      <nav class="choices" [attr.aria-label]="copy.home.choices">
-        <button type="button" class="slab lean entry" (click)="custom.emit()">
+      <div class="choices" role="group" [attr.aria-label]="copy.home.choices">
+        @if (rematch(); as rematch) {
+          <button
+            type="button"
+            class="slab lean entry"
+            [attr.aria-label]="rematch.a11y"
+            (click)="store.startRematch()"
+          >
+            <span class="entry-text">
+              <span class="slab__label">{{ copy.home.rematch }}</span>
+              <span class="entry-meta">{{ rematch.help }}</span>
+            </span>
+            <!-- Plays at once, like the grid: an arrow, not a chevron. -->
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+          </button>
+        }
+        <button
+          type="button"
+          class="slab lean entry"
+          [attr.aria-label]="prepared()?.a11y ?? null"
+          (click)="custom.emit()"
+        >
           <span class="entry-text">
             <span class="slab__label long" [appFitText]="copy.home.custom">{{
               copy.home.custom
             }}</span>
             <span class="slab__label short">{{ copy.home.customShort }}</span>
-            <span class="entry-meta">{{ copy.home.customHelp }}</span>
+            <span class="entry-meta" [class.entry-meta--set]="prepared() !== null">{{
+              prepared()?.help ?? copy.home.customHelp
+            }}</span>
           </span>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 5l6 7-6 7" /></svg>
         </button>
         <button type="button" class="slab lean entry" (click)="tournament.emit()">
           <span class="entry-text">
-            <span class="slab__label" [appFitText]="copy.home.tournament">{{
-              copy.home.tournament
-            }}</span>
+            <span class="slab__label">{{ copy.home.tournament }}</span>
             <span class="entry-meta">{{ copy.home.tournamentHelp }}</span>
           </span>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 5l6 7-6 7" /></svg>
         </button>
-      </nav>
+      </div>
     </div>
   `,
   styles: `
@@ -115,7 +150,7 @@ let shown = false;
 
       position: relative;
       flex: 1 1 auto;
-      min-height: 172px;
+      min-height: 112px;
       container-type: size;
       display: flex;
       padding: 0;
@@ -131,6 +166,9 @@ let shown = false;
     }
 
     .panel {
+      /* The board's angle over this height, measured from the board itself. */
+      --seam-lean: var(--grid-seam, 36px);
+
       flex: 1;
       min-width: 0;
       display: flex;
@@ -146,6 +184,21 @@ let shown = false;
       padding-left: calc(var(--s-xl) + var(--s-sm));
     }
 
+    /*
+     * A steeper seam reaches further back, so the gap between the two stays the
+     * board's, and each outer edge bleeds further out, so it never shows its lean.
+     */
+    .panel--a::before,
+    .panel--a::after {
+      left: calc(-12px - var(--seam-lean));
+    }
+
+    .panel--b::before,
+    .panel--b::after {
+      left: calc(21px - var(--seam-lean));
+      right: calc(-12px - var(--seam-lean));
+    }
+
     .who {
       display: flex;
       flex-direction: column;
@@ -156,12 +209,13 @@ let shown = false;
       text-transform: uppercase;
     }
 
+    /* As large as the panel allows while staying clear of the VS. */
     .letter {
-      font: italic 800 var(--t-hull) / 1 var(--font);
+      font: italic 800 min(40cqw, 50cqh - 96px) / 0.95 var(--font);
       text-transform: uppercase;
     }
 
-    /* Too short for the large letter to stay clear of the VS: it joins "Equipo" on one line. */
+    /* Too short for a large letter: it joins "Equipo" on one line. */
     @container (max-height: 320px) {
       .who {
         flex-direction: row;
@@ -172,6 +226,29 @@ let shown = false;
       .letter {
         font-size: var(--t-title);
         line-height: 1.15;
+      }
+    }
+
+    /* A strip: everything tighter, the VS above the band. */
+    @container (max-height: 240px) {
+      .panel {
+        padding-block: var(--s-sm);
+      }
+
+      .name,
+      .letter {
+        font-size: var(--t-button);
+      }
+
+      .vs {
+        top: 40%;
+        padding: 2px var(--s-lg);
+        font-size: var(--t-title);
+      }
+
+      .go {
+        bottom: var(--s-sm);
+        min-height: var(--min-target);
       }
     }
 
@@ -246,22 +323,20 @@ let shown = false;
       text-transform: uppercase;
     }
 
-    .choices {
-      display: flex;
-      flex-direction: column;
-      gap: var(--s-md);
-      padding: var(--s-md) var(--s-xl)
-        calc(max(env(safe-area-inset-bottom), var(--s-md)) + var(--s-xs));
-      border-top: 1px solid var(--c-line);
-    }
-
     .slot {
       position: relative;
     }
 
+    /* While the undo bar shows, it takes the facts line's place at its own height. */
     .slot app-undo-snackbar {
-      left: var(--s-xl);
-      right: var(--s-xl);
+      position: static;
+      display: block;
+      margin: var(--s-sm) var(--s-xl);
+    }
+
+    .slot:not(.covered) app-undo-snackbar,
+    .covered .facts {
+      display: none;
     }
 
     /* Below the facts line, over the choices, while the app is not installed. */
@@ -270,13 +345,14 @@ let shown = false;
       border-top: 1px solid var(--c-line);
     }
 
-    /* While the undo bar shows, it takes the facts line's place, opened to its height. */
-    .covered {
-      min-height: calc(var(--min-target) + 4px + var(--s-sm) * 2);
-    }
-
-    .covered .facts {
-      visibility: hidden;
+    .choices {
+      container-type: inline-size;
+      display: flex;
+      flex-direction: column;
+      gap: var(--s-md);
+      padding: var(--s-md) var(--s-xl)
+        calc(max(env(safe-area-inset-bottom), var(--s-md)) + var(--s-xs));
+      border-top: 1px solid var(--c-line);
     }
 
     .short {
@@ -312,6 +388,11 @@ let shown = false;
       overflow-wrap: break-word;
     }
 
+    /* What Personalizar will start with: stated, so the quick match never takes it unseen. */
+    .entry-meta--set {
+      color: var(--c-text);
+    }
+
     .entry svg {
       flex: none;
       width: 20px;
@@ -324,25 +405,6 @@ let shown = false;
     }
 
     @media (max-height: 36em) {
-      .grid {
-        min-height: 112px;
-      }
-
-      .panel {
-        padding-block: var(--s-sm);
-      }
-
-      .vs {
-        top: 40%;
-        padding: 2px var(--s-lg);
-        font-size: var(--t-title);
-      }
-
-      .go {
-        bottom: var(--s-sm);
-        min-height: var(--min-target);
-      }
-
       .facts {
         padding-block: var(--s-sm);
       }
@@ -366,12 +428,19 @@ let shown = false;
       }
     }
 
+    /* Three choices on a small phone leave no room for it; the board's empty list still offers it. */
+    @media (max-height: 48em) {
+      :host(.three) .install {
+        display: none !important;
+      }
+    }
+
     @media (max-height: 36em) and (min-width: 30em) {
       .choices {
         flex-direction: row;
       }
 
-      /* Side by side, both labels keep one size: the short one stands in. */
+      /* Side by side, the labels share one size: short words, sized to the row. */
       /* The fit directive sets its own display, so this has to outrank it. */
       .long {
         display: none !important;
@@ -381,10 +450,18 @@ let shown = false;
         display: block;
       }
 
+      .slab__label {
+        font-size: min(var(--t-compact), 3.4cqw);
+      }
+
       .entry {
         flex: 1 1 0;
         min-width: 0;
-        padding: 0 var(--s-md);
+        padding: 0 var(--s-sm);
+      }
+
+      .entry svg {
+        display: none;
       }
     }
 
@@ -414,25 +491,89 @@ let shown = false;
         }
       }
 
-      /* Coming back mid-session: the two sides slam in and meet at the VS. */
+      /* Coming back mid-session: the board's liveries unfold into the grid. */
       :host(.arrive) {
-        animation: fade-in 220ms var(--ease-out);
+        animation: ground-in 220ms var(--ease-out) backwards;
       }
 
-      :host(.arrive) .panel--a {
-        animation: slam-a 480ms var(--ease-out) backwards;
+      :host(.arrive) .grid {
+        animation: unfold 280ms var(--ease-out) backwards;
       }
 
-      :host(.arrive) .panel--b {
-        animation: slam-b 480ms var(--ease-out) backwards;
+      :host(.arrive) .who,
+      :host(.arrive) .slot,
+      :host(.arrive) .install,
+      :host(.arrive) .choices {
+        animation: fade-in 200ms 120ms var(--ease-out) backwards;
       }
 
       :host(.arrive) .vs {
-        animation: land 240ms 260ms var(--ease-out) backwards;
+        animation: land 240ms 200ms var(--ease-out) backwards;
       }
 
       :host(.arrive) .go {
-        animation: rise 240ms 200ms var(--ease-out) backwards;
+        animation: rise 240ms 160ms var(--ease-out) backwards;
+      }
+
+      /* Leaving: the grid folds up onto the board's liveries, which are already live. */
+      :host(.leaving) {
+        animation: ground-out 220ms var(--ease-out) forwards;
+      }
+
+      :host(.leaving) .grid {
+        animation: fold 220ms var(--ease-out) forwards;
+      }
+
+      :host(.leaving) .who,
+      :host(.leaving) .vs,
+      :host(.leaving) .go {
+        animation: fade-out 100ms ease-out forwards;
+      }
+
+      :host(.leaving) app-target-header,
+      :host(.leaving) .slot,
+      :host(.leaving) .install,
+      :host(.leaving) .choices {
+        animation: fade-out 160ms ease-out forwards;
+      }
+
+      @keyframes ground-in {
+        from {
+          background-color: transparent;
+        }
+      }
+
+      @keyframes ground-out {
+        to {
+          background-color: transparent;
+        }
+      }
+
+      @keyframes unfold {
+        from {
+          clip-path: inset(0 0 calc(100% - var(--lockup-h, 190px)) 0);
+        }
+
+        to {
+          clip-path: inset(0);
+        }
+      }
+
+      /* Folded onto the board's liveries, it gives way to them: the floods match, the words appear. */
+      @keyframes fold {
+        from {
+          clip-path: inset(0);
+        }
+
+        70% {
+          clip-path: inset(0 0 calc(100% - var(--lockup-h, 190px)) 0);
+          opacity: 1;
+        }
+
+        to {
+          clip-path: inset(0 0 calc(100% - var(--lockup-h, 190px)) 0);
+          opacity: 0;
+        }
       }
 
       @keyframes fade-in {
@@ -441,23 +582,9 @@ let shown = false;
         }
       }
 
-      @keyframes slam-a {
-        from {
-          transform: translateX(-60%);
-        }
-
-        60% {
-          transform: translateX(6px);
-        }
-      }
-
-      @keyframes slam-b {
-        from {
-          transform: translateX(60%);
-        }
-
-        60% {
-          transform: translateX(-6px);
+      @keyframes fade-out {
+        to {
+          opacity: 0;
         }
       }
 
@@ -472,38 +599,6 @@ let shown = false;
         from {
           opacity: 0;
           transform: translateY(12px);
-        }
-      }
-
-      /* Leaving: the two sides part and the board, already live, shows through. */
-      :host(.leaving) {
-        pointer-events: none;
-        animation: fade-out 220ms var(--ease-out) forwards;
-      }
-
-      :host(.leaving) .panel--a {
-        animation: part-a 220ms var(--ease-out) forwards;
-      }
-
-      :host(.leaving) .panel--b {
-        animation: part-b 220ms var(--ease-out) forwards;
-      }
-
-      @keyframes fade-out {
-        to {
-          opacity: 0;
-        }
-      }
-
-      @keyframes part-a {
-        to {
-          transform: translateX(-40%);
-        }
-      }
-
-      @keyframes part-b {
-        to {
-          transform: translateX(40%);
         }
       }
     }
@@ -533,14 +628,70 @@ export class HomeScreen {
   private readonly update = inject(Update);
   /** The undo bar or the update notice takes the facts line's place. */
   protected readonly covered = computed(() => this.store.undo() !== null || this.update.ready());
+
+  /** What Personalizar starts with, said whenever it is not the quick match. */
+  protected readonly prepared = computed(() => {
+    const state = this.store.state();
+    if (isDefault(state)) return null;
+    const { a, b } = state.teams;
+    return {
+      help: copy.home.prepared(a.name, b.name, state.target),
+      a11y: copy.home.preparedA11y(a.name, b.name, state.target),
+    };
+  });
+
+  /** The last match again, unless it is what Personalizar already holds. */
+  protected readonly rematch = computed(() => {
+    const rematch = this.store.rematch();
+    if (rematch === null) return null;
+    const state = this.store.state();
+    const same =
+      state.target === rematch.target &&
+      TEAM_IDS.every(
+        (id) =>
+          state.teams[id].name === rematch.teams[id].name &&
+          samePlayers(state.teams[id].players, rematch.teams[id].players),
+      );
+    if (same) return null;
+    const { a, b } = rematch.teams;
+    return {
+      help: copy.home.rematchHelp(a.name, b.name, rematch.target),
+      a11y: copy.home.rematchA11y(a.name, b.name, rematch.target),
+    };
+  });
+
+  protected readonly seam = signal(SEAM_LEAN);
+  protected readonly lockupHeight = signal(190);
   private readonly grid = viewChild.required<ElementRef<HTMLButtonElement>>('grid');
 
   constructor() {
     shown = true;
+    const destroyRef = inject(DestroyRef);
+    afterNextRender(() => this.followLockup(destroyRef));
   }
 
   /** Reading starts at the quick match, the one-tap way in. */
   focus(): void {
     this.grid().nativeElement.focus();
+  }
+
+  /**
+   * Keeps the grid's seam on the board's: the same lean per pixel of height,
+   * starting from the same point, so the grid's top is the board's lockup.
+   */
+  private followLockup(destroyRef: DestroyRef): void {
+    const lockup = document.querySelector<HTMLElement>('app-team-lockup');
+    if (lockup === null || typeof ResizeObserver === 'undefined') return;
+    const grid = this.grid().nativeElement;
+    const measure = () => {
+      const height = lockup.offsetHeight;
+      if (height === 0) return;
+      this.lockupHeight.set(height);
+      this.seam.set((SEAM_LEAN * grid.offsetHeight) / height);
+    };
+    const observer = new ResizeObserver(measure);
+    observer.observe(lockup);
+    observer.observe(grid);
+    destroyRef.onDestroy(() => observer.disconnect());
   }
 }

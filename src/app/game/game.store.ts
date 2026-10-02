@@ -29,6 +29,9 @@ import {
   samePlayers,
   Team,
   TeamId,
+  DEFAULT_NAMES,
+  DEFAULT_QUICK_VALUE,
+  DEFAULT_TARGET,
   initialState,
   isClean,
   isDefault,
@@ -116,7 +119,7 @@ type LastChange = { kind: 'hand' } | { kind: 'target' | 'edit'; snapshot: State 
  */
 type Happening =
   | { kind: 'hand'; team: TeamId; points: number; lead: boolean }
-  | { kind: 'start'; label: string | null };
+  | { kind: 'start'; label: string | null; fromHome?: boolean };
 
 export type Moment = Happening & { seq: number };
 
@@ -185,6 +188,21 @@ export class GameStore {
 
   /** Inicio, where a match or a tournament is chosen, shows over the board. */
   readonly atHome = computed(() => this.home() && this.idle());
+
+  /**
+   * The last match played, to play again from Inicio: its teams and meta. Left
+   * out when it was Equipo A against Equipo B at the usual meta, which is the quick match.
+   */
+  readonly rematch = computed(() => {
+    const last = this.history.history().matches[0];
+    if (last === undefined) return null;
+    const plain =
+      last.target === DEFAULT_TARGET &&
+      TEAM_IDS.every(
+        (id) => last.teams[id].name === DEFAULT_NAMES[id] && last.teams[id].players === null,
+      );
+    return plain ? null : { teams: last.teams, target: last.target };
+  });
 
   /** Whether the way back on offer undoes a whole step, such as closing a match. */
   readonly canGoBack = computed(() => this.undo()?.reversal.kind === 'snapshot');
@@ -319,25 +337,52 @@ export class GameStore {
 
   /** Starts the match once the two teams are chosen, at a mesa or from Inicio. */
   startMatch(): void {
-    if (this.state().between === null && !this.atHome()) return;
+    const fromHome = this.atHome();
+    if (this.state().between === null && !fromHome) return;
     this.home.set(false);
     this.dispatch({ type: 'resume' });
-    this.play({ kind: 'start', label: null });
+    this.play({ kind: 'start', label: null, fromHome });
   }
 
   /** From Inicio: Equipo A against Equipo B, with the usual meta and quick points. */
   startQuickMatch(): void {
     if (!this.atHome()) return;
-    if (isDefault(this.state())) {
+    const before = this.state();
+    if (isDefault(before)) {
       this.home.set(false);
+      // Going back to an older board would now erase this match.
+      this.boardChanged();
     } else {
-      // The teams and settings it replaces can be had back.
-      this.change(copy.undo.quickMatch, () => {
+      // What it replaces can be had back, and the offer says what that is.
+      this.change(copy.undo.quickMatch(this.described(before)), () => {
         this.home.set(false);
         this.dispatch({ type: 'resetAll' });
       });
     }
-    this.play({ kind: 'start', label: null });
+    this.play({ kind: 'start', label: null, fromHome: true });
+  }
+
+  /** From Inicio: the last match's teams and meta again, with the wins they have here. */
+  startRematch(): void {
+    const rematch = this.rematch();
+    if (!this.atHome() || rematch === null) return;
+    const before = this.state();
+    const at = (side: TeamId): Team => {
+      const { name, players } = rematch.teams[side];
+      return { name, players, roundsWon: this.winsHere(name, players) ?? 0, saved: null };
+    };
+    const apply = () => {
+      this.home.set(false);
+      this.dispatch({ type: 'seat', teams: { a: at('a'), b: at('b') } });
+      this.dispatch({ type: 'setTarget', target: rematch.target });
+    };
+    if (isDefault(before)) {
+      apply();
+      this.boardChanged();
+    } else {
+      this.change(copy.undo.rematch(this.described(before)), apply);
+    }
+    this.play({ kind: 'start', label: null, fromHome: true });
   }
 
   /** Back to Inicio, while nothing is being played. */
@@ -699,6 +744,19 @@ export class GameStore {
   announce(message: string): void {
     // A live region only speaks when its text changes, so a repeat gets a trailing space.
     this.announcement.update((current) => (current === message ? message + REPEAT_MARK : message));
+  }
+
+  /** What a board set up away from the defaults holds, for the offer that brings it back. */
+  private described(state: State): string {
+    const { a, b } = state.teams;
+    const named = TEAM_IDS.some(
+      (id) => state.teams[id].name !== DEFAULT_NAMES[id] || state.teams[id].players !== null,
+    );
+    return copy.undo.before({
+      teams: named ? [a.name, b.name] : null,
+      target: state.target === DEFAULT_TARGET ? null : state.target,
+      quick: state.quickValue === DEFAULT_QUICK_VALUE ? null : state.quickValue,
+    });
   }
 
   private play(happening: Happening): void {

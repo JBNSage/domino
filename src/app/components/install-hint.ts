@@ -49,8 +49,10 @@ import { Install } from '../platform/install';
       gap: var(--s-sm) var(--s-lg);
     }
 
+    /* Its words line up with the sentence above; the target keeps its padding. */
     .later {
       min-height: var(--min-target);
+      margin-inline-start: calc(var(--s-sm) * -1);
       padding: 0 var(--s-sm);
       border: 0;
       background: none;

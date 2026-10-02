@@ -25,7 +25,7 @@ A match under way opens on its live scoreboard. With nothing being played the ap
 ## Operating Context
 
 - Inicio shows while nothing is being played: no hands, no step owed and no tournament. It is where the app opens then, where "Inicio" in the menu leads, and where the app returns by itself after "Borrar → Todo" and after a tournament is closed. A match that is under way, or one closed on the board, stays on the board.
-- "Partida rápida" always starts from the defaults: Equipo A and Equipo B without players, meta 200, +30. What it replaces can be undone, which returns to Inicio. "Personalizar partida" opens a screen with the two teams, the meta and the quick points, starting from what was used last; "Empezar partida" plays them. The mesa in use stays in use either way.
+- "Partida rápida" always starts from the defaults: Equipo A and Equipo B without players, meta 200, +30. What it replaces can be undone, which returns to Inicio. "Personalizar partida" opens a screen with the two teams, the meta and the quick points, starting from what was used last; "Empezar partida" plays them. The mesa in use stays in use either way. Inicio says what Personalizar holds when it is not the defaults, and an undo after a quick match names what it replaced. "Revancha" plays the last match's teams and meta again in one tap, when that match was not the quick match.
 - A match is played to a target score (default 200, user-editable).
 - Points are entered per hand for one team; the other team scores 0 on that row.
 - Quick points add a fixed bonus (default 30, user-editable) to one team in a single tap.
