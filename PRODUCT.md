@@ -8,7 +8,7 @@ web
 
 ## Stack
 
-Angular + TypeScript, shipped as an installable progressive web app (PWA) on GitHub Pages, so it needs no app store. It began as an Expo app; the user asked for the move. No router: the scoreboard is the page, and every other surface is a sheet or a full screen above it. Signals for state and localStorage persistence were chosen for the smallest app that meets the brief.
+Angular + TypeScript, shipped as an installable progressive web app (PWA) on GitHub Pages, so it needs no app store. It began as an Expo app; the user asked for the move. No router: the scoreboard is the page, Inicio is a layer over it while nothing is being played, and every other surface is a sheet or a full screen above them. Signals for state and localStorage persistence were chosen for the smallest app that meets the brief.
 
 ## Users
 
@@ -16,14 +16,16 @@ People playing dominoes in two teams who need one person at the table to keep sc
 
 ## Product Purpose
 
-A domino score keeper that is ready the instant it opens: no setup, no menu, no account. Success is that a hand's points are recorded in a couple of taps and nobody at the table argues about the total.
+A domino score keeper that is ready the instant it opens: a match is one tap away, with no account and nothing to configure first. Success is that a hand's points are recorded in a couple of taps and nobody at the table argues about the total.
 
 ## Positioning
 
-Opens directly on the live scoreboard. Two teams, one running list, one target; nothing to configure before the first point. Players, the history and tournaments are there for those who want them, behind one menu button.
+A match under way opens on its live scoreboard. With nothing being played the app opens on Inicio: the two default teams lined up, which are the quick match in one tap, and below them a personalised match (teams, players, meta and quick points) or a tournament. Two teams, one running list, one target. The history, statistics and mesas are behind one menu button.
 
 ## Operating Context
 
+- Inicio shows while nothing is being played: no hands, no step owed and no tournament. It is where the app opens then, where "Inicio" in the menu leads, and where the app returns by itself after "Borrar → Todo" and after a tournament is closed. A match that is under way, or one closed on the board, stays on the board.
+- "Partida rápida" always starts from the defaults: Equipo A and Equipo B without players, meta 200, +30. What it replaces can be undone, which returns to Inicio. "Personalizar partida" opens a screen with the two teams, the meta and the quick points, starting from what was used last; "Empezar partida" plays them. The mesa in use stays in use either way.
 - A match is played to a target score (default 200, user-editable).
 - Points are entered per hand for one team; the other team scores 0 on that row.
 - Quick points add a fixed bonus (default 30, user-editable) to one team in a single tap.
@@ -64,7 +66,7 @@ None. No logo, illustrations, or photography exist; future work must not fabrica
 
 ## Product Principles
 
-1. The scoreboard is the home screen; every other surface is a short detour from it.
+1. A match under way is the home screen, and every other surface is a short detour from it. With none, Inicio puts the next one a tap away.
 2. Entering points takes fewer taps than saying them out loud.
 3. Mistakes are cheap: anything entered can be removed, and removal can be undone.
 4. The totals are always legible from across the table.

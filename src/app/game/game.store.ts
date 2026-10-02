@@ -30,6 +30,8 @@ import {
   Team,
   TeamId,
   initialState,
+  isClean,
+  isDefault,
   leadTaken,
   reducer,
   selectTotals,
@@ -74,8 +76,8 @@ type Recorded = { matches: string[]; tournaments: string[] };
 
 const nothingRecorded: Recorded = { matches: [], tournaments: [] };
 
-/** The board and the tournament as they were, and what was written since. */
-type Snapshot = { state: State; tournament: Tournament | null; recorded: Recorded };
+/** The board and the tournament as they were, what was written since, and whether Inicio showed. */
+type Snapshot = { state: State; tournament: Tournament | null; recorded: Recorded; home: boolean };
 
 /**
  * How an action is taken back. Changes to one hand are reversed on their own,
@@ -178,6 +180,12 @@ export class GameStore {
   /** At a mesa, the next match can be played by other teams or players. */
   readonly canRotate = computed(() => this.tournament() === null && this.tables.active() !== null);
 
+  /** Nothing is being played: no hands, no step owed and no tournament. */
+  readonly idle = computed(() => this.tournament() === null && isClean(this.state()));
+
+  /** Inicio, where a match or a tournament is chosen, shows over the board. */
+  readonly atHome = computed(() => this.home() && this.idle());
+
   /** Whether the way back on offer undoes a whole step, such as closing a match. */
   readonly canGoBack = computed(() => this.undo()?.reversal.kind === 'snapshot');
 
@@ -191,6 +199,8 @@ export class GameStore {
   private readonly draft = inject(TournamentDraft);
   private readonly tables = inject(TablesStore);
   private readonly lastChange = signal<LastChange>({ kind: 'hand' });
+  // Opening the app with nothing in play starts at Inicio; a match under way stays on the board.
+  private readonly home = signal(this.tournament() === null && isClean(this.state()));
   private undoTimer: ReturnType<typeof setTimeout> | null = null;
   private nextId = 0;
 
@@ -233,6 +243,7 @@ export class GameStore {
     this.dispatch({ type: 'addPoints', team, points, id });
     const state = this.state();
     if (state === before) return null;
+    this.home.set(false);
 
     this.lastChange.set({ kind: 'hand' });
     this.boardChanged();
@@ -306,11 +317,32 @@ export class GameStore {
     this.announce(copy.seat.announce(this.state().teams[team].name));
   }
 
-  /** Starts the match once the two teams are chosen. */
+  /** Starts the match once the two teams are chosen, at a mesa or from Inicio. */
   startMatch(): void {
-    if (this.state().between === null) return;
+    if (this.state().between === null && !this.atHome()) return;
+    this.home.set(false);
     this.dispatch({ type: 'resume' });
     this.play({ kind: 'start', label: null });
+  }
+
+  /** From Inicio: Equipo A against Equipo B, with the usual meta and quick points. */
+  startQuickMatch(): void {
+    if (!this.atHome()) return;
+    if (isDefault(this.state())) {
+      this.home.set(false);
+    } else {
+      // The teams and settings it replaces can be had back.
+      this.change(copy.undo.quickMatch, () => {
+        this.home.set(false);
+        this.dispatch({ type: 'resetAll' });
+      });
+    }
+    this.play({ kind: 'start', label: null });
+  }
+
+  /** Back to Inicio, while nothing is being played. */
+  goHome(): void {
+    if (this.idle()) this.home.set(true);
   }
 
   /**
@@ -482,12 +514,17 @@ export class GameStore {
   resetAll(): void {
     // A tournament is ended from its table, not swept away with the board.
     if (this.tournament() !== null) return;
-    this.change(copy.undo.allReset, () => this.dispatch({ type: 'resetAll' }));
+    this.change(copy.undo.allReset, () => {
+      this.dispatch({ type: 'resetAll' });
+      // Nothing is left decided, so the next match is chosen again.
+      this.home.set(true);
+    });
   }
 
   startTournament(teams: TournamentTeam[], rule: Rule): void {
     this.change(copy.undo.tournamentStarted, () => {
       const tournament = create(this.newId(), Date.now(), teams, rule);
+      this.home.set(false);
       this.tournament.set(tournament);
       this.seat(tournament);
     });
@@ -621,6 +658,7 @@ export class GameStore {
       case 'snapshot':
         this.dispatch({ type: 'hydrate', state: reversal.snapshot.state });
         this.tournament.set(reversal.snapshot.tournament);
+        this.home.set(reversal.snapshot.home);
         this.history.remove({
           matches: reversal.snapshot.recorded.matches,
           records: reversal.snapshot.recorded.tournaments,
@@ -712,10 +750,11 @@ export class GameStore {
   private change(message: string, apply: () => Recorded | void): void {
     const state = this.state();
     const tournament = this.tournament();
+    const home = this.home();
     const recorded = apply() ?? nothingRecorded;
     if (this.state() === state && this.tournament() === tournament) return;
     this.lastChange.set({ kind: 'hand' });
-    this.offer(message, { kind: 'snapshot', snapshot: { state, tournament, recorded } });
+    this.offer(message, { kind: 'snapshot', snapshot: { state, tournament, recorded, home } });
   }
 
   /** Sits the tournament's two teams at the board, with the wins they bring. */
@@ -738,6 +777,8 @@ export class GameStore {
       type: 'seat',
       teams: { a: { ...a, roundsWon: 0 }, b: { ...b, roundsWon: 0 } },
     });
+    // With the tournament over, what to play next is chosen at Inicio.
+    this.home.set(true);
   }
 
   private tournamentWinner(): string | null {
@@ -766,6 +807,7 @@ export class GameStore {
         const state = readState(event.newValue) ?? initialState;
         if (JSON.stringify(state) === JSON.stringify(this.state())) return;
         this.state.set(state);
+        if (!isClean(state)) this.home.set(false);
         this.lastChange.set({ kind: 'hand' });
         // Whatever this tab was offering belongs to a board that is gone.
         this.clearUndo();
@@ -773,6 +815,7 @@ export class GameStore {
       if (event.key === TOURNAMENT_KEY || event.key === null) {
         const tournament = readTournament(event.newValue);
         if (JSON.stringify(tournament) !== JSON.stringify(this.tournament())) {
+          if (tournament !== null) this.home.set(false);
           this.tournament.set(tournament);
         }
       }

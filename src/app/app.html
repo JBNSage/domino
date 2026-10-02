@@ -1,5 +1,6 @@
-<main #board class="board" tabindex="-1">
-  <h1 class="sr-only">Dominó</h1>
+<h1 class="sr-only">Dominó</h1>
+<!-- Under Inicio the board stays mounted, so the start of a match plays on it, but out of reach. -->
+<main #board class="board" tabindex="-1" [attr.inert]="store.atHome() ? '' : null">
   <app-target-header
     [target]="store.state().target"
     (editTarget)="settings.open('target')"
@@ -15,6 +16,16 @@
   <app-quick-add-bar (enter)="points.open($event)" (editQuick)="settings.open('quick')" />
 </main>
 
+@if (store.atHome()) {
+  <app-home-screen
+    animate.leave="leaving"
+    (menu)="menu.open()"
+    (tables)="tables.open()"
+    (custom)="matchSetup.open()"
+    (tournament)="setup.open()"
+  />
+}
+
 <app-menu-sheet
   #menu
   (tournament)="store.tournament() === null ? setup.open() : standings.open()"
@@ -23,6 +34,7 @@
   (tables)="tables.open()"
   (editTeam)="editSide($event)"
   (reset)="reset.open()"
+  (home)="store.goHome()"
 />
 <app-points-sheet #points />
 <app-settings-sheet #settings />
@@ -42,6 +54,11 @@
 <app-tables-screen #tables (edit)="mesa.open($event)" />
 <app-table-screen #mesa (editTeam)="team.open($event)" (played)="tables.close()" />
 
+<app-match-setup-screen
+  #matchSetup
+  (editSide)="editSide($event)"
+  (editValue)="settings.open($event)"
+/>
 <app-tournament-setup-screen #setup (editTeam)="team.open($event)" />
 <app-next-match-screen
   (table)="standings.open()"

@@ -273,6 +273,30 @@ export function reducer(state: State, action: Action): State {
   }
 }
 
+/** Nothing on the board and no step owed: a match can start from here. */
+export function isClean(state: State): boolean {
+  return state.rows.length === 0 && state.between === null;
+}
+
+/** The board as a quick match starts it, whether or not it is the same object. */
+export function isDefault(state: State): boolean {
+  return (
+    isClean(state) &&
+    state.target === initialState.target &&
+    state.quickValue === initialState.quickValue &&
+    TEAM_IDS.every((id) => {
+      const team = state.teams[id];
+      const fresh = initialState.teams[id];
+      return (
+        team.name === fresh.name &&
+        team.players === null &&
+        team.roundsWon === 0 &&
+        team.saved === null
+      );
+    })
+  );
+}
+
 export function totalsOf(rows: Row[]): Record<TeamId, number> {
   const totals: Record<TeamId, number> = { a: 0, b: 0 };
   for (const row of rows) totals[row.team] += row.points;

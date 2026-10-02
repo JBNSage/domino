@@ -1,7 +1,6 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  ElementRef,
   computed,
   effect,
   inject,
@@ -14,10 +13,9 @@ import { FitText } from '../directives/fit-text';
 import { GameStore } from '../game/game.store';
 import { TEAM_IDS, TeamId, sharedPlayer } from '../game/state';
 import { available, standings, teamOf } from '../game/tournament';
-import { play } from '../platform/motion';
-import { PlayerPair } from './player-pair';
 import { Screen } from './screen';
 import { SeatSheet } from './seat-sheet';
+import { Seat, Seats } from './seats';
 import { TeamEdit } from './team-sheet';
 
 /**
@@ -27,51 +25,18 @@ import { TeamEdit } from './team-sheet';
  */
 @Component({
   selector: 'app-next-match-screen',
-  imports: [Screen, SeatSheet, FitText, PlayerPair],
+  imports: [Screen, SeatSheet, Seats, FitText],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <app-screen [heading]="heading()" [locked]="true" (closed)="reopen()">
       <p class="lead" id="next-match-lead">{{ lead() }}</p>
 
-      <div class="seats">
-        @for (seat of seats(); track seat.side) {
-          <button
-            type="button"
-            class="seat lean"
-            [class]="'seat--' + seat.side"
-            [disabled]="fixed()"
-            aria-describedby="next-match-lead"
-            [attr.aria-label]="
-              fixed()
-                ? copy.tournament.seatFixedA11y(seat.name, seat.players, seat.won)
-                : copy.tournament.seatA11y(seat.name, seat.players, seat.won)
-            "
-            (click)="pick(seat.side)"
-          >
-            @if (seat.enters) {
-              <span class="enters lean">{{ copy.moments.enters }}</span>
-            }
-            <span class="who">
-              <span class="name">{{ seat.name }}</span>
-              @if (seat.players; as players) {
-                <app-player-pair class="players" [players]="players" />
-              }
-              <span class="wins lean numerals">
-                <span [appFitText]="copy.tournament.wins(seat.won)">{{
-                  copy.tournament.wins(seat.won)
-                }}</span>
-              </span>
-            </span>
-            @if (!fixed()) {
-              <!-- Two arrows passing each other: this team can be swapped. -->
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M4 8h14l-3.5-3.5M20 16H6l3.5 3.5" />
-              </svg>
-            }
-          </button>
-        }
-        <span class="vs lean" aria-hidden="true">{{ copy.moments.vs }}</span>
-      </div>
+      <app-seats
+        [seats]="seats()"
+        [fixed]="fixed()"
+        describedBy="next-match-lead"
+        (pick)="pick($event)"
+      />
 
       @if (shared(); as player) {
         <p class="shared" role="status">{{ copy.tournament.shared(player) }}</p>
@@ -142,142 +107,6 @@ import { TeamEdit } from './team-sheet';
       color: var(--c-muted);
     }
 
-    .seats {
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      gap: var(--s-md);
-    }
-
-    /* The two sides face each other across the gap. */
-    .vs {
-      --fill: var(--c-ink);
-      --edge: var(--c-text);
-      --lean-inset: 6px;
-
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      padding: var(--s-xs) var(--s-xl);
-      color: var(--c-on-ink);
-      font: italic 800 var(--t-title) / 1.1 var(--font);
-      transform: translate(-50%, -50%);
-      pointer-events: none;
-    }
-
-    .seat {
-      position: relative;
-    }
-
-    /* The team that comes in from the queue. */
-    .enters {
-      --fill: var(--c-ink);
-      --lean-inset: 3px;
-
-      position: absolute;
-      top: var(--s-sm);
-      right: min(var(--s-xxl), 8vw);
-      padding: 2px var(--s-md);
-      color: var(--team);
-      font: italic 800 var(--t-label) / 1.3 var(--font);
-      letter-spacing: 0.4px;
-      text-transform: uppercase;
-    }
-
-    .seat {
-      --edge: var(--c-team-edge);
-      --lean-inset: 18px;
-      --focus: var(--c-ink);
-
-      width: 100%;
-      min-height: 120px;
-      display: flex;
-      align-items: center;
-      gap: var(--s-md);
-      padding: var(--s-lg) min(var(--s-xxl) + var(--s-sm), 10vw);
-      border: 0;
-      background: none;
-      color: var(--c-ink);
-      text-align: left;
-    }
-
-    .seat:disabled {
-      cursor: default;
-    }
-
-    .seat:focus-visible {
-      outline-offset: -8px;
-    }
-
-    .seat--a {
-      --fill: var(--c-team-a);
-      --team: var(--c-team-a);
-    }
-
-    .seat--b {
-      --fill: var(--c-team-b);
-      --team: var(--c-team-b);
-    }
-
-    .seat:not(:disabled):active::before {
-      opacity: var(--pressed);
-    }
-
-    @media (hover: hover) {
-      .seat:not(:disabled):hover::before {
-        filter: brightness(1.06);
-      }
-    }
-
-    .who {
-      flex: 1;
-      min-width: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-    }
-
-    .who > * {
-      max-width: 100%;
-    }
-
-    /* A long name wraps rather than losing its last letters. */
-    .name {
-      font: italic 800 var(--t-title) / 1.15 var(--font);
-      text-transform: uppercase;
-      overflow-wrap: break-word;
-      hyphens: auto;
-    }
-
-    .players {
-      font: italic 600 var(--t-meta) / 1.3 var(--font);
-      text-transform: uppercase;
-    }
-
-    .wins {
-      --fill: var(--c-ink);
-      --lean-inset: 3px;
-
-      min-width: 0;
-      margin-top: var(--s-sm);
-      padding: 2px var(--s-md);
-      color: var(--team);
-      font: italic 600 var(--t-meta) / 1.3 var(--font);
-      letter-spacing: 0.4px;
-      text-transform: uppercase;
-    }
-
-    .seat svg {
-      flex: none;
-      width: 28px;
-      height: 28px;
-      fill: none;
-      stroke: var(--c-ink);
-      stroke-width: 2;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-    }
-
     .queue {
       display: flex;
       flex-direction: column;
@@ -320,30 +149,6 @@ import { TeamEdit } from './team-sheet';
     .others {
       padding: 0;
     }
-
-    @media (max-height: 36em) {
-      .seat {
-        min-height: 0;
-        padding-block: var(--s-sm);
-      }
-
-      .wins {
-        margin-top: var(--s-xs);
-      }
-    }
-
-    @media (max-height: 36em) and (min-width: 30em) {
-      .seats {
-        flex-direction: row;
-        gap: var(--s-xs);
-      }
-
-      .seat {
-        flex: 1 1 0;
-        min-width: 0;
-        padding-inline: var(--s-xl);
-      }
-    }
   `,
 })
 export class NextMatchScreen {
@@ -357,9 +162,9 @@ export class NextMatchScreen {
   /** Asks for the team sheet, which the shell owns. */
   readonly editTeam = output<TeamEdit>();
 
-  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
   private readonly screen = viewChild.required(Screen);
   private readonly seatSheet = viewChild.required(SeatSheet);
+  private readonly seatSlabs = viewChild.required(Seats);
 
   protected readonly inTournament = computed(() => this.store.tournament() !== null);
   private readonly visible = computed(() => {
@@ -384,7 +189,7 @@ export class NextMatchScreen {
     return tournament === null ? [] : standings(tournament);
   });
 
-  protected readonly seats = computed(() => {
+  protected readonly seats = computed<Seat[]>(() => {
     const tournament = this.store.tournament();
     if (tournament === null) {
       const { teams } = this.store.state();
@@ -436,48 +241,14 @@ export class NextMatchScreen {
       if (this.visible()) {
         if (screen.isOpen) return;
         screen.open();
-        requestAnimationFrame(() => this.faceOff());
+        requestAnimationFrame(() => this.seatSlabs().faceOff());
         // The choice on this screen is the two teams, so reading starts there.
-        queueMicrotask(() => this.host.querySelector<HTMLElement>('.seat:not(:disabled)')?.focus());
+        queueMicrotask(() => this.seatSlabs().focusFirst());
       } else {
         this.seatSheet().close();
         screen.close();
       }
     });
-  }
-
-  /** The two sides slam in from their own edges and meet at the VS. */
-  private faceOff(): void {
-    this.host.querySelectorAll('.seat').forEach((seat, index) => {
-      const side = index === 0 ? -1 : 1;
-      play(
-        seat,
-        [
-          { transform: `translateX(${side * 55}%)`, opacity: 0 },
-          { transform: `translateX(${side * -4}px)`, opacity: 1, offset: 0.65 },
-          { transform: 'none' },
-        ],
-        { duration: 440, delay: index * 40, fill: 'backwards' },
-      );
-    });
-    play(
-      this.host.querySelector('.seats > .vs'),
-      [
-        { transform: 'translate(-50%, -50%) scale(2)', opacity: 0 },
-        { transform: 'translate(-50%, -50%) scale(1)', opacity: 1 },
-      ],
-      { duration: 240, delay: 260, fill: 'backwards' },
-    );
-    this.host.querySelectorAll('.enters').forEach((stamp) =>
-      play(
-        stamp,
-        [
-          { transform: 'scale(1.8) rotate(-6deg)', opacity: 0 },
-          { transform: 'none', opacity: 1 },
-        ],
-        { duration: 260, delay: 420, fill: 'backwards' },
-      ),
-    );
   }
 
   protected undo(): void {

@@ -29,8 +29,8 @@ import { play } from '../platform/motion';
       <button
         #panel
         type="button"
-        class="panel"
-        [class]="'panel--' + team.id"
+        class="panel livery"
+        [class]="'panel--' + team.id + ' livery--' + team.id"
         [attr.aria-label]="team.label"
         (click)="pressTeam.emit(team.id)"
       >
@@ -85,17 +85,12 @@ import { play } from '../platform/motion';
   `,
   styles: `
     :host {
-      --seam-lean: 36px;
-      --edge-x: calc(var(--team-edge-width) * 1.1);
-
       position: relative;
       display: flex;
       overflow: hidden;
     }
 
     .panel {
-      position: relative;
-      isolation: isolate;
       flex: 1;
       min-width: 0;
       min-height: 172px;
@@ -111,50 +106,11 @@ import { play } from '../platform/motion';
     }
 
     .panel--a {
-      --team: var(--c-team-a);
       padding-right: var(--s-xl);
     }
 
     .panel--b {
-      --team: var(--c-team-b);
       padding-left: calc(var(--s-xl) + var(--s-sm));
-    }
-
-    /* Each livery reaches half a lean past the centre line, so the seam stays parallel. */
-    .panel::before,
-    .panel::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      z-index: -1;
-    }
-
-    .panel--a::before,
-    .panel--a::after {
-      left: -48px;
-      right: -15px;
-    }
-
-    .panel--b::before,
-    .panel--b::after {
-      left: -15px;
-      right: -48px;
-    }
-
-    .panel::before {
-      background: var(--c-team-edge);
-      clip-path: polygon(var(--seam-lean) 0, 100% 0, calc(100% - var(--seam-lean)) 100%, 0 100%);
-    }
-
-    .panel::after {
-      background: var(--team);
-      clip-path: polygon(
-        calc(var(--seam-lean) + var(--edge-x)) var(--team-edge-width),
-        calc(100% - var(--edge-x)) var(--team-edge-width),
-        calc(100% - var(--seam-lean) - var(--edge-x)) calc(100% - var(--team-edge-width)),
-        var(--edge-x) calc(100% - var(--team-edge-width))
-      );
     }
 
     .panel:active::after {

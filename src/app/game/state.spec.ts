@@ -4,6 +4,7 @@ import {
   cleanName,
   cleanPlayers,
   initialState,
+  isDefault,
   leadTaken,
   matchPoint,
   parseAmount,
@@ -388,5 +389,27 @@ describe('matchPoint', () => {
     const won = play([add('a', 190, '1'), add('b', 185, '2'), add('a', 10, '3')]);
     expect(matchPoint(won, 'a')).toBeNull();
     expect(matchPoint(won, 'b')).toBeNull();
+  });
+});
+
+describe('isDefault', () => {
+  it('holds for the defaults read back from storage', () => {
+    expect(isDefault(JSON.parse(JSON.stringify(initialState)))).toBe(true);
+  });
+
+  it('fails for another name, players, target, quick points or wins', () => {
+    const team = initialState.teams.a;
+    const changed: State[] = [
+      { ...initialState, teams: { ...initialState.teams, a: { ...team, name: 'Los Primos' } } },
+      {
+        ...initialState,
+        teams: { ...initialState.teams, a: { ...team, players: ['Ana', 'Luis'] } },
+      },
+      { ...initialState, teams: { ...initialState.teams, a: { ...team, roundsWon: 1 } } },
+      { ...initialState, target: 150 },
+      { ...initialState, quickValue: 25 },
+      { ...initialState, between: 'start' },
+    ];
+    for (const state of changed) expect(isDefault(state)).toBe(false);
   });
 });

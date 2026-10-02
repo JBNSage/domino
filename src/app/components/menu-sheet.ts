@@ -30,6 +30,14 @@ import { Sheet } from './sheet';
       <h2 class="title" id="menu-sheet-title">{{ copy.menu.title }}</h2>
 
       <div class="entries">
+        @if (offerHome()) {
+          <button type="button" class="slab lean entry" (click)="go(home)">
+            <span class="entry-text">
+              <span class="slab__label">{{ copy.menu.home }}</span>
+              <span class="entry-meta">{{ copy.menu.homeHelp }}</span>
+            </span>
+          </button>
+        }
         <button type="button" class="slab lean entry" (click)="go(tournament)">
           <span class="slab__label" [appFitText]="tournamentLabel()">{{ tournamentLabel() }}</span>
         </button>
@@ -52,22 +60,25 @@ import { Sheet } from './sheet';
         </button>
       </div>
 
-      <div class="group">
-        <span class="label">{{ copy.menu.teams }}</span>
-        <div class="teams">
-          @for (team of teams(); track team.id) {
-            <button
-              type="button"
-              class="slab slab--compact slab--team lean team"
-              [style.--fill]="'var(--c-team-' + team.id + ')'"
-              [attr.aria-label]="copy.menu.teamA11y(team.name)"
-              (click)="go(editTeam, team.id)"
-            >
-              <span class="slab__label" [appFitText]="team.name">{{ team.name }}</span>
-            </button>
-          }
+      <!-- At Inicio there is no board in view to change or clear. -->
+      @if (!store.atHome()) {
+        <div class="group">
+          <span class="label">{{ copy.menu.teams }}</span>
+          <div class="teams">
+            @for (team of teams(); track team.id) {
+              <button
+                type="button"
+                class="slab slab--compact slab--team lean team"
+                [style.--fill]="'var(--c-team-' + team.id + ')'"
+                [attr.aria-label]="copy.menu.teamA11y(team.name)"
+                (click)="go(editTeam, team.id)"
+              >
+                <span class="slab__label" [appFitText]="team.name">{{ team.name }}</span>
+              </button>
+            }
+          </div>
         </div>
-      </div>
+      }
 
       <app-choice-group
         [label]="copy.appearance.label"
@@ -76,19 +87,25 @@ import { Sheet } from './sheet';
         (valueChange)="choose($event)"
       />
 
-      <div class="slab-row">
+      <div class="slab-row" [class.alone]="store.atHome()">
         <button type="button" class="slab slab--compact lean" (click)="sheet().close()">
           <span class="slab__label" [appFitText]="copy.menu.close">{{ copy.menu.close }}</span>
         </button>
-        <button type="button" class="slab slab--compact slab--warn lean clear" (click)="go(reset)">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M4 7h16" />
-            <path d="M9 7V4h6v3" />
-            <path d="M6 7l1 13h10l1-13" />
-            <path d="M10 11v6M14 11v6" />
-          </svg>
-          <span class="slab__label" [appFitText]="copy.menu.reset">{{ copy.menu.reset }}</span>
-        </button>
+        @if (!store.atHome()) {
+          <button
+            type="button"
+            class="slab slab--compact slab--warn lean clear"
+            (click)="go(reset)"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4 7h16" />
+              <path d="M9 7V4h6v3" />
+              <path d="M6 7l1 13h10l1-13" />
+              <path d="M10 11v6M14 11v6" />
+            </svg>
+            <span class="slab__label" [appFitText]="copy.menu.reset">{{ copy.menu.reset }}</span>
+          </button>
+        }
       </div>
     </app-sheet>
   `,
@@ -165,6 +182,12 @@ import { Sheet } from './sheet';
       }
     }
 
+    /* Alone, the closing slab sits at the left and is as wide as its label. */
+    .alone .slab {
+      flex: none;
+      padding: 0 var(--s-lg);
+    }
+
     .clear svg {
       flex: none;
       width: 20px;
@@ -193,16 +216,20 @@ export class MenuSheet {
   /** The mesas, to choose where the match is played. */
   readonly tables = output<void>();
   readonly editTeam = output<TeamId>();
+  /** Back to Inicio, to choose how the next match is played. */
+  readonly home = output<void>();
   // eslint-disable-next-line @angular-eslint/no-output-native
   readonly reset = output<void>();
 
-  private readonly store = inject(GameStore);
+  protected readonly store = inject(GameStore);
   private readonly mesas = inject(TablesStore);
   protected readonly sheet = viewChild.required(Sheet);
 
   protected readonly tournamentLabel = computed(() =>
     this.store.tournament() === null ? copy.menu.tournament : copy.menu.table,
   );
+  /** Inicio is offered while nothing is being played and it is not already showing. */
+  protected readonly offerHome = computed(() => this.store.idle() && !this.store.atHome());
   protected readonly mesa = computed(() => this.mesas.active()?.name ?? null);
   protected readonly teams = computed(() =>
     TEAM_IDS.map((id) => ({ id, name: this.store.state().teams[id].name })),

@@ -3,13 +3,19 @@ import {
   Component,
   DestroyRef,
   ElementRef,
+  Injector,
+  afterNextRender,
+  effect,
   inject,
+  untracked,
   viewChild,
 } from '@angular/core';
 
 import { ChampionScreen } from './components/champion-screen';
 import { HistoryScreen } from './components/history-screen';
+import { HomeScreen } from './components/home-screen';
 import { MatchScreen } from './components/match-screen';
+import { MatchSetupScreen } from './components/match-setup-screen';
 import { MenuSheet } from './components/menu-sheet';
 import { NextMatchScreen } from './components/next-match-screen';
 import { PointsSheet } from './components/points-sheet';
@@ -41,6 +47,8 @@ import { keepAwake } from './platform/wake-lock';
 @Component({
   selector: 'app-root',
   imports: [
+    HomeScreen,
+    MatchSetupScreen,
     TargetHeader,
     TeamLockup,
     ScoreList,
@@ -73,6 +81,8 @@ export class App {
   protected readonly store = inject(GameStore);
   private readonly tables = inject(TablesStore);
   private readonly edits = inject(TeamEdits);
+  private readonly injector = inject(Injector);
+  private readonly home = viewChild(HomeScreen);
   private readonly seat = viewChild.required(SeatSheet);
   private readonly team = viewChild.required(TeamSheet);
 
@@ -81,10 +91,11 @@ export class App {
 
   constructor() {
     const destroyRef = inject(DestroyRef);
-    destroyRef.onDestroy(keepAwake());
     destroyRef.onDestroy(followModality());
     keepStorage();
     this.followKeyboard(destroyRef);
+    this.keepBoardAwake(destroyRef);
+    this.followHome();
   }
 
   /**
@@ -98,8 +109,49 @@ export class App {
 
   /** The undo bar is gone once used, so focus goes to what it changed. */
   protected afterUndo(row: string | null): void {
-    if (row !== null) this.list().focusRow(row);
+    if (this.store.atHome()) this.home()?.focus();
+    else if (row !== null) this.list().focusRow(row);
     else this.board().nativeElement.focus();
+  }
+
+  /** The scoreboard keeps the screen on; Inicio lets it sleep. */
+  private keepBoardAwake(destroyRef: DestroyRef): void {
+    let release: (() => void) | null = null;
+    effect(() => {
+      const atHome = this.store.atHome();
+      untracked(() => {
+        if (atHome) {
+          release?.();
+          release = null;
+        } else {
+          release ??= keepAwake();
+        }
+      });
+    });
+    destroyRef.onDestroy(() => release?.());
+  }
+
+  /**
+   * Focus follows Inicio coming and going during a session; at launch it is
+   * left where the browser puts it.
+   */
+  private followHome(): void {
+    let before = this.store.atHome();
+    effect(() => {
+      const atHome = this.store.atHome();
+      if (atHome === before) return;
+      before = atHome;
+      afterNextRender(
+        () => {
+          const active = document.activeElement;
+          // A dialog still open keeps focus; the one that just closed may have left it on Inicio.
+          if (active?.closest('dialog[open]')) return;
+          if (atHome) this.home()?.focus();
+          else this.board().nativeElement.focus();
+        },
+        { injector: this.injector },
+      );
+    });
   }
 
   /** Publishes the on-screen keyboard's height, so sheets sit above it. */

@@ -786,3 +786,157 @@ describe('GameStore at a mesa', () => {
     expect(store.undo()).toBeNull();
   });
 });
+
+describe('GameStore at Inicio', () => {
+  let store: GameStore;
+
+  /** Opens the app afresh on whatever is saved. */
+  const relaunch = () => {
+    TestBed.resetTestingModule();
+    store = TestBed.inject(GameStore);
+  };
+
+  beforeEach(() => {
+    localStorage.clear();
+    vi.useFakeTimers();
+    store = TestBed.inject(GameStore);
+  });
+
+  afterEach(() => vi.useRealTimers());
+
+  it('opens at Inicio when nothing is being played', () => {
+    expect(store.atHome()).toBe(true);
+  });
+
+  it('opens on the board when a match or a tournament is under way', () => {
+    store.addPoints('a', 20);
+    TestBed.tick();
+    relaunch();
+    expect(store.atHome()).toBe(false);
+
+    localStorage.clear();
+    relaunch();
+    store.startTournament(
+      ['Uno', 'Dos'].map((name, index) => ({ id: `t${index}`, name, players: null })),
+      { kind: 'free' },
+    );
+    TestBed.tick();
+    relaunch();
+    expect(store.atHome()).toBe(false);
+  });
+
+  it('stays on the board after a match that was under way at launch', () => {
+    store.addPoints('a', 200);
+    TestBed.tick();
+    relaunch();
+    store.closeRound();
+    expect(store.idle()).toBe(true);
+    expect(store.atHome()).toBe(false);
+  });
+
+  it('starts a quick match from the defaults, with no undo when nothing was replaced', () => {
+    store.startQuickMatch();
+    expect(store.atHome()).toBe(false);
+    expect(store.state()).toEqual(initialState);
+    expect(store.moment()?.kind).toBe('start');
+    expect(store.undo()).toBeNull();
+  });
+
+  it('puts the defaults back for a quick match, and can be taken back to Inicio', () => {
+    store.setTeam('a', 'Los Primos', ['Ana', 'Luis']);
+    store.saveSettings(150, 25);
+    const before = store.state();
+
+    store.startQuickMatch();
+    expect(store.state()).toEqual(initialState);
+    expect(store.undo()?.message).toBe(copy.undo.quickMatch);
+
+    store.restore();
+    expect(store.state()).toEqual(before);
+    expect(store.atHome()).toBe(true);
+  });
+
+  it('keeps the mesa in use for a quick match', () => {
+    const tables = TestBed.inject(TablesStore);
+    tables.change((current) => setActive(addTable(current, 'm1', 'Casa'), 'm1'));
+    store.startQuickMatch();
+    expect(tables.active()?.id).toBe('m1');
+  });
+
+  it('starts the personalised match with the teams chosen for it', () => {
+    store.setTeam('b', 'Los Tíos', null);
+    store.startMatch();
+    expect(store.atHome()).toBe(false);
+    expect(store.state().teams.b.name).toBe('Los Tíos');
+    expect(store.moment()?.kind).toBe('start');
+  });
+
+  it('returns to Inicio when the start of a tournament is taken back', () => {
+    store.startTournament(
+      ['Uno', 'Dos'].map((name, index) => ({ id: `t${index}`, name, players: null })),
+      { kind: 'free' },
+    );
+    expect(store.atHome()).toBe(false);
+    store.restore();
+    expect(store.atHome()).toBe(true);
+  });
+
+  it('returns to Inicio after a full reset, and to the board when it is taken back', () => {
+    store.startQuickMatch();
+    store.addPoints('a', 40);
+    store.resetAll();
+    expect(store.atHome()).toBe(true);
+
+    store.restore();
+    expect(store.atHome()).toBe(false);
+    expect(store.totals().a).toBe(40);
+  });
+
+  it('returns to Inicio once a tournament is saved', () => {
+    store.startTournament(
+      ['Uno', 'Dos'].map((name, index) => ({ id: `t${index}`, name, players: null })),
+      { kind: 'firstTo', count: 1 },
+    );
+    store.addPoints('a', 200);
+    store.closeRound();
+    expect(store.tournament()?.phase).toBe('done');
+    expect(store.atHome()).toBe(false);
+
+    store.finishTournament();
+    expect(store.atHome()).toBe(true);
+    store.restore();
+    expect(store.atHome()).toBe(false);
+  });
+
+  it('stays on the board after a match is closed, and goes to Inicio only when asked', () => {
+    store.startQuickMatch();
+    store.addPoints('a', 200);
+    store.goHome();
+    expect(store.atHome()).toBe(false);
+
+    store.closeRound();
+    expect(store.atHome()).toBe(false);
+    store.goHome();
+    expect(store.atHome()).toBe(true);
+  });
+
+  it('plays the first match at a mesa from Inicio without coming back to it', () => {
+    const tables = TestBed.inject(TablesStore);
+    tables.change((current) => addTable(current, 'm1', 'Casa'));
+    store.chooseTable('m1');
+    expect(store.state().between).toBe('start');
+    expect(store.atHome()).toBe(false);
+
+    store.startMatch();
+    expect(store.state().between).toBeNull();
+    expect(store.atHome()).toBe(false);
+  });
+
+  it('comes back to Inicio when the mesa is left before its first match', () => {
+    const tables = TestBed.inject(TablesStore);
+    tables.change((current) => addTable(current, 'm1', 'Casa'));
+    store.chooseTable('m1');
+    store.chooseTable(null);
+    expect(store.atHome()).toBe(true);
+  });
+});
