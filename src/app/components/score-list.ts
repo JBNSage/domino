@@ -47,7 +47,9 @@ const NEAR_END = 80;
       <div class="empty">
         <app-slashes [size]="22" />
         <h2 class="empty-title">{{ copy.list.emptyTitle }}</h2>
-        <p class="empty-body">{{ copy.list.emptyBody }}</p>
+        <p class="empty-body">
+          {{ store.canScore() ? copy.list.emptyBody : copy.list.watchingBody }}
+        </p>
 
         <app-install-hint class="install" />
       </div>
@@ -102,7 +104,12 @@ const NEAR_END = 80;
                 type="button"
                 class="row lean"
                 [class.row--latest]="last"
-                [attr.aria-label]="label(row, index) + '. ' + copy.list.rowHint"
+                [attr.aria-label]="
+                  store.canScore()
+                    ? label(row, index) + '. ' + copy.list.rowHint
+                    : label(row, index)
+                "
+                [disabled]="!store.canScore()"
                 (click)="select(row)"
               >
                 <ng-container
@@ -190,12 +197,12 @@ const NEAR_END = 80;
       --edge: var(--c-text);
     }
 
-    button.row:active::before {
+    button.row:not(:disabled):active::before {
       opacity: var(--pressed);
     }
 
     @media (hover: hover) {
-      button.row:hover::before {
+      button.row:not(:disabled):hover::before {
         filter: brightness(1.12);
       }
     }
@@ -339,6 +346,8 @@ export class ScoreList {
   }
 
   protected select(row: Row): void {
+    // Only watching: hands are read, not changed.
+    if (!this.store.canScore()) return;
     this.selected.set(row.id);
     this.focusIn(row, '.keep');
   }

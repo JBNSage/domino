@@ -14,9 +14,11 @@ import {
 import { ChampionScreen } from './components/champion-screen';
 import { HistoryScreen } from './components/history-screen';
 import { HomeScreen } from './components/home-screen';
+import { JoinScreen } from './components/join-screen';
 import { MatchScreen } from './components/match-screen';
 import { MatchSetupScreen } from './components/match-setup-screen';
 import { MenuSheet } from './components/menu-sheet';
+import { NameSheet } from './components/name-sheet';
 import { NextMatchScreen } from './components/next-match-screen';
 import { PointsSheet } from './components/points-sheet';
 import { QuickAddBar } from './components/quick-add-bar';
@@ -28,6 +30,7 @@ import { TargetHeader } from './components/target-header';
 import { TeamLockup } from './components/team-lockup';
 import { PlayerStatsScreen } from './components/player-stats-screen';
 import { SeatSheet } from './components/seat-sheet';
+import { ShareScreen } from './components/share-screen';
 import { StatsScreen } from './components/stats-screen';
 import { TableScreen } from './components/table-screen';
 import { TablesScreen } from './components/tables-screen';
@@ -38,6 +41,9 @@ import { TournamentSetupScreen } from './components/tournament-setup-screen';
 import { UndoSnackbar } from './components/undo-snackbar';
 import { WinnerModal } from './components/winner-modal';
 import { GameStore } from './game/game.store';
+import { parseInvite } from './game/invite';
+import { MeStore } from './game/me.store';
+import { copy } from './copy';
 import { TeamId } from './game/state';
 import { TablesStore } from './game/tables.store';
 import { keepStorage } from './game/storage';
@@ -55,6 +61,7 @@ import { keepAwake } from './platform/wake-lock';
     UndoSnackbar,
     QuickAddBar,
     MenuSheet,
+    NameSheet,
     PointsSheet,
     SettingsSheet,
     ResetSheet,
@@ -63,6 +70,8 @@ import { keepAwake } from './platform/wake-lock';
     HistoryScreen,
     TablesScreen,
     TableScreen,
+    ShareScreen,
+    JoinScreen,
     StatsScreen,
     PlayerStatsScreen,
     MatchScreen,
@@ -85,6 +94,9 @@ export class App {
   private readonly home = viewChild(HomeScreen);
   private readonly seat = viewChild.required(SeatSheet);
   private readonly team = viewChild.required(TeamSheet);
+  private readonly nameSheet = viewChild.required(NameSheet);
+  private readonly joinScreen = viewChild.required(JoinScreen);
+  private readonly me = inject(MeStore);
 
   private readonly board = viewChild.required<ElementRef<HTMLElement>>('board');
   private readonly list = viewChild.required(ScoreList);
@@ -96,6 +108,24 @@ export class App {
     this.followKeyboard(destroyRef);
     this.keepBoardAwake(destroyRef);
     this.followHome();
+    this.followInvites(destroyRef);
+  }
+
+  /**
+   * A link to a mesa opens the app with the invitation after a "#": the join
+   * screen opens with it, and the address is tidied so a reload does not ask again.
+   */
+  private followInvites(destroyRef: DestroyRef): void {
+    if (typeof window === 'undefined') return;
+    const check = () => {
+      const invite = parseInvite(location.hash);
+      if (invite === null) return;
+      history.replaceState(history.state, '', location.pathname + location.search);
+      afterNextRender(() => this.joinScreen().open(invite), { injector: this.injector });
+    };
+    check();
+    window.addEventListener('hashchange', check);
+    destroyRef.onDestroy(() => window.removeEventListener('hashchange', check));
   }
 
   /**
@@ -105,6 +135,21 @@ export class App {
   protected editSide(side: TeamId): void {
     if (this.tables.active() !== null && this.store.tournament() === null) this.seat().open(side);
     else this.team().open(this.edits.side(side));
+  }
+
+  /** This phone's name, as the others see it at a shared mesa. */
+  protected editMe(): void {
+    this.nameSheet().open({
+      title: copy.me.title,
+      label: copy.me.fieldLabel,
+      value: this.me.name(),
+      placeholder: null,
+      taken: [],
+      takenMessage: '',
+      emptyMessage: copy.me.empty,
+      confirm: copy.me.save,
+      save: (name) => this.me.rename(name),
+    });
   }
 
   /** The undo bar is gone once used, so focus goes to what it changed. */

@@ -4,6 +4,9 @@ import { copy } from '../copy';
 import { haptics } from '../platform/haptics';
 import { History } from './history';
 import { HistoryStore } from './history.store';
+import { MESA_CLOUD, LiveRow } from './cloud';
+import { newId } from './ids';
+import { fromLiveDoc, isEmptyWrite, liveWrites, sameBoard, toLiveDoc } from './mesa-doc';
 import { teamWinsAt } from './stats';
 import { TablesStore } from './tables.store';
 import {
@@ -80,7 +83,14 @@ type Recorded = { matches: string[]; tournaments: string[] };
 const nothingRecorded: Recorded = { matches: [], tournaments: [] };
 
 /** The board and the tournament as they were, what was written since, and whether Inicio showed. */
-type Snapshot = { state: State; tournament: Tournament | null; recorded: Recorded; home: boolean };
+type Snapshot = {
+  state: State;
+  tournament: Tournament | null;
+  recorded: Recorded;
+  home: boolean;
+  /** The live match's id at a shared mesa, so undoing a closed match closes it again as itself. */
+  liveMatchId: string | null;
+};
 
 /**
  * How an action is taken back. Changes to one hand are reversed on their own,
@@ -186,8 +196,32 @@ export class GameStore {
   /** Nothing is being played: no hands, no step owed and no tournament. */
   readonly idle = computed(() => this.tournament() === null && isClean(this.state()));
 
-  /** Inicio, where a match or a tournament is chosen, shows over the board. */
-  readonly atHome = computed(() => this.home() && this.idle());
+  /**
+   * The shared mesa whose live match this board is, if any. While a tournament
+   * is played the board stays on this phone.
+   */
+  readonly liveMesa = computed(() => {
+    const mesa = this.tables.active();
+    return mesa?.shared && this.tournament() === null ? mesa : null;
+  });
+
+  /** Whether this phone may change the board: anywhere but at a shared mesa where it only watches. */
+  readonly canScore = computed(() => this.liveMesa()?.shared?.scores ?? true);
+
+  /**
+   * The shared mesa in use has not arrived yet, or its live match has not been
+   * read: the board waits, rather than play over hands it cannot see.
+   */
+  readonly liveLoading = computed(() => {
+    if (this.tournament() !== null) return false;
+    const pending = this.tables.pendingShared();
+    if (pending !== null) return true;
+    const mesa = this.liveMesa();
+    return mesa !== null && this.cloud.mesas().get(mesa.id)?.liveLoaded !== true;
+  });
+
+  /** Inicio, where a match or a tournament is chosen, shows over the board; never while only watching. */
+  readonly atHome = computed(() => this.home() && this.idle() && this.canScore());
 
   /**
    * The last match played, to play again from Inicio: its teams and meta. Left
@@ -220,7 +254,14 @@ export class GameStore {
   // Opening the app with nothing in play starts at Inicio; a match under way stays on the board.
   private readonly home = signal(this.tournament() === null && isClean(this.state()));
   private undoTimer: ReturnType<typeof setTimeout> | null = null;
-  private nextId = 0;
+  private readonly cloud = inject(MESA_CLOUD);
+  /** The live match's id and each hand's time, as last read from the cloud. */
+  private liveMatchId: string | null = null;
+  private liveRows: ReadonlyMap<string, LiveRow> = new Map();
+  /** When each hand seen this session was played, kept after it is removed, so it comes back in its place. */
+  private readonly liveAt = new Map<string, number>();
+  /** The mesa the board was last loaded from, so the first read of another plays no moment. */
+  private liveFrom: string | null = null;
 
   constructor() {
     effect(() => saveState(this.state()));
@@ -242,15 +283,27 @@ export class GameStore {
       const tables = this.tables.tables();
       untracked(() => {
         const reversal = this.undo()?.reversal;
-        if (reversal?.kind === 'tables' && reversal.after !== tables) this.clearUndo();
+        // Compared by content: a shared mesa comes back from the cloud as a new object.
+        if (
+          reversal?.kind === 'tables' &&
+          JSON.stringify(reversal.after) !== JSON.stringify(tables)
+        ) {
+          this.clearUndo();
+        }
       });
     });
 
     this.followOtherTabs();
+    this.followLive();
   }
 
   dispatch(action: Action): void {
+    // Only watching: the board is the mesa's, and changes come from those who may score.
+    if ((!this.canScore() || this.liveLoading()) && action.type !== 'hydrate') return;
+    const before = this.state();
     this.state.update((state) => reducer(state, action));
+    // Only those who may score reach the mesa's board, an undo included.
+    if (this.state() !== before && this.canScore()) this.pushLive(before, this.state());
   }
 
   addPoints(team: TeamId, points: number): Row | null {
@@ -397,8 +450,10 @@ export class GameStore {
   chooseTable(id: string | null): void {
     this.tables.change((tables) => setActive(tables, id));
     if (this.tables.tables().active !== id) return;
+    // A shared mesa brings its own board, the match being played there.
+    if (this.liveMesa() !== null) this.takeLive();
     if (id === null) this.dispatch({ type: 'resume' });
-    else if (this.tournament() === null) this.dispatch({ type: 'waitForTeams' });
+    else if (this.tournament() === null && this.canScore()) this.dispatch({ type: 'waitForTeams' });
   }
 
   /** Renames a player at a mesa, in its saved teams, at the board and in its matches. */
@@ -513,11 +568,12 @@ export class GameStore {
    */
   closeRound(rotate = false): void {
     const result = this.result();
-    if (result === null) return;
+    if (result === null || !this.canScore()) return;
     const { teams, target, rows } = this.state();
     const tournament = this.tournament();
     const table = this.tables.active();
-    const id = this.newId();
+    // At a shared mesa every phone that closes this match writes the same one.
+    const id = (this.liveMesa() !== null ? this.liveMatchId : null) ?? this.newId();
 
     this.change(copy.undo.roundClosed, () => {
       this.history.addMatch({
@@ -704,6 +760,7 @@ export class GameStore {
         this.dispatch({ type: 'hydrate', state: reversal.snapshot.state });
         this.tournament.set(reversal.snapshot.tournament);
         this.home.set(reversal.snapshot.home);
+        this.restoreLiveMatchId(reversal.snapshot.liveMatchId);
         this.history.remove({
           matches: reversal.snapshot.recorded.matches,
           records: reversal.snapshot.recorded.tournaments,
@@ -713,7 +770,7 @@ export class GameStore {
         this.history.restore(reversal.removed);
         return null;
       case 'tables':
-        this.tables.tables.set(reversal.before);
+        this.tables.restore(reversal.before);
         for (const { side, saved } of reversal.relink) {
           const team = this.state().teams[side];
           this.dispatch({
@@ -775,9 +832,9 @@ export class GameStore {
     this.play({ kind: 'start', label });
   }
 
+  /** Unique across phones, since hands at a shared mesa come from several. */
   private newId(): string {
-    this.nextId += 1;
-    return `${Date.now()}-${this.nextId}`;
+    return newId('');
   }
 
   private offer(message: string, reversal: Reversal): void {
@@ -809,10 +866,14 @@ export class GameStore {
     const state = this.state();
     const tournament = this.tournament();
     const home = this.home();
+    const liveMatchId = this.liveMatchId;
     const recorded = apply() ?? nothingRecorded;
     if (this.state() === state && this.tournament() === tournament) return;
     this.lastChange.set({ kind: 'hand' });
-    this.offer(message, { kind: 'snapshot', snapshot: { state, tournament, recorded, home } });
+    this.offer(message, {
+      kind: 'snapshot',
+      snapshot: { state, tournament, recorded, home, liveMatchId },
+    });
   }
 
   /** Sits the tournament's two teams at the board, with the wins they bring. */
@@ -853,6 +914,112 @@ export class GameStore {
   private clearUndo(): void {
     this.holdUndo();
     this.undo.set(null);
+  }
+
+  /** Sends a change of the board to the live match of the shared mesa in use. */
+  private pushLive(before: State, after: State): void {
+    const mesa = this.liveMesa();
+    if (mesa?.shared === undefined) return;
+    const { members, me } = mesa.shared;
+    const by = me ?? '';
+    const shared = this.cloud.mesas().get(mesa.id);
+    // Until the live match has been read, nothing is written over it.
+    if (shared?.liveLoaded !== true) return;
+    if (shared.live === null) {
+      // The first board of this mesa in the cloud.
+      this.liveMatchId ??= newId('x');
+      this.cloud.setLive(mesa.id, toLiveDoc(after, this.liveMatchId, members, by, Date.now()));
+      return;
+    }
+    const writes = liveWrites(before, after, {
+      members,
+      by,
+      now: Date.now(),
+      atOf: (id) => this.liveRows.get(id)?.at ?? this.liveAt.get(id),
+      newMatchId: () => newId('x'),
+    });
+    if (!isEmptyWrite(writes)) this.cloud.updateLive(mesa.id, writes);
+  }
+
+  /** The live match of the shared mesa in use, as other phones change it. */
+  private followLive(): void {
+    effect(() => {
+      const mesa = this.liveMesa();
+      // Read so the effect runs again when the cloud brings something new.
+      if (mesa !== null) this.cloud.mesas().get(mesa.id);
+      untracked(() => this.takeLive());
+    });
+  }
+
+  /**
+   * Puts the live match on the board. The first read of a mesa arrives quietly;
+   * after that, a hand from another phone lands as one from this phone would.
+   */
+  private takeLive(): void {
+    const mesa = this.liveMesa();
+    if (mesa?.shared === undefined) {
+      this.liveFrom = null;
+      return;
+    }
+    const shared = this.cloud.mesas().get(mesa.id);
+    // Not read yet is not the same as never played: wait for the cloud to say which.
+    if (shared?.liveLoaded !== true) return;
+    const live = shared.live;
+    if (live === null) {
+      // Nobody has played here yet: whoever may score starts the mesa's board,
+      // clean, keeping only this phone's meta and quick points.
+      if (this.liveFrom !== mesa.id && mesa.shared.scores) {
+        this.liveFrom = mesa.id;
+        this.liveMatchId = newId('x');
+        const { target, quickValue } = this.state();
+        const clean: State = { ...initialState, target, quickValue };
+        this.state.set(clean);
+        this.cloud.setLive(
+          mesa.id,
+          toLiveDoc(clean, this.liveMatchId, mesa.shared.members, mesa.shared.me ?? '', Date.now()),
+        );
+      }
+      return;
+    }
+
+    const { state, matchId, rows } = fromLiveDoc(live, mesa.shared.members);
+    this.liveMatchId = matchId;
+    this.liveRows = rows;
+    for (const [id, row] of rows) this.liveAt.set(id, row.at);
+    const first = this.liveFrom !== mesa.id;
+    this.liveFrom = mesa.id;
+    const before = this.state();
+    if (sameBoard(state, before)) return;
+
+    const seen = new Set(before.rows.map((row) => row.id));
+    const arrived = state.rows.filter(
+      (row) => !seen.has(row.id) && rows.get(row.id)?.by !== mesa.shared?.me,
+    );
+    this.state.set(state);
+    if (!isClean(state)) this.home.set(false);
+    this.lastChange.set({ kind: 'hand' });
+    // A whole-board offer would undo the other phone's work too.
+    this.boardChanged();
+    const last = arrived[arrived.length - 1];
+    if (first || last === undefined) return;
+    const lead = leadTaken(state.rows, last.team);
+    if (lead) haptics.lead();
+    else haptics.tap();
+    this.play({ kind: 'hand', team: last.team, points: last.points, lead });
+    const announcement = copy.team.announce(
+      state.teams[last.team].name,
+      selectTotals(state)[last.team],
+    );
+    this.announce(lead ? `${announcement}. ${copy.moments.lead}` : announcement);
+  }
+
+  /** Puts back the live match's id with an undone step, so the match keeps one record. */
+  private restoreLiveMatchId(id: string | null): void {
+    const mesa = this.liveMesa();
+    if (mesa === null || id === null) return;
+    if (this.cloud.mesas().get(mesa.id)?.live?.matchId === id) return;
+    this.liveMatchId = id;
+    this.cloud.updateLive(mesa.id, { fields: { matchId: id }, rows: {} });
   }
 
   /** The installed app and a browser tab can both be open; the newest save wins in both. */

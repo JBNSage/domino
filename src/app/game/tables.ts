@@ -1,3 +1,4 @@
+import type { Member } from './cloud';
 import { Players, cleanLabel, cleanPlayer, fold, parsePlayers, sameName } from './state';
 
 export const MAX_TABLES = 12;
@@ -11,6 +12,19 @@ export type SavedTeam = {
   players: Players | null;
 };
 
+/** A shared mesa, from this phone's point of view. */
+export type SharedInfo = {
+  /** Whether this phone's person owns the mesa: only owners change it. */
+  owner: boolean;
+  /** Whether they may add points to its live match; owners always may. */
+  scores: boolean;
+  /** This phone's account. */
+  me: string | null;
+  members: Member[];
+  /** The code in the mesa's link, which only owners see. */
+  invite: string | null;
+};
+
 /** A place where the same people usually play: who they are, and the teams they form. */
 export type Table = {
   id: string;
@@ -18,6 +32,8 @@ export type Table = {
   /** In alphabetical order. */
   players: string[];
   teams: SavedTeam[];
+  /** Set when the mesa is shared; such a mesa is kept in the cloud, not on this phone. */
+  shared?: SharedInfo;
 };
 
 export type Tables = {

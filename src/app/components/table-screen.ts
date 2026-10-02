@@ -23,6 +23,7 @@ import {
 } from '../game/tables';
 import { HistoryStore } from '../game/history.store';
 import { teamWinsAt } from '../game/stats';
+import { SharingStore } from '../game/sharing.store';
 import { TablesStore } from '../game/tables.store';
 import { NameSheet } from './name-sheet';
 import { PlayerPair } from './player-pair';
@@ -39,20 +40,49 @@ import { TeamEdits } from './team-edits';
   template: `
     <app-screen [heading]="mesa()?.name ?? copy.tables.title">
       @if (mesa(); as mesa) {
-        <button
-          type="button"
-          class="slab slab--compact lean rename"
-          [attr.aria-label]="copy.tables.nameA11y(mesa.name)"
-          (click)="rename()"
-        >
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M4 20l1-4.5L16.5 4 20 7.5 8.5 19z" />
-            <path d="M14 6.5l3.5 3.5" />
-          </svg>
-          <span class="slab__label" [appFitText]="copy.tables.rename">{{
-            copy.tables.rename
-          }}</span>
-        </button>
+        @if (mesa.shared; as shared) {
+          <p class="note shared-note">
+            {{ copy.tables.sharedSummary(shared.members.length) }}
+            @if (!shared.owner) {
+              <br />{{ copy.tables.watchOnly }}
+            }
+          </p>
+        }
+        @if (owner()) {
+          <div class="tools">
+            <button
+              type="button"
+              class="slab slab--compact lean"
+              [attr.aria-label]="copy.tables.nameA11y(mesa.name)"
+              (click)="rename()"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 20l1-4.5L16.5 4 20 7.5 8.5 19z" />
+                <path d="M14 6.5l3.5 3.5" />
+              </svg>
+              <span class="slab__label" [appFitText]="copy.tables.rename">{{
+                copy.tables.rename
+              }}</span>
+            </button>
+            <button
+              type="button"
+              class="slab slab--compact lean"
+              [attr.aria-label]="copy.share.startA11y(mesa.name)"
+              [disabled]="sharing()"
+              (click)="share()"
+            >
+              <!-- Three linked dots: this mesa goes to other phones. -->
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M7 12l9-5M7 12l9 5" />
+                <circle cx="6" cy="12" r="2.5" />
+                <circle cx="17.5" cy="6" r="2.5" />
+                <circle cx="17.5" cy="18" r="2.5" />
+              </svg>
+              <span class="slab__label" [appFitText]="shareLabel()">{{ shareLabel() }}</span>
+            </button>
+          </div>
+          <p class="note error" role="status">{{ shareFailed() ? copy.share.failed : '' }}</p>
+        }
 
         <section class="part">
           <h3 class="heading numerals">{{ copy.tables.players(mesa.players.length) }}</h3>
@@ -62,14 +92,28 @@ import { TeamEdits } from './team-edits';
             <ul class="chips">
               @for (player of shownPlayers(); track player) {
                 <li>
-                  <button
-                    type="button"
-                    class="chip lean"
-                    [attr.aria-label]="copy.tables.playerA11y(player)"
-                    (click)="editPlayer(player)"
-                  >
-                    {{ player }}
-                  </button>
+                  @if (memberOf(player); as member) {
+                    <!-- A person in the mesa: their name is theirs to change. -->
+                    <span
+                      class="chip chip--member lean"
+                      [attr.aria-label]="
+                        copy.tables.personA11y(member.name, member.owner, member.scores)
+                      "
+                    >
+                      {{ player }}
+                    </span>
+                  } @else if (owner()) {
+                    <button
+                      type="button"
+                      class="chip lean"
+                      [attr.aria-label]="copy.tables.playerA11y(player)"
+                      (click)="editPlayer(player)"
+                    >
+                      {{ player }}
+                    </button>
+                  } @else {
+                    <span class="chip lean">{{ player }}</span>
+                  }
                 </li>
               }
             </ul>
@@ -86,7 +130,9 @@ import { TeamEdits } from './team-edits';
             }
           }
 
-          @if (playersFull()) {
+          @if (!owner()) {
+            <!-- Only owners add players. -->
+          } @else if (playersFull()) {
             <p class="note">{{ copy.tables.playersFull }}</p>
           } @else {
             <div class="new-player">
@@ -144,6 +190,7 @@ import { TeamEdits } from './team-edits';
                     type="button"
                     class="team lean"
                     [attr.aria-label]="copy.tables.teamA11y(team.name, team.players, team.won)"
+                    [disabled]="!owner()"
                     (click)="editTeam.emit(edits.saved(mesa.id, team, team.name))"
                   >
                     <span class="who">
@@ -160,7 +207,9 @@ import { TeamEdits } from './team-edits';
               }
             </ol>
           }
-          @if (teamsFull()) {
+          @if (!owner()) {
+            <!-- Only owners keep teams. -->
+          } @else if (teamsFull()) {
             <p class="note">{{ copy.tables.teamsFull }}</p>
           } @else {
             <button type="button" class="slab slab--compact lean add" (click)="addTeam()">
@@ -173,14 +222,29 @@ import { TeamEdits } from './team-edits';
         </section>
       }
 
-      <button
-        screenFooter
-        type="button"
-        class="slab slab--compact slab--warn lean"
-        (click)="askRemove()"
-      >
-        <span class="slab__label" [appFitText]="copy.tables.remove">{{ copy.tables.remove }}</span>
-      </button>
+      @if (owner()) {
+        <button
+          screenFooter
+          type="button"
+          class="slab slab--compact slab--warn lean"
+          (click)="askRemove()"
+        >
+          <span class="slab__label" [appFitText]="copy.tables.remove">{{
+            copy.tables.remove
+          }}</span>
+        </button>
+      } @else {
+        <button
+          screenFooter
+          type="button"
+          class="slab slab--compact slab--warn lean"
+          (click)="askLeave()"
+        >
+          <span class="slab__label" [appFitText]="copy.tables.leaveMesa">{{
+            copy.tables.leaveMesa
+          }}</span>
+        </button>
+      }
       <button
         screenFooter
         type="button"
@@ -188,27 +252,44 @@ import { TeamEdits } from './team-edits';
         [attr.aria-label]="copy.tables.playA11y(mesa()?.name ?? '')"
         (click)="play()"
       >
-        <span class="slab__label" [appFitText]="copy.tables.play">{{ copy.tables.play }}</span>
+        <span class="slab__label" [appFitText]="playLabel()">{{ playLabel() }}</span>
       </button>
     </app-screen>
 
     <app-name-sheet />
 
     <app-sheet #ask accent="var(--c-danger)" labelledBy="table-remove-title">
-      <h2 class="title" id="table-remove-title">
-        {{ copy.tables.removeTitle(mesa()?.name ?? '') }}
-      </h2>
-      <div class="facts">
-        <p>
-          {{ copy.tables.removeBody(mesa()?.players?.length ?? 0, mesa()?.teams?.length ?? 0) }}
-        </p>
-        <p class="strong">{{ copy.tables.removeUndo }}</p>
-      </div>
+      @if (asking() === 'leave') {
+        <h2 class="title" id="table-remove-title">
+          {{ copy.tables.leaveTitle(mesa()?.name ?? '') }}
+        </h2>
+        <div class="facts">
+          <p>{{ copy.tables.leaveBody }}</p>
+        </div>
+      } @else {
+        <h2 class="title" id="table-remove-title">
+          {{ copy.tables.removeTitle(mesa()?.name ?? '') }}
+        </h2>
+        <div class="facts">
+          <p>
+            {{ copy.tables.removeBody(mesa()?.players?.length ?? 0, mesa()?.teams?.length ?? 0) }}
+          </p>
+          <p class="strong">
+            {{ mesa()?.shared ? copy.tables.removeShared : copy.tables.removeUndo }}
+          </p>
+        </div>
+      }
       <div class="actions">
-        <button type="button" class="slab slab--danger lean" (click)="remove()">
-          <span class="slab__label" [appFitText]="copy.tables.remove">{{
-            copy.tables.remove
-          }}</span>
+        <button
+          type="button"
+          class="slab slab--danger lean"
+          (click)="asking() === 'leave' ? leave() : remove()"
+        >
+          <span
+            class="slab__label"
+            [appFitText]="asking() === 'leave' ? copy.tables.leaveMesa : copy.tables.remove"
+            >{{ asking() === 'leave' ? copy.tables.leaveMesa : copy.tables.remove }}</span
+          >
         </button>
         <button type="button" class="slab slab--compact lean" (click)="ask.close()">
           <span class="slab__label" [appFitText]="copy.common.cancel">{{
@@ -219,6 +300,40 @@ import { TeamEdits } from './team-edits';
     </app-sheet>
   `,
   styles: `
+    .tools {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--s-sm);
+      padding: 0 var(--s-sm);
+    }
+
+    .tools .slab {
+      flex: 0 1 auto;
+      padding: 0 var(--s-lg);
+    }
+
+    .shared-note {
+      color: var(--c-text);
+    }
+
+    /* A person in the mesa, not a name written by hand: outlined, not filled. */
+    .chip--member {
+      --fill: transparent;
+      --edge: var(--c-line);
+
+      display: inline-flex;
+      align-items: center;
+    }
+
+    span.chip:not(.chip--member) {
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .team:disabled {
+      cursor: default;
+    }
+
     .rename,
     .more {
       align-self: flex-start;
@@ -231,14 +346,14 @@ import { TeamEdits } from './team-edits';
       --label: var(--c-ground);
     }
 
-    .team:active::before,
-    .chip:active::before {
+    button.team:not(:disabled):active::before,
+    button.chip:active::before {
       opacity: var(--pressed);
     }
 
     @media (hover: hover) {
-      .team:hover::before,
-      .chip:hover::before {
+      button.team:not(:disabled):hover::before,
+      button.chip:hover::before {
         filter: brightness(1.12);
       }
     }
@@ -458,6 +573,8 @@ export class TableScreen {
 
   /** Asks for the team sheet, which the shell owns. */
   readonly editTeam = output<TeamEdit>();
+  /** Asks for the screen that shares the mesa, which the shell owns. */
+  readonly openShare = output<string>();
   /** The mesa is now played at: the screens above the board close. */
   readonly played = output<void>();
 
@@ -467,6 +584,7 @@ export class TableScreen {
 
   private readonly store = inject(GameStore);
   private readonly tables = inject(TablesStore);
+  private readonly sharingStore = inject(SharingStore);
   private readonly history = inject(HistoryStore);
   private readonly screen = viewChild.required(Screen);
   private readonly names = viewChild.required(NameSheet);
@@ -478,6 +596,25 @@ export class TableScreen {
   protected readonly mesa = computed(
     () => this.tables.tables().tables.find((table) => table.id === this.id()) ?? null,
   );
+
+  /** Owners change a shared mesa; a mesa kept on this phone is always this phone's. */
+  protected readonly owner = computed(() => {
+    const mesa = this.mesa();
+    return mesa !== null && (mesa.shared === undefined || mesa.shared.owner);
+  });
+  protected readonly sharing = signal(false);
+  protected readonly shareFailed = signal(false);
+  protected readonly shareLabel = computed(() =>
+    this.sharing() ? copy.share.starting : copy.share.start,
+  );
+  protected readonly playLabel = computed(() =>
+    this.mesa()?.shared?.scores === false ? copy.tables.view : copy.tables.play,
+  );
+  protected readonly asking = signal<'remove' | 'leave'>('remove');
+
+  protected memberOf(player: string) {
+    return this.mesa()?.shared?.members.find((member) => sameName(member.name, player)) ?? null;
+  }
 
   protected readonly shownPlayers = computed(() => {
     const players = this.mesa()?.players ?? [];
@@ -513,6 +650,7 @@ export class TableScreen {
 
   open(id: string): void {
     this.id.set(id);
+    this.shareFailed.set(false);
     this.newPlayer.set('');
     this.allPlayers.set(false);
     this.screen().open();
@@ -584,18 +722,61 @@ export class TableScreen {
     this.editTeam.emit(this.edits.saved(mesa.id, null, this.freeName(mesa.teams)));
   }
 
+  /** Moves the mesa to the cloud the first time, then opens the screen that shares it. */
+  protected async share(): Promise<void> {
+    const mesa = this.mesa();
+    if (mesa === null || this.sharing()) return;
+    if (mesa.shared) {
+      this.openShare.emit(mesa.id);
+      return;
+    }
+    this.sharing.set(true);
+    this.shareFailed.set(false);
+    const shared = await this.sharingStore.share(mesa.id);
+    this.sharing.set(false);
+    if (shared === null) {
+      this.shareFailed.set(true);
+      return;
+    }
+    // In the cloud the mesa has a new id; this screen and the next follow it.
+    this.id.set(shared);
+    this.openShare.emit(shared);
+  }
+
   protected askRemove(): void {
     const mesa = this.mesa();
     if (mesa === null) return;
-    if (mesa.players.length === 0 && mesa.teams.length === 0) this.remove();
+    this.asking.set('remove');
+    if (!mesa.shared && mesa.players.length === 0 && mesa.teams.length === 0) this.remove();
     else this.ask().open();
   }
 
-  protected remove(): void {
+  protected askLeave(): void {
+    this.asking.set('leave');
+    this.ask().open();
+  }
+
+  protected async remove(): Promise<void> {
     const mesa = this.mesa();
     this.ask().close();
+    if (mesa === null) return;
+    if (!mesa.shared) {
+      this.screen().close();
+      this.store.removeTable(mesa.id);
+      return;
+    }
+    // A shared mesa goes for everyone, at once.
+    if (await this.sharingStore.deleteMesa(mesa.id)) this.screen().close();
+    else this.store.announce(copy.tables.removeFailed);
+  }
+
+  protected async leave(): Promise<void> {
+    const mesa = this.mesa();
+    this.ask().close();
+    if (mesa === null) return;
     this.screen().close();
-    if (mesa !== null) this.store.removeTable(mesa.id);
+    await this.sharingStore.leave(mesa.id);
+    this.store.announce(copy.tables.leaving(mesa.name));
   }
 
   /** "Equipo 3", or the next number no saved team uses. */

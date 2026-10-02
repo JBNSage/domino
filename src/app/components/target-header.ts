@@ -23,6 +23,7 @@ import { Slashes } from './slashes';
         type="button"
         class="slab slab--compact lean target"
         [attr.aria-label]="copy.target.edit(target())"
+        [disabled]="!store.canScore()"
         (click)="editTarget.emit()"
       >
         <span class="label" [appFitText]="copy.target.label" [minScale]="0.5">{{
@@ -220,7 +221,7 @@ import { Slashes } from './slashes';
 export class TargetHeader {
   protected readonly copy = copy;
 
-  private readonly store = inject(GameStore);
+  protected readonly store = inject(GameStore);
   private readonly mesas = inject(TablesStore);
 
   /** What is being played for in a tournament; otherwise where. */
@@ -231,8 +232,12 @@ export class TargetHeader {
       if (mesa === null) return null;
       return {
         tournament: false,
-        text: copy.tables.status(mesa.name),
-        a11y: copy.tables.statusA11y(mesa.name),
+        text: this.store.canScore()
+          ? copy.tables.status(mesa.name)
+          : copy.tables.watching(mesa.name),
+        a11y: this.store.canScore()
+          ? copy.tables.statusA11y(mesa.name)
+          : copy.tables.watchingA11y(mesa.name),
       };
     }
     const status = copy.tournament.status(

@@ -104,6 +104,9 @@ type Entry =
       <h2 class="title" id="clear-sheet-title">{{ copy.history.clearTitle }}</h2>
       <div class="facts">
         <p>{{ clearBody() }}</p>
+        @if (sharedStay()) {
+          <p>{{ copy.history.clearShared }}</p>
+        }
         <p class="strong">{{ copy.history.clearUndo }}</p>
       </div>
       <div class="actions">
@@ -357,8 +360,13 @@ export class HistoryScreen {
       : { title: history.noMatchesTitle, body: history.noMatchesBody };
   });
 
+  /** A shared mesa's matches are not this phone's to clear; they stay with the mesa. */
+  protected readonly sharedStay = computed(
+    () => this.history.history().matches.length > this.history.kept().matches.length,
+  );
+
   protected readonly clearBody = computed(() => {
-    const { matches, tournaments } = this.history.history();
+    const { matches, tournaments } = this.history.kept();
     const single = matches.filter((match) => match.tournament === null).length;
     return copy.history.clearBody(single, tournaments.length);
   });

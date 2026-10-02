@@ -19,3 +19,8 @@
   flex: 1;
   min-height: 0;
 }
+
+/* Only watching a shared mesa: the scoring controls stay in view, dimmed and out of reach. */
+.quick.watching {
+  opacity: 0.4;
+}

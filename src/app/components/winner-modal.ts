@@ -28,7 +28,7 @@ import { Slashes } from './slashes';
   imports: [Slashes, FitText, Roll, PlayerPair],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <dialog #dialog class="winner" aria-labelledby="winner-title" (cancel)="correct()">
+    <dialog #dialog class="winner" aria-labelledby="winner-title" (cancel)="onCancel($event)">
       @if (result(); as result) {
         <div class="flood" [class]="'flood--' + result.winner"></div>
         <div class="trail" [class]="'trail--' + result.winner" aria-hidden="true"></div>
@@ -87,7 +87,8 @@ import { Slashes } from './slashes';
             </div>
           </div>
 
-          <div class="actions">
+          <!-- Only those who may score close the match; the others see it end on their own. -->
+          <div class="actions" [hidden]="!store.canScore()">
             <div class="others">
               <button type="button" class="slab slab--compact lean correct" (click)="correct()">
                 <span class="slab__label" [appFitText]="store.correctLabel()">
@@ -582,6 +583,15 @@ export class WinnerModal {
       if (visible && !dialog.open) dialog.showModal();
       else if (!visible && dialog.open) dialog.close();
     });
+  }
+
+  /** Escape and Back take back what ended the match; only those who may score can. */
+  protected onCancel(event: Event): void {
+    if (!this.store.canScore()) {
+      event.preventDefault();
+      return;
+    }
+    this.correct();
   }
 
   protected correct(): void {

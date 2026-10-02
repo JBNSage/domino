@@ -377,6 +377,22 @@
         ],
         "cssVariable": "--c-team-edge",
         "appearance": "light"
+      },
+      "qr-white": {
+        "role": "neutral",
+        "displayName": "QR White",
+        "canonical": "#FFFFFF",
+        "tonalRamp": [
+          "oklch(15% 0 0)",
+          "oklch(27% 0 0)",
+          "oklch(38% 0 0)",
+          "oklch(50% 0 0)",
+          "oklch(61% 0 0)",
+          "oklch(73% 0 0)",
+          "oklch(84% 0 0)",
+          "oklch(100% 0 0)"
+        ],
+        "note": "Written as #fff in share-screen.ts, not a custom property: the ground of the QR code in both appearances, outside the palette so any camera reads dark modules on white."
       }
     },
     "typographyMeta": {
@@ -686,6 +702,10 @@
       "overflow": "each name on one line, ending in an ellipsis when it alone does not fit",
       "shrink": "never",
       "separator": "a middle dot that belongs to the first name"
+    },
+    "watch": {
+      "quickBarOpacity": "0.4",
+      "note": "while only watching a shared mesa the quick bar is dimmed and inert; the pressed opacity stays 0.7"
     }
   },
   "components": [
@@ -701,7 +721,7 @@
       "name": "Slab Button, Compact",
       "kind": "button",
       "refersTo": "slab-button-compact",
-      "description": "48-pixel outlined slab for the occasional action; the quick-points bonus above each team's Anotar.",
+      "description": "48-pixel outlined slab for the occasional action; the quick-points bonus above each team's Anotar. At a shared mesa: Cambiar nombre and Compartir (three linked dots) on the mesa, Copiar enlace, Compartir… and Crear enlace nuevo on the share screen, the reader's name with a pencil and Ahora no on the join screen.",
       "html": "<button class=\"ds-slab-compact\">+30</button>",
       "css": ".ds-slab-compact { position: relative; isolation: isolate; } .ds-slab-compact::before { content: ''; position: absolute; inset: 0 6px; z-index: -1; background: var(--c-ground, #0e1114); border: 2px solid var(--c-line, #6b7480); transform: skewX(-12deg); } .ds-slab-compact { display: inline-flex; align-items: center; justify-content: center; min-width: 160px; min-height: 48px; padding: 0 16px; border: 0; background: none; color: var(--c-text, #fff); font-family: var(--font, 'Kanit', sans-serif); font-style: italic; font-weight: 800; font-size: var(--t-compact, 1.125rem); line-height: 1.1; letter-spacing: 0.5px; text-transform: uppercase; white-space: nowrap; cursor: pointer; transition: transform 90ms cubic-bezier(0.16, 1, 0.3, 1); } .ds-slab-compact:not(:disabled):hover::before { filter: brightness(1.12); } .ds-slab-compact:not(:disabled):active { transform: translateX(3px); } .ds-slab-compact:not(:disabled):active::before { opacity: 0.7; } .ds-slab-compact:focus-visible { outline: 3px solid var(--c-text, #fff); outline-offset: 3px; } .ds-slab-compact:disabled { color: var(--c-muted, #b6bcc4); cursor: default; } .ds-slab-compact:disabled::before { background: var(--c-raised, #2a2f36); border-color: transparent; }"
     },
@@ -725,7 +745,7 @@
       "name": "Slab Button, Neutral",
       "kind": "button",
       "refersTo": "slab-button-neutral",
-      "description": "Filled confirm in inverse neutrals: Guardar on the settings sheet, Empezar torneo, Empezar partida, Guardar y salir, compact Corregir under a selected hand.",
+      "description": "Filled confirm in inverse neutrals: Guardar on the settings sheet, Empezar torneo, Empezar partida, Guardar y salir, Jugar en esta mesa (Ver esta mesa), Enviar por WhatsApp (a link drawn as a slab), Unirse, compact Corregir under a selected hand.",
       "html": "<button class=\"ds-slab-neutral\">Guardar</button>",
       "css": ".ds-slab-neutral { position: relative; isolation: isolate; } .ds-slab-neutral::before { content: ''; position: absolute; inset: 0 6px; z-index: -1; background: var(--c-text, #fff); border: 2px solid transparent; transform: skewX(-12deg); } .ds-slab-neutral { display: inline-flex; align-items: center; justify-content: center; min-width: 160px; min-height: 56px; padding: 0 24px; border: 0; background: none; color: var(--c-ground, #0e1114); font-family: var(--font, 'Kanit', sans-serif); font-style: italic; font-weight: 800; font-size: var(--t-button, 1.25rem); line-height: 1.1; letter-spacing: 0.5px; text-transform: uppercase; white-space: nowrap; cursor: pointer; transition: transform 90ms cubic-bezier(0.16, 1, 0.3, 1); } .ds-slab-neutral:not(:disabled):hover::before { filter: brightness(1.12); } .ds-slab-neutral:not(:disabled):active { transform: translateX(3px); } .ds-slab-neutral:not(:disabled):active::before { opacity: 0.7; } .ds-slab-neutral:focus-visible { outline: 3px solid var(--c-text, #fff); outline-offset: 3px; } .ds-slab-neutral:disabled { color: var(--c-muted, #b6bcc4); cursor: default; } .ds-slab-neutral:disabled::before { background: var(--c-raised, #2a2f36); border-color: transparent; }"
     },
@@ -741,7 +761,7 @@
       "name": "Slab Button, Danger Outlined",
       "kind": "button",
       "refersTo": "slab-button-danger-outlined",
-      "description": "Compact outlined slab in the danger colour, for the action that leads to deleting or ending: Borrar in the menu (with its bin icon), Eliminar equipo, Borrar historial, Terminar torneo, Eliminar on a match or a tournament record.",
+      "description": "Compact outlined slab in the danger colour, for the action that leads to deleting or ending: Borrar in the menu (with its bin icon), Eliminar equipo, Borrar historial, Terminar torneo, Eliminar on a match or a tournament record. Also Salir de la mesa in the footer of a shared mesa, and Quitar in a person's row of the share screen, which removes at once with no confirming sheet.",
       "html": "<button class=\"ds-slab-danger-outline\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M4 7h16\"/><path d=\"M9 7V4h6v3\"/><path d=\"M6 7l1 13h10l1-13\"/><path d=\"M10 11v6M14 11v6\"/></svg>Borrar</button>",
       "css": ".ds-slab-danger-outline { position: relative; isolation: isolate; } .ds-slab-danger-outline::before { content: ''; position: absolute; inset: 0 6px; z-index: -1; background: var(--c-ground, #0e1114); border: 2px solid var(--c-danger, #ff6b5c); transform: skewX(-12deg); } .ds-slab-danger-outline { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 0 16px; border: 0; background: none; font-family: var(--font, 'Kanit', sans-serif); font-style: italic; font-weight: 800; font-size: var(--t-compact, 1.125rem); line-height: 1.1; letter-spacing: 0.5px; text-transform: uppercase; white-space: nowrap; cursor: pointer; transition: transform 90ms cubic-bezier(0.16, 1, 0.3, 1); min-width: 160px; color: var(--c-danger, #ff6b5c); } .ds-slab-danger-outline svg { flex: none; width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; } .ds-slab-danger-outline:hover::before { filter: brightness(1.12); } .ds-slab-danger-outline:active { transform: translateX(3px); } .ds-slab-danger-outline:active::before { opacity: 0.7; } .ds-slab-danger-outline:focus-visible { outline: 3px solid var(--c-text, #fff); outline-offset: 3px; }"
     },
@@ -757,7 +777,7 @@
       "name": "Target Slab",
       "kind": "custom",
       "refersTo": "target-slab",
-      "description": "Compact outlined header slab showing the score that wins the match; opens the settings sheet.",
+      "description": "Compact outlined header slab showing the score that wins the match; opens the settings sheet. While only watching a shared mesa it opens nothing, and the status line reads \"Mesa: Casa de Ana · Mirando\".",
       "html": "<button class=\"ds-target\"><span class=\"ds-target-label\">Meta</span><span class=\"ds-target-value\">200</span><svg class=\"ds-target-pencil\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M4 20l1-4.5L16.5 4 20 7.5 8.5 19z\"/><path d=\"M14 6.5l3.5 3.5\"/></svg></button>",
       "css": ".ds-target { position: relative; isolation: isolate; } .ds-target::before { content: ''; position: absolute; inset: 0 6px; z-index: -1; background: var(--c-ground, #0e1114); border: 2px solid var(--c-line, #6b7480); transform: skewX(-12deg); } .ds-target { display: inline-flex; align-items: center; gap: 8px; min-height: 48px; padding: 0 16px; border: 0; background: none; color: var(--c-text, #fff); font-family: var(--font, 'Kanit', sans-serif); font-style: italic; font-weight: 800; text-transform: uppercase; white-space: nowrap; cursor: pointer; transition: transform 90ms cubic-bezier(0.16, 1, 0.3, 1); } .ds-target-label { color: var(--c-muted, #b6bcc4); font-weight: 600; font-size: var(--t-body, 1rem); line-height: 1.2; } .ds-target-value { font-size: var(--t-title, 1.75rem); font-variant-numeric: tabular-nums; } .ds-target-pencil { width: 16px; height: 16px; fill: none; stroke: var(--c-muted, #b6bcc4); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; } .ds-target:hover::before { filter: brightness(1.12); } .ds-target:active { transform: translateX(3px); } .ds-target:active::before { opacity: 0.7; } .ds-target:focus-visible { outline: 3px solid var(--c-text, #fff); outline-offset: 3px; }"
     },
@@ -937,11 +957,42 @@
       "description": "On the personalised match, under \"Reglas\": a compact outlined slab stating one value, its label over the value with a 16-pixel pencil, opening the settings sheet on that field. Two share a row 8 apart, inset 7 so the row's outer corners sit on the seat slabs' corners.",
       "html": "<button class=\"ds-rule\" aria-label=\"Meta: 200 puntos para ganar. Cambiar\"><span class=\"ds-rule-text\"><span class=\"ds-rule-label\">Meta</span><span class=\"ds-rule-value\">200</span></span><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M4 20l1-4.5L16.5 4 20 7.5 8.5 19z\"/><path d=\"M14 6.5l3.5 3.5\"/></svg></button>",
       "css": ".ds-rule { position: relative; isolation: isolate; } .ds-rule::before { content: ''; position: absolute; inset: 0 5px; z-index: -1; background: var(--c-ground, #0e1114); border: 2px solid var(--c-line, #6b7480); transform: skewX(-12deg); } .ds-rule { display: flex; align-items: center; width: 170px; min-height: 64px; padding: 4px 16px 4px 24px; border: 0; background: none; color: var(--c-text, #fff); text-align: left; text-transform: uppercase; cursor: pointer; transition: transform 90ms cubic-bezier(0.16, 1, 0.3, 1); } .ds-rule-text { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; } .ds-rule-label { color: var(--c-muted, #b6bcc4); font-family: var(--font, 'Kanit', sans-serif); font-style: italic; font-weight: 600; font-size: var(--t-label, 0.8125rem); line-height: 1.3; } .ds-rule-value { font-family: var(--font, 'Kanit', sans-serif); font-style: italic; font-weight: 800; font-size: var(--t-title, 1.75rem); line-height: 1.1; font-variant-numeric: tabular-nums; } .ds-rule svg { flex: none; width: 16px; height: 16px; margin-left: auto; stroke: var(--c-muted, #b6bcc4); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; } .ds-rule:hover::before { filter: brightness(1.12); } .ds-rule:active { transform: translateX(3px); } .ds-rule:active::before { opacity: 0.7; } .ds-rule:focus-visible { outline: 3px solid var(--c-text, #fff); outline-offset: 3px; }"
+    },
+    {
+      "name": "Member Chip",
+      "kind": "chip",
+      "refersTo": "member-chip",
+      "description": "On the mesa screen, a person who has joined a shared mesa: transparent fill, 2px Line outline, Text colour, not pressable. Names written by hand stay Surface chips.",
+      "html": "<ul class=\"ds-mchips\"><li class=\"ds-mchip\">Ana</li><li class=\"ds-mchip ds-mchip-member\">Luis</li></ul>",
+      "css": ".ds-mchips { display: flex; flex-wrap: wrap; gap: 8px 4px; margin: 0; padding: 0; list-style: none; } .ds-mchip { position: relative; isolation: isolate; } .ds-mchip::before { content: ''; position: absolute; inset: 0 4px; z-index: -1; background: var(--c-surface, #1a1e23); border: 2px solid transparent; transform: skewX(-12deg); } .ds-mchip { display: inline-flex; align-items: center; min-height: 48px; padding: 0 16px; color: var(--c-text, #fff); font-family: var(--font, 'Kanit', sans-serif); font-style: italic; font-weight: 800; font-size: var(--t-body, 1rem); text-transform: uppercase; } .ds-mchip-member::before { background: transparent; border-color: var(--c-line, #6b7480); }"
+    },
+    {
+      "name": "Person Row",
+      "kind": "custom",
+      "refersTo": "person-row",
+      "description": "Share screen: one leaning Surface row per person in a shared mesa, the name with two role switches (Dueño, Anota; the keep switch's leaning box) and a compact danger-outlined Quitar. The reader's own row reads Tú · Dueño instead.",
+      "html": "<div class=\"ds-person\"><span class=\"ds-person-name\">Ana</span><div class=\"ds-roles\"><button class=\"ds-role\" role=\"switch\" aria-checked=\"false\"><span class=\"ds-box\"></span>Dueño</button><button class=\"ds-role\" role=\"switch\" aria-checked=\"true\"><span class=\"ds-box ds-box-on\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M5 12.5l4.5 4.5L19 7\"/></svg></span>Anota</button><button class=\"ds-quitar\">Quitar</button></div></div>",
+      "css": ".ds-person { position: relative; isolation: isolate; } .ds-person::before { content: ''; position: absolute; inset: 0 8px; z-index: -1; background: var(--c-surface, #1a1e23); border: 2px solid transparent; transform: skewX(-12deg); } .ds-person { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; width: 342px; min-height: 60px; padding: 8px 24px; color: var(--c-text, #fff); font-family: var(--font, 'Kanit', sans-serif); font-style: italic; font-weight: 800; text-transform: uppercase; } .ds-person-name { flex: 1 1 8rem; font-size: var(--t-button, 1.25rem); overflow-wrap: anywhere; } .ds-roles { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; } .ds-role { display: flex; align-items: center; gap: 8px; min-height: 48px; padding: 0 4px; border: 0; background: none; color: inherit; font: inherit; font-size: var(--t-compact, 1.125rem); text-transform: uppercase; cursor: pointer; } .ds-role:disabled { color: var(--c-muted, #b6bcc4); cursor: default; } .ds-role:focus-visible { outline: 3px solid var(--c-text, #fff); outline-offset: 3px; } .ds-box { position: relative; isolation: isolate; } .ds-box::before { content: ''; position: absolute; inset: 0 3px; z-index: -1; background: transparent; border: 2px solid var(--c-line, #6b7480); transform: skewX(-12deg); } .ds-box { display: grid; place-items: center; width: 40px; height: 32px; } .ds-box-on::before { background: var(--c-text, #fff); border-color: transparent; } .ds-box svg { width: 20px; height: 20px; fill: none; stroke: var(--c-ground, #0e1114); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; } .ds-quitar { position: relative; isolation: isolate; } .ds-quitar::before { content: ''; position: absolute; inset: 0 6px; z-index: -1; background: var(--c-ground, #0e1114); border: 2px solid var(--c-danger, #ff6b5c); transform: skewX(-12deg); } .ds-quitar { min-height: 48px; padding: 0 12px; border: 0; background: none; color: var(--c-danger, #ff6b5c); font: inherit; font-size: var(--t-compact, 1.125rem); letter-spacing: 0.5px; text-transform: uppercase; cursor: pointer; } .ds-quitar:active::before { opacity: 0.7; }"
+    },
+    {
+      "name": "QR Panel",
+      "kind": "custom",
+      "refersTo": "qr-panel",
+      "description": "Share screen: the link as a QR code, Graphite Ink on white in both appearances (The Camera Rule), up to 272px square, 16px padding, 2px Line border. Labelled as an image for screen readers.",
+      "html": "<div class=\"ds-qr\" role=\"img\" aria-label=\"Código QR para unirse a Casa de Ana\"><svg viewBox=\"0 0 7 7\" aria-hidden=\"true\"><path d=\"M0 0h3v3H0zM4 0h3v3H4zM0 4h3v3H0zM4 4h1v1H4zM6 5h1v2H6zM4 6h1v1H4z\"/></svg></div>",
+      "css": ".ds-qr { display: grid; place-items: center; width: 240px; aspect-ratio: 1; padding: 16px; background: #fff; border: 2px solid var(--c-line, #6b7480); } .ds-qr svg { width: 100%; height: 100%; fill: #0e1114; shape-rendering: crispEdges; }"
+    },
+    {
+      "name": "Watching Quick Bar",
+      "kind": "custom",
+      "description": "Watch mode: the board's quick bar stays in view at 40% opacity and inert while the reader only watches a shared mesa.",
+      "html": "<div class=\"ds-quick-watch\" inert><span class=\"ds-qw ds-qw-a\">Anotar</span><span class=\"ds-qw ds-qw-b\">Anotar</span></div>",
+      "css": ".ds-quick-watch { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; width: 342px; padding: 12px 24px; border-top: 1px solid var(--c-line, #6b7480); opacity: 0.4; } .ds-qw { position: relative; isolation: isolate; } .ds-qw::before { content: ''; position: absolute; inset: 0 6px; z-index: -1; background: var(--c-team-a, #ff5a00); border: 2px solid var(--c-team-edge, transparent); transform: skewX(-12deg); } .ds-qw { display: flex; align-items: center; justify-content: center; min-height: 56px; color: var(--c-ink, #0e1114); font-family: var(--font, 'Kanit', sans-serif); font-style: italic; font-weight: 800; font-size: var(--t-button, 1.25rem); letter-spacing: 0.5px; text-transform: uppercase; } .ds-qw-b::before { background: var(--c-team-b, #dfff00); }"
     }
   ],
   "narrative": {
     "northStar": "Liga de Carreras",
-    "overview": "The scoreboard is painted like two rival race cars parked nose to nose. Each team owns a flood of one loud colour with its total set in numerals large enough to read from the far seat at the table, and every other surface steps back to graphite at night or pit silver by day. There is one board, and while nothing is being played Inicio lies over it: the two liveries lined up nose to nose, which are the quick match. Above them sit twelve bottom sheets (menu, points, settings, reset, team, seat, name, team picker, statistics filter, removing a mesa, end of tournament, clearing the history), twelve full screens (history, match, tournament record, personalised match, tournament setup, next match, standings, champion, mesas, mesa, statistics, player statistics) and the winner screen, all built from the same parts.\n\nThe system has one shape and one typeface. The shape is a parallelogram that leans 12 degrees forward, used for buttons, rows, list entries, chips, the two liveries, the seat and champion slabs, the undo bar and the full-screen floods. The typeface is Kanit, set in heavy italic capitals for everything that is a name, a number or a command, and in upright medium only for full sentences. The only ornament is a mark of three small leaning bars cut from the same shape.\n\nDensity is low and the targets are large: the smallest control is 48 pixels and slab buttons are 56 pixels tall (48 on a short screen). The board has no navigation bar and no tabs: one menu button in the header opens a sheet that leads to everything that is not scoring, and a full screen returns through its back control. There are no cards, and the icons are a few small line symbols. On a wide screen the same phone column sits centred on the ground, 480 pixels wide.",
+    "overview": "The scoreboard is painted like two rival race cars parked nose to nose. Each team owns a flood of one loud colour with its total set in numerals large enough to read from the far seat at the table, and every other surface steps back to graphite at night or pit silver by day. There is one board, and while nothing is being played Inicio lies over it: the two liveries lined up nose to nose, which are the quick match. Above them sit twelve bottom sheets (menu, points, settings, reset, team, seat, name, team picker, statistics filter, removing or leaving a mesa, end of tournament, clearing the history), fourteen full screens (history, match, tournament record, personalised match, tournament setup, next match, standings, champion, mesas, mesa, sharing a mesa, joining a mesa, statistics, player statistics) and the winner screen, all built from the same parts. A mesa can be shared between phones; a phone that may only watch it sees the same board, out of reach.\n\nThe system has one shape and one typeface. The shape is a parallelogram that leans 12 degrees forward, used for buttons, rows, list entries, chips, the two liveries, the seat and champion slabs, the undo bar and the full-screen floods. The typeface is Kanit, set in heavy italic capitals for everything that is a name, a number or a command, and in upright medium only for full sentences. The only ornament is a mark of three small leaning bars cut from the same shape.\n\nDensity is low and the targets are large: the smallest control is 48 pixels and slab buttons are 56 pixels tall (48 on a short screen). The board has no navigation bar and no tabs: one menu button in the header opens a sheet that leads to everything that is not scoring, and a full screen returns through its back control. There are no cards, and the icons are a few small line symbols. On a wide screen the same phone column sits centred on the ground, 480 pixels wide.",
     "keyCharacteristics": [
       "Two saturated team colours used as fills, always carrying graphite ink.",
       "One forward-leaning parallelogram as the shape of every filled element; zero corner radius anywhere.",
@@ -974,6 +1025,11 @@
       {
         "name": "The Day Keyline Rule",
         "body": "By day every team-colour fill on the ground or a surface wears a 2-pixel Graphite Ink keyline: liveries, points chips, team slabs, seat slabs, the sides of a finished match, and the champion slab and chip. At night the keyline has no width. The winner flood and the flood of a screen never wear one.",
+        "section": "colors"
+      },
+      {
+        "name": "The Camera Rule",
+        "body": "The QR code is dark on white in both appearances, on a square of its own with a 2-pixel Line border. It is the only white in the build that does not flip with the ground.",
         "section": "colors"
       },
       {
@@ -1015,6 +1071,11 @@
         "name": "The One Ornament Rule",
         "body": "The triple-slash mark is the only decoration. It is hidden from assistive technology.",
         "section": "shapes"
+      },
+      {
+        "name": "The Watch Rule",
+        "body": "A watcher sees the whole board: the liveries, the list and the quick bar stay where they are, the quick bar dimmed to 40% and inert, because the scores are what a watcher came to see. Actions that only change the board, and have no place on it (the team slabs and \"Borrar\" in the menu, the winner screen's actions), are left out.",
+        "section": "components"
       }
     ],
     "dos": [
@@ -1036,13 +1097,17 @@
       "Do pin a screen's actions in its footer and let only its body scroll.",
       "Do tighten the same parts when the viewport is 36em tall or less, with thresholds in em, and keep the actions of every overlay on screen.",
       "Do keep what is about to change in view while its options are showing, and put each explanation directly under the action it explains.",
-      "Do give any gesture-only shortcut a visible control that reaches the same value."
+      "Do give any gesture-only shortcut a visible control that reaches the same value.",
+      "Do draw a QR code dark on white in both appearances, on its own square with the 2-pixel Line border.",
+      "Do keep the board whole for someone who only watches: dim and disable the quick bar rather than removing it, and leave out the actions that only change the board."
     ],
     "donts": [
       "Don't print a team colour as text on the ground or on a neutral surface; it is only legible as text on a Graphite Ink fill.",
       "Don't round a corner. No radius exists in this system.",
-      "Don't skew or rotate the element that holds text. The layer behind it leans; the italic does the rest.",
-      "Don't add shadows, gradients or blur to slabs, rows, chips, liveries, fields or sheets.",
+      "Don't skew or rotate the element that holds text at rest. The layer behind it leans; the italic does the rest. A moment may pass through a skew and settle.",
+      "Don't add shadows, gradients or blur to slabs, rows, chips, liveries, fields or sheets. The only gradient is the passing light of a moment.",
+      "Don't make a moment wait for itself: nothing that plays may delay a tap, a sheet or the next hand.",
+      "Don't celebrate an undo or a correction.",
       "Don't invert the ink on team colours in the day appearance.",
       "Don't use Danger for anything other than an invalid value or an action that deletes or ends.",
       "Don't add a second ornament alongside the triple-slash mark.",

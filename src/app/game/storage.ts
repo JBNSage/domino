@@ -1,4 +1,5 @@
 import { History, emptyHistory, parseHistory } from './history';
+import { Profile, parseProfile } from './me';
 import { State, parseState } from './state';
 import { Tables, noTables, parseTables } from './tables';
 import { Tournament, parseTournament } from './tournament';
@@ -9,6 +10,7 @@ const UNDO_KEY = 'domino/undo/v1';
 export const TOURNAMENT_KEY = 'domino/tournament/v1';
 export const HISTORY_KEY = 'domino/history/v1';
 export const TABLES_KEY = 'domino/tables/v1';
+export const ME_KEY = 'domino/me/v1';
 
 function parse(raw: string | null): unknown {
   if (raw === null) return null;
@@ -89,6 +91,18 @@ export function loadTables(): Tables {
 export function saveTables(tables: Tables): void {
   const empty = tables.tables.length === 0;
   write(TABLES_KEY, empty ? null : JSON.stringify(tables));
+}
+
+export function readProfile(raw: string | null): Profile | null {
+  return parseProfile(parse(raw));
+}
+
+export function loadProfile(): Profile | null {
+  return readProfile(read(ME_KEY));
+}
+
+export function saveProfile(profile: Profile): void {
+  write(ME_KEY, JSON.stringify(profile));
 }
 
 /** Asks the browser not to evict the saved match when storage runs low. */
