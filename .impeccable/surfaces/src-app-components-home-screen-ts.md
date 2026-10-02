@@ -21,7 +21,7 @@ STORY: Opening with nothing in play, the scorer sees the two sides already lined
 
 FIRST VIEWPORT: Header as the board's, with the mark and DOMINÓ in place of the meta slab. The two liveries fill the middle of the screen, names at the top, VS on the seam, an ink band "PARTIDA RÁPIDA ›" across their foot. A facts line under them. Two outlined slabs pinned at the bottom: "Personalizar partida" and "Torneo", each with one muted line.
 
-SIGNATURE INTERACTION: Tapping the grid parts the two liveries while the board, already live beneath, plays its match-start slam; coming back to Inicio mid-session, the sides slam in and the VS lands. A light crosses the band every 2.4 s. Reduce Motion removes all of it.
+SIGNATURE INTERACTION: The grid's seam is the board's, so its top is the board's lockup. Tapping it folds Inicio up onto that lockup, which is already live beneath, and the VS lands; coming back mid-session it unfolds again. The grid shows the match the app knows about (prepared, else the last one, else Equipo A vs B). A light crosses the band every 2.4 s. Reduce Motion removes all of it.
 
 FORM: Extension of an established world (Liga de Carreras); structure chosen with the user from three options (the grid, ranked first); no seed roll at extension scope.
 

@@ -14,9 +14,16 @@ import {
 import { copy } from '../copy';
 import { FitText } from '../directives/fit-text';
 import { GameStore } from '../game/game.store';
-import { DEFAULT_NAMES, TEAM_IDS, isDefault, samePlayers } from '../game/state';
+import {
+  DEFAULT_NAMES,
+  DEFAULT_QUICK_VALUE,
+  DEFAULT_TARGET,
+  TEAM_IDS,
+  sharedPlayer,
+} from '../game/state';
 import { Update } from '../platform/update';
 import { InstallHint } from './install-hint';
+import { PlayerPair } from './player-pair';
 import { TargetHeader } from './target-header';
 import { UndoSnackbar } from './undo-snackbar';
 
@@ -37,11 +44,10 @@ const SEAM_LEAN = 36;
  */
 @Component({
   selector: 'app-home-screen',
-  imports: [TargetHeader, UndoSnackbar, InstallHint, FitText],
+  imports: [TargetHeader, UndoSnackbar, InstallHint, PlayerPair, FitText],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     '[class.arrive]': 'arrive',
-    '[class.three]': 'rematch() !== null',
     '[style.--grid-seam.px]': 'seam()',
     '[style.--lockup-h.px]': 'lockupHeight()',
   },
@@ -54,66 +60,66 @@ const SEAM_LEAN = 36;
         (tables)="tables.emit()"
       />
 
-      <button
-        #grid
-        type="button"
-        class="grid"
-        [attr.aria-label]="copy.home.quickA11y"
-        (click)="store.startQuickMatch()"
-      >
-        @for (side of sides; track side.id) {
+      <button #grid type="button" class="grid" [attr.aria-label]="match().a11y" (click)="play()">
+        @for (side of match().sides; track side.id) {
           <span class="panel livery" [class]="'panel--' + side.id + ' livery--' + side.id">
-            <!-- "Equipo" over its letter, the letter at poster scale. -->
-            <span class="who">
-              <span class="name">{{ side.word }}</span>
-              <span class="letter">{{ side.letter }}</span>
-            </span>
+            @if (side.letter; as letter) {
+              <!-- "Equipo" over its letter, the letter at poster scale. -->
+              <span class="who">
+                <span class="name">{{ side.word }}</span>
+                <span class="letter">{{ letter }}</span>
+              </span>
+            } @else {
+              <span class="who">
+                <span class="team">{{ side.word }}</span>
+                @if (side.players; as players) {
+                  <app-player-pair class="players" [players]="players" />
+                }
+              </span>
+            }
           </span>
         }
         <span class="vs lean">{{ copy.moments.vs }}</span>
         <span class="go lean">
-          <span class="go__label" [appFitText]="copy.home.quick">{{ copy.home.quick }}</span>
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 5l6 7-6 7" /></svg>
+          <span class="go__label" [appFitText]="match().label">{{ match().label }}</span>
+          <!-- An arrow, here and on any choice that plays at once; a chevron opens a screen. -->
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
         </span>
       </button>
       <!-- The undo bar takes the facts line's place while it shows. -->
       <div class="slot" [class.covered]="covered()">
-        <p class="facts numerals" aria-hidden="true">{{ copy.home.facts }}</p>
+        <p class="facts numerals" aria-hidden="true">{{ match().facts }}</p>
         <app-undo-snackbar />
       </div>
 
-      <app-install-hint class="install" />
+      <app-install-hint class="install" [compact]="true" />
 
       <div class="choices" role="group" [attr.aria-label]="copy.home.choices">
-        @if (rematch(); as rematch) {
+        @if (match().kind !== 'quick') {
+          <!-- The grid holds their match, so the quick one waits here. -->
           <button
             type="button"
             class="slab lean entry"
-            [attr.aria-label]="rematch.a11y"
-            (click)="store.startRematch()"
+            [attr.aria-label]="copy.home.quickChoiceA11y"
+            (click)="store.startQuickMatch()"
           >
             <span class="entry-text">
-              <span class="slab__label">{{ copy.home.rematch }}</span>
-              <span class="entry-meta">{{ rematch.help }}</span>
+              <span class="slab__label long" [appFitText]="copy.home.quick">{{
+                copy.home.quick
+              }}</span>
+              <span class="slab__label short">{{ copy.home.quickShort }}</span>
+              <span class="entry-meta">{{ copy.home.quickHelp }}</span>
             </span>
-            <!-- Plays at once, like the grid: an arrow, not a chevron. -->
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
           </button>
         }
-        <button
-          type="button"
-          class="slab lean entry"
-          [attr.aria-label]="prepared()?.a11y ?? null"
-          (click)="custom.emit()"
-        >
+        <button type="button" class="slab lean entry" (click)="custom.emit()">
           <span class="entry-text">
             <span class="slab__label long" [appFitText]="copy.home.custom">{{
               copy.home.custom
             }}</span>
             <span class="slab__label short">{{ copy.home.customShort }}</span>
-            <span class="entry-meta" [class.entry-meta--set]="prepared() !== null">{{
-              prepared()?.help ?? copy.home.customHelp
-            }}</span>
+            <span class="entry-meta">{{ copy.home.customHelp }}</span>
           </span>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 5l6 7-6 7" /></svg>
         </button>
@@ -161,8 +167,23 @@ const SEAM_LEAN = 36;
       overflow: hidden;
     }
 
+    /* The liveries would paint over an outline, so the ring is a layer above them. */
     .grid:focus-visible {
-      outline-offset: -8px;
+      outline: none;
+    }
+
+    .grid:focus-visible::after {
+      content: '';
+      position: absolute;
+      inset: var(--s-sm);
+      z-index: 1;
+      border: 3px solid var(--c-ink);
+      pointer-events: none;
+    }
+
+    /* After a touch, as everywhere, the ring waits for the keyboard. */
+    :host-context([data-input='touch']) .grid:focus-visible::after {
+      display: none;
     }
 
     .panel {
@@ -200,6 +221,8 @@ const SEAM_LEAN = 36;
     }
 
     .who {
+      min-width: 0;
+      max-width: 100%;
       display: flex;
       flex-direction: column;
     }
@@ -209,47 +232,25 @@ const SEAM_LEAN = 36;
       text-transform: uppercase;
     }
 
+    /* A team's own name, as large as two or three words allow; a long word breaks. */
+    .team {
+      max-width: 100%;
+      font: italic 800 min(9cqw, var(--t-display)) / 1.05 var(--font);
+      text-transform: uppercase;
+      overflow-wrap: break-word;
+      hyphens: auto;
+    }
+
+    .players {
+      margin-top: var(--s-xs);
+      font: italic 600 var(--t-label) / 1.3 var(--font);
+      text-transform: uppercase;
+    }
+
     /* As large as the panel allows while staying clear of the VS. */
     .letter {
       font: italic 800 min(40cqw, 50cqh - 96px) / 0.95 var(--font);
       text-transform: uppercase;
-    }
-
-    /* Too short for a large letter: it joins "Equipo" on one line. */
-    @container (max-height: 320px) {
-      .who {
-        flex-direction: row;
-        align-items: baseline;
-        gap: var(--s-sm);
-      }
-
-      .letter {
-        font-size: var(--t-title);
-        line-height: 1.15;
-      }
-    }
-
-    /* A strip: everything tighter, the VS above the band. */
-    @container (max-height: 240px) {
-      .panel {
-        padding-block: var(--s-sm);
-      }
-
-      .name,
-      .letter {
-        font-size: var(--t-button);
-      }
-
-      .vs {
-        top: 40%;
-        padding: 2px var(--s-lg);
-        font-size: var(--t-title);
-      }
-
-      .go {
-        bottom: var(--s-sm);
-        min-height: var(--min-target);
-      }
     }
 
     .grid:active .panel::after,
@@ -314,6 +315,60 @@ const SEAM_LEAN = 36;
       stroke-linejoin: round;
     }
 
+    /* Too short for a large letter or a large name: one line of Title beside "Equipo". */
+    @container (max-height: 320px) {
+      .who {
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: baseline;
+        gap: 0 var(--s-sm);
+      }
+
+      .letter {
+        font-size: var(--t-title);
+        line-height: 1.15;
+      }
+
+      .team {
+        font-size: var(--t-title);
+        line-height: 1.15;
+      }
+
+      .players {
+        display: none;
+      }
+    }
+
+    /* A strip: everything tighter, the VS above the band. */
+    @container (max-height: 240px) {
+      .panel {
+        padding-block: var(--s-sm);
+      }
+
+      .name,
+      .letter {
+        font-size: var(--t-button);
+      }
+
+      .team {
+        font-size: var(--t-button);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .vs {
+        top: 40%;
+        padding: 2px var(--s-lg);
+        font-size: var(--t-title);
+      }
+
+      .go {
+        bottom: var(--s-sm);
+        min-height: var(--min-target);
+      }
+    }
+
     .facts {
       margin: 0;
       padding: var(--s-md) var(--s-xl) var(--s-lg);
@@ -341,7 +396,7 @@ const SEAM_LEAN = 36;
 
     /* Below the facts line, over the choices, while the app is not installed. */
     .install.shown {
-      padding: var(--s-md) var(--s-xl) var(--s-lg);
+      padding: var(--s-xs) var(--s-sm) var(--s-xs) var(--s-xl);
       border-top: 1px solid var(--c-line);
     }
 
@@ -388,11 +443,6 @@ const SEAM_LEAN = 36;
       overflow-wrap: break-word;
     }
 
-    /* What Personalizar will start with: stated, so the quick match never takes it unseen. */
-    .entry-meta--set {
-      color: var(--c-text);
-    }
-
     .entry svg {
       flex: none;
       width: 20px;
@@ -424,13 +474,6 @@ const SEAM_LEAN = 36;
 
       /* A short screen keeps its height for the grid; the board's empty list still offers it. */
       .install {
-        display: none !important;
-      }
-    }
-
-    /* Three choices on a small phone leave no room for it; the board's empty list still offers it. */
-    @media (max-height: 48em) {
-      :host(.three) .install {
         display: none !important;
       }
     }
@@ -524,17 +567,15 @@ const SEAM_LEAN = 36;
         animation: fold 220ms var(--ease-out) forwards;
       }
 
+      /* Its words go first and fast, so they are never read over the board's. */
       :host(.leaving) .who,
       :host(.leaving) .vs,
-      :host(.leaving) .go {
-        animation: fade-out 100ms ease-out forwards;
-      }
-
+      :host(.leaving) .go,
       :host(.leaving) app-target-header,
       :host(.leaving) .slot,
       :host(.leaving) .install,
       :host(.leaving) .choices {
-        animation: fade-out 160ms ease-out forwards;
+        animation: fade-out 70ms ease-out forwards;
       }
 
       @keyframes ground-in {
@@ -565,7 +606,7 @@ const SEAM_LEAN = 36;
           clip-path: inset(0);
         }
 
-        70% {
+        55% {
           clip-path: inset(0 0 calc(100% - var(--lockup-h, 190px)) 0);
           opacity: 1;
         }
@@ -611,12 +652,6 @@ const SEAM_LEAN = 36;
 export class HomeScreen {
   protected readonly copy = copy;
   protected readonly store = inject(GameStore);
-  protected readonly sides = TEAM_IDS.map((id) => {
-    const name = DEFAULT_NAMES[id];
-    const cut = name.lastIndexOf(' ');
-    return { id, word: name.slice(0, cut), letter: name.slice(cut + 1) };
-  });
-
   readonly menu = output<void>();
   /** The mesas, from the status line naming the one in use. */
   readonly tables = output<void>();
@@ -629,34 +664,45 @@ export class HomeScreen {
   /** The undo bar or the update notice takes the facts line's place. */
   protected readonly covered = computed(() => this.store.undo() !== null || this.update.ready());
 
-  /** What Personalizar starts with, said whenever it is not the quick match. */
-  protected readonly prepared = computed(() => {
+  /**
+   * The match the grid holds and starts: the one set up in Personalizar, else
+   * the last one played, else Equipo A against Equipo B.
+   */
+  protected readonly match = computed(() => {
     const state = this.store.state();
-    if (isDefault(state)) return null;
-    const { a, b } = state.teams;
-    return {
-      help: copy.home.prepared(a.name, b.name, state.target),
-      a11y: copy.home.preparedA11y(a.name, b.name, state.target),
-    };
-  });
-
-  /** The last match again, unless it is what Personalizar already holds. */
-  protected readonly rematch = computed(() => {
     const rematch = this.store.rematch();
-    if (rematch === null) return null;
-    const state = this.store.state();
-    const same =
-      state.target === rematch.target &&
-      TEAM_IDS.every(
-        (id) =>
-          state.teams[id].name === rematch.teams[id].name &&
-          samePlayers(state.teams[id].players, rematch.teams[id].players),
+    const prepared =
+      state.target !== DEFAULT_TARGET ||
+      state.quickValue !== DEFAULT_QUICK_VALUE ||
+      TEAM_IDS.some(
+        (id) => state.teams[id].name !== DEFAULT_NAMES[id] || state.teams[id].players !== null,
       );
-    if (same) return null;
-    const { a, b } = rematch.teams;
+    const kind: 'quick' | 'prepared' | 'rematch' = prepared
+      ? 'prepared'
+      : rematch !== null
+        ? 'rematch'
+        : 'quick';
+    const teams = kind === 'rematch' && rematch !== null ? rematch.teams : state.teams;
+    const target = kind === 'rematch' && rematch !== null ? rematch.target : state.target;
     return {
-      help: copy.home.rematchHelp(a.name, b.name, rematch.target),
-      a11y: copy.home.rematchA11y(a.name, b.name, rematch.target),
+      kind,
+      sides: TEAM_IDS.map((id) => {
+        const { name, players } = teams[id];
+        // A default name is set as a word over its letter; any other is set whole.
+        const cut = name === DEFAULT_NAMES[id] ? name.lastIndexOf(' ') : -1;
+        return cut < 0
+          ? { id, word: name, letter: null, players }
+          : { id, word: name.slice(0, cut), letter: name.slice(cut + 1), players };
+      }),
+      label:
+        kind === 'prepared'
+          ? copy.home.start
+          : kind === 'rematch'
+            ? copy.home.rematch
+            : copy.home.quick,
+      facts: copy.home.facts(target, state.quickValue),
+      a11y: copy.home.gridA11y(kind, teams.a.name, teams.b.name, target, state.quickValue),
+      shared: sharedPlayer(teams.a.players, teams.b.players),
     };
   });
 
@@ -670,7 +716,16 @@ export class HomeScreen {
     afterNextRender(() => this.followLockup(destroyRef));
   }
 
-  /** Reading starts at the quick match, the one-tap way in. */
+  /** Starts what the grid shows. Two teams that share a player are sent to be fixed first. */
+  protected play(): void {
+    const match = this.match();
+    if (match.kind === 'quick') this.store.startQuickMatch();
+    else if (match.kind === 'rematch') this.store.startRematch();
+    else if (match.shared !== null) this.custom.emit();
+    else this.store.startMatch();
+  }
+
+  /** Reading starts at the grid, the one-tap way in. */
   focus(): void {
     this.grid().nativeElement.focus();
   }

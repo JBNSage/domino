@@ -42,19 +42,29 @@ export const copy = {
   home: {
     title: 'Dominó',
     quick: 'Partida rápida',
-    quickA11y: `Partida rápida: ${DEFAULT_NAMES.a} contra ${DEFAULT_NAMES.b}, meta ${DEFAULT_TARGET}, puntos rápidos +${DEFAULT_QUICK_VALUE}`,
-    facts: `Meta ${DEFAULT_TARGET} · Puntos rápidos +${DEFAULT_QUICK_VALUE}`,
+    /** What the grid plays, said for each of the matches it can hold. */
+    gridA11y: (
+      kind: 'quick' | 'prepared' | 'rematch',
+      a: string,
+      b: string,
+      target: number,
+      quick: number,
+    ) => {
+      const match = `${a} contra ${b}, meta ${target}, puntos rápidos +${quick}`;
+      if (kind === 'prepared') return `Empezar partida: ${match}`;
+      if (kind === 'rematch') return `Revancha: ${match}, como la última partida`;
+      return `Partida rápida: ${match}`;
+    },
+    start: 'Empezar partida',
+    quickShort: 'Rápida',
+    rematch: 'Revancha',
+    facts: (target: number, quick: number) => `Meta ${target} · Puntos rápidos +${quick}`,
+    /** The quick match as a choice, once the grid holds another match. */
+    quickHelp: `${DEFAULT_NAMES.a} vs ${DEFAULT_NAMES.b} · Meta ${DEFAULT_TARGET}`,
+    quickChoiceA11y: `Partida rápida: ${DEFAULT_NAMES.a} contra ${DEFAULT_NAMES.b}, meta ${DEFAULT_TARGET}, puntos rápidos +${DEFAULT_QUICK_VALUE}`,
     custom: 'Personalizar partida',
     customShort: 'Personalizar',
     customHelp: 'Equipos, jugadores y reglas',
-    /** What Personalizar starts with, when it is not the quick match. */
-    prepared: (a: string, b: string, target: number) => `Preparada: ${a} vs ${b} · Meta ${target}`,
-    preparedA11y: (a: string, b: string, target: number) =>
-      `Personalizar partida. Preparada: ${a} contra ${b}, meta ${target}`,
-    rematch: 'Revancha',
-    rematchHelp: (a: string, b: string, target: number) => `${a} vs ${b} · Meta ${target}`,
-    rematchA11y: (a: string, b: string, target: number) =>
-      `Revancha: ${a} contra ${b}, meta ${target}, como la última partida`,
     tournament: 'Torneo',
     tournamentHelp: 'Varios equipos, por turnos',
     choices: 'Otras formas de jugar',

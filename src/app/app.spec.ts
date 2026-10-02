@@ -34,9 +34,55 @@ describe('App', () => {
     const home = (fixture.nativeElement as HTMLElement).querySelector('app-home-screen');
     expect(home?.textContent).toContain(copy.install.prompt);
 
-    home?.querySelector<HTMLButtonElement>('app-install-hint .later')?.click();
+    home?.querySelector<HTMLButtonElement>('app-install-hint .close')?.click();
     await fixture.whenStable();
     expect(home?.textContent).not.toContain(copy.install.prompt);
+  });
+
+  it('holds the match set up in Personalizar in the grid, and starts it as it is', async () => {
+    const store = TestBed.inject(GameStore);
+    store.setTeam('a', 'Los Primos', ['Ana', 'Luis']);
+    store.saveSettings(150, 30);
+    const fixture = TestBed.createComponent(App);
+    await fixture.whenStable();
+    const home = (fixture.nativeElement as HTMLElement).querySelector('app-home-screen');
+    const grid = home?.querySelector<HTMLButtonElement>('.grid');
+
+    expect(grid?.textContent).toContain('Los Primos');
+    expect(grid?.textContent).toContain(copy.home.start);
+    expect(grid?.getAttribute('aria-label')).toBe(
+      copy.home.gridA11y('prepared', 'Los Primos', 'Equipo B', 150, 30),
+    );
+    // The quick match is still there, as a choice.
+    expect(home?.querySelector('.choices')?.textContent).toContain(copy.home.quick);
+
+    grid?.click();
+    await fixture.whenStable();
+    expect(store.atHome()).toBe(false);
+    expect(store.state().teams.a.name).toBe('Los Primos');
+    expect(store.state().target).toBe(150);
+    expect(store.undo()).toBeNull();
+  });
+
+  it('holds the last match in the grid as a rematch once the board is back to the defaults', async () => {
+    const store = TestBed.inject(GameStore);
+    store.setTeam('a', 'Los Primos', null);
+    store.startMatch();
+    store.addPoints('a', 200);
+    store.closeRound();
+    store.resetAll();
+    const fixture = TestBed.createComponent(App);
+    await fixture.whenStable();
+    const grid = (fixture.nativeElement as HTMLElement).querySelector<HTMLButtonElement>(
+      'app-home-screen .grid',
+    );
+
+    expect(grid?.textContent).toContain('Los Primos');
+    expect(grid?.textContent).toContain(copy.home.rematch);
+
+    grid?.click();
+    await fixture.whenStable();
+    expect(store.state().teams.a.name).toBe('Los Primos');
   });
 
   it('starts a quick match in one tap', async () => {

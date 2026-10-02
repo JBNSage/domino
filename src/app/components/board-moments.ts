@@ -51,9 +51,10 @@ import { GameStore } from '../game/game.store';
       pointer-events: none;
     }
 
+    /* Left of the centre line, so it lands clear of the total on the right. */
     .vs {
       top: 50%;
-      left: 50%;
+      left: calc(50% - 26px);
       display: flex;
       flex-direction: column;
       align-items: center;
