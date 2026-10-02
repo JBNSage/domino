@@ -13,6 +13,7 @@ import { FitText } from '../directives/fit-text';
 import { GameStore } from '../game/game.store';
 import { DEFAULT_NAMES, TEAM_IDS } from '../game/state';
 import { Update } from '../platform/update';
+import { InstallHint } from './install-hint';
 import { TargetHeader } from './target-header';
 import { UndoSnackbar } from './undo-snackbar';
 
@@ -26,7 +27,7 @@ let shown = false;
  */
 @Component({
   selector: 'app-home-screen',
-  imports: [TargetHeader, UndoSnackbar, FitText],
+  imports: [TargetHeader, UndoSnackbar, InstallHint, FitText],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { '[class.arrive]': 'arrive' },
   template: `
@@ -60,13 +61,15 @@ let shown = false;
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 5l6 7-6 7" /></svg>
         </span>
       </button>
-      <p class="facts numerals" aria-hidden="true" [class.covered]="covered()">
-        {{ copy.home.facts }}
-      </p>
+      <!-- The undo bar takes the facts line's place while it shows. -->
+      <div class="slot" [class.covered]="covered()">
+        <p class="facts numerals" aria-hidden="true">{{ copy.home.facts }}</p>
+        <app-undo-snackbar />
+      </div>
+
+      <app-install-hint class="install" />
 
       <nav class="choices" [attr.aria-label]="copy.home.choices">
-        <!-- Floats above the choices, as it floats above the quick bar on the board. -->
-        <app-undo-snackbar />
         <button type="button" class="slab lean entry" (click)="custom.emit()">
           <span class="entry-text">
             <span class="slab__label long" [appFitText]="copy.home.custom">{{
@@ -113,6 +116,7 @@ let shown = false;
       position: relative;
       flex: 1 1 auto;
       min-height: 172px;
+      container-type: size;
       display: flex;
       padding: 0;
       border: 0;
@@ -155,6 +159,20 @@ let shown = false;
     .letter {
       font: italic 800 var(--t-hull) / 1 var(--font);
       text-transform: uppercase;
+    }
+
+    /* Too short for the large letter to stay clear of the VS: it joins "Equipo" on one line. */
+    @container (max-height: 320px) {
+      .who {
+        flex-direction: row;
+        align-items: baseline;
+        gap: var(--s-sm);
+      }
+
+      .letter {
+        font-size: var(--t-title);
+        line-height: 1.15;
+      }
     }
 
     .grid:active .panel::after,
@@ -229,7 +247,6 @@ let shown = false;
     }
 
     .choices {
-      position: relative;
       display: flex;
       flex-direction: column;
       gap: var(--s-md);
@@ -238,16 +255,28 @@ let shown = false;
       border-top: 1px solid var(--c-line);
     }
 
-    .choices app-undo-snackbar {
+    .slot {
+      position: relative;
+    }
+
+    .slot app-undo-snackbar {
       left: var(--s-xl);
       right: var(--s-xl);
-      bottom: calc(100% + var(--s-sm));
+    }
+
+    /* Below the facts line, over the choices, while the app is not installed. */
+    .install.shown {
+      padding: var(--s-md) var(--s-xl) var(--s-lg);
+      border-top: 1px solid var(--c-line);
     }
 
     /* While the undo bar shows, it takes the facts line's place, opened to its height. */
     .covered {
-      visibility: hidden;
       min-height: calc(var(--min-target) + 4px + var(--s-sm) * 2);
+    }
+
+    .covered .facts {
+      visibility: hidden;
     }
 
     .short {
@@ -303,16 +332,6 @@ let shown = false;
         padding-block: var(--s-sm);
       }
 
-      .who {
-        flex-direction: row;
-        align-items: baseline;
-        gap: var(--s-sm);
-      }
-
-      .letter {
-        font-size: var(--t-title);
-      }
-
       .vs {
         top: 40%;
         padding: 2px var(--s-lg);
@@ -339,6 +358,11 @@ let shown = false;
 
       .entry-meta {
         display: none;
+      }
+
+      /* A short screen keeps its height for the grid; the board's empty list still offers it. */
+      .install {
+        display: none !important;
       }
     }
 

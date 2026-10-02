@@ -5,6 +5,7 @@ import { copy } from './copy';
 import { GameStore } from './game/game.store';
 import { addTable, setActive } from './game/tables';
 import { TablesStore } from './game/tables.store';
+import { Install } from './platform/install';
 
 describe('App', () => {
   beforeEach(() => localStorage.clear());
@@ -19,6 +20,23 @@ describe('App', () => {
     expect(home?.textContent).toContain(copy.home.custom);
     expect(home?.textContent).toContain(copy.home.tournament);
     expect(page.querySelector('main')?.hasAttribute('inert')).toBe(true);
+  });
+
+  it('suggests installing the app at Inicio, until it is declined', async () => {
+    localStorage.removeItem('domino/install-hint/v1');
+    const fixture = TestBed.createComponent(App);
+    // The service hears the browser's offer only once it exists.
+    TestBed.inject(Install);
+    window.dispatchEvent(
+      Object.assign(new Event('beforeinstallprompt'), { prompt: async () => {} }),
+    );
+    await fixture.whenStable();
+    const home = (fixture.nativeElement as HTMLElement).querySelector('app-home-screen');
+    expect(home?.textContent).toContain(copy.install.prompt);
+
+    home?.querySelector<HTMLButtonElement>('app-install-hint .later')?.click();
+    await fixture.whenStable();
+    expect(home?.textContent).not.toContain(copy.install.prompt);
   });
 
   it('starts a quick match in one tap', async () => {

@@ -15,8 +15,8 @@ import { copy } from '../copy';
 import { FitText } from '../directives/fit-text';
 import { GameStore } from '../game/game.store';
 import { Row } from '../game/state';
-import { Install } from '../platform/install';
 import { prefersReducedMotion } from '../platform/motion';
+import { InstallHint } from './install-hint';
 import { Slashes } from './slashes';
 
 /** How close to the end still counts as "reading the newest hands". */
@@ -24,7 +24,7 @@ const NEAR_END = 80;
 
 @Component({
   selector: 'app-score-list',
-  imports: [Slashes, FitText, NgTemplateOutlet],
+  imports: [Slashes, FitText, NgTemplateOutlet, InstallHint],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { '[class.with-undo]': 'store.undo() !== null' },
   template: `
@@ -49,23 +49,7 @@ const NEAR_END = 80;
         <h2 class="empty-title">{{ copy.list.emptyTitle }}</h2>
         <p class="empty-body">{{ copy.list.emptyBody }}</p>
 
-        @if (install.hint(); as hint) {
-          <div class="install">
-            <p class="install-text">
-              {{ hint === 'ios' ? copy.install.ios : copy.install.prompt }}
-            </p>
-            <div class="install-actions">
-              @if (hint === 'prompt') {
-                <button type="button" class="slab slab--compact lean" (click)="install.install()">
-                  <span class="slab__label">{{ copy.install.action }}</span>
-                </button>
-              }
-              <button type="button" class="later" (click)="install.dismiss()">
-                {{ copy.install.dismiss }}
-              </button>
-            </div>
-          </div>
-        }
+        <app-install-hint class="install" />
       </div>
     } @else {
       <ol class="rows">
@@ -158,39 +142,17 @@ const NEAR_END = 80;
       text-transform: uppercase;
     }
 
-    .empty-body,
-    .install-text {
+    .empty-body {
       margin: 0;
       max-width: 34ch;
       color: var(--c-muted);
     }
 
-    .install {
-      display: flex;
-      flex-direction: column;
-      gap: var(--s-sm);
+    /* It renders nothing once installed or declined, so the rule comes with it. */
+    .install.shown {
       margin-top: var(--s-xl);
       padding-top: var(--s-lg);
       border-top: 1px solid var(--c-line);
-    }
-
-    .install-actions {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: var(--s-sm) var(--s-lg);
-    }
-
-    .later {
-      min-height: var(--min-target);
-      padding: 0 var(--s-sm);
-      border: 0;
-      background: none;
-      color: var(--c-text);
-      font: italic 800 var(--t-body) / 1.2 var(--font);
-      text-transform: uppercase;
-      text-decoration: underline;
-      text-underline-offset: 0.2em;
     }
 
     .rows {
@@ -330,7 +292,6 @@ export class ScoreList {
   protected readonly copy = copy;
   protected readonly teams = ['a', 'b'] as const;
   protected readonly store = inject(GameStore);
-  protected readonly install = inject(Install);
 
   readonly edit = output<{ row: Row; index: number }>();
 
