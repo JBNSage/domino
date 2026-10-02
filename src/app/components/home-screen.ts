@@ -269,9 +269,13 @@ const SEAM_LEAN = 36;
       --edge: var(--c-text);
       --lean-inset: 6px;
 
+      /* How far down the seam it sits. */
+      --at: 0.5;
+
       position: absolute;
-      top: 50%;
-      left: 50%;
+      top: calc(var(--at) * 100%);
+      /* The seam starts 18 right of centre and leans left as it goes down: the VS rides it. */
+      left: calc(50% + 18px - var(--grid-seam, 36px) * var(--at));
       padding: var(--s-sm) var(--s-xl);
       color: var(--c-on-ink);
       font: italic 800 var(--t-field) / 1 var(--font);
@@ -358,7 +362,8 @@ const SEAM_LEAN = 36;
       }
 
       .vs {
-        top: 40%;
+        --at: 0.4;
+
         padding: 2px var(--s-lg);
         font-size: var(--t-title);
       }
