@@ -65,7 +65,7 @@ export class TeamEdits {
       blocked: other.players ?? [],
       // Tournament teams belong to the tournament, not to the mesa.
       // Off until asked: changing players never rewrites a saved team by itself.
-      keep: table === null || tournament !== null ? null : false,
+      keep: table === null || tournament !== null || !this.ownsActive() ? null : false,
       savedId: savedHere,
       save: (name, players, keep) => {
         if (table === null || tournament !== null) {
@@ -100,7 +100,7 @@ export class TeamEdits {
       confirm: copy.players.save,
       table,
       blocked: other.players ?? [],
-      keep: table === null ? null : false,
+      keep: table === null || !this.ownsActive() ? null : false,
       savedId: null,
       save: (name, players, keep) => {
         const saved = table !== null && keep ? newId('s') : null;
@@ -137,5 +137,11 @@ export class TeamEdits {
   private savedHere(saved: string | null): string | null {
     const table = this.tables.active();
     return saved !== null && table?.teams.some((team) => team.id === saved) ? saved : null;
+  }
+
+  /** At a shared mesa only its owners keep teams; a mesa on this phone is always this phone's. */
+  private ownsActive(): boolean {
+    const shared = this.tables.active()?.shared;
+    return shared === undefined || shared.owner;
   }
 }

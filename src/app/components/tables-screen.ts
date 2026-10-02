@@ -207,7 +207,9 @@ export class TablesScreen {
     this.tables.tables().tables.map((table) => ({
       id: table.id,
       name: table.name,
-      summary: copy.tables.summary(table.players.length, table.teams.length),
+      summary: table.shared
+        ? `${copy.tables.summary(table.players.length, table.teams.length)} · ${copy.tables.shared}`
+        : copy.tables.summary(table.players.length, table.teams.length),
       active: table.id === this.activeId(),
     })),
   );

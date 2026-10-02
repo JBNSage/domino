@@ -3,17 +3,24 @@
 <main #board class="board" tabindex="-1" [attr.inert]="store.atHome() ? '' : null">
   <app-target-header
     [target]="store.state().target"
-    (editTarget)="settings.open('target')"
+    (editTarget)="store.canScore() && settings.open('target')"
     (menu)="menu.open()"
     (table)="standings.open()"
     (tables)="tables.open()"
   />
-  <app-team-lockup (pressTeam)="points.open($event)" />
+  <app-team-lockup (pressTeam)="store.canScore() && points.open($event)" />
   <div class="body">
     <app-score-list (edit)="points.openEdit($event.row, $event.index)" />
     <app-undo-snackbar (restored)="afterUndo($event)" />
   </div>
-  <app-quick-add-bar (enter)="points.open($event)" (editQuick)="settings.open('quick')" />
+  <!-- Only watching: the bar stays in view, out of reach. -->
+  <app-quick-add-bar
+    class="quick"
+    [class.watching]="!store.canScore()"
+    [attr.inert]="store.canScore() ? null : ''"
+    (enter)="points.open($event)"
+    (editQuick)="settings.open('quick')"
+  />
 </main>
 
 @if (store.atHome()) {
@@ -35,7 +42,9 @@
   (editTeam)="editSide($event)"
   (reset)="reset.open()"
   (home)="store.goHome()"
+  (editMe)="editMe()"
 />
+<app-name-sheet #nameSheet />
 <app-points-sheet #points />
 <app-settings-sheet #settings />
 <app-reset-sheet #reset (table)="standings.open()" />
@@ -52,7 +61,14 @@
 <app-player-stats-screen #playerStats />
 
 <app-tables-screen #tables (edit)="mesa.open($event)" />
-<app-table-screen #mesa (editTeam)="team.open($event)" (played)="tables.close()" />
+<app-table-screen
+  #mesa
+  (editTeam)="team.open($event)"
+  (openShare)="share.open($event)"
+  (played)="tables.close()"
+/>
+<app-share-screen #share />
+<app-join-screen (rename)="editMe()" (joined)="tables.close()" />
 
 <app-match-setup-screen
   #matchSetup

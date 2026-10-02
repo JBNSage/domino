@@ -170,7 +170,8 @@ export class NextMatchScreen {
   private readonly visible = computed(() => {
     const tournament = this.store.tournament();
     if (tournament !== null) return tournament.phase === 'between';
-    return this.store.state().between !== null;
+    // Only those who may score choose the next teams; the others watch the board.
+    return this.store.state().between !== null && this.store.canScore();
   });
 
   protected readonly heading = computed(() => {

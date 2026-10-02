@@ -16,7 +16,7 @@ People playing dominoes in two teams who need one person at the table to keep sc
 
 ## Product Purpose
 
-A domino score keeper that is ready the instant it opens: a match is one tap away, with no account and nothing to configure first. Success is that a hand's points are recorded in a couple of taps and nobody at the table argues about the total.
+A domino score keeper that is ready the instant it opens: a match is one tap away, with no sign-in and nothing to configure first. Success is that a hand's points are recorded in a couple of taps and nobody at the table argues about the total.
 
 ## Positioning
 
@@ -52,7 +52,12 @@ A match under way opens on its live scoreboard. With nothing being played the ap
 - Works offline once opened, and everything persists across app restarts: rows, teams and players, target, quick value, matches won, the tournament under way, the history and the mesas.
 - Follows the system light/dark setting unless the reader chooses light or dark.
 - Portrait phone is the target; tablets are not a design target.
-- Everything stays on the device: no accounts, no sync, no sharing of results.
+- Everything stays on the device unless a mesa is shared. There is no sign-in: every phone gets a made-up name for its person ("Doble Seis"), which they can change from the menu, and an anonymous account that is created the first time the phone shares or joins a mesa. Losing the phone, or clearing the browser, loses that account; the person joins again by link.
+- A shared mesa lives in the cloud (Firebase): its players, saved teams, the matches played there and the match being played now. Only shared mesas leave the phone; sharing moves a mesa, its teams and its matches, and other mesas stay offline as before.
+- Sharing is for owners: a share screen sends the mesa's link by WhatsApp, copies it, or shows it as a QR code to scan across the table. "Crear enlace nuevo" makes the old link stop letting anyone in.
+- Whoever opens the link joins the mesa as a player with their own name, which only they change; owners can take them out. They start by watching: they see the players, teams, matches and the live board, but add no points until an owner lets them ("Anota"). The person who shares is the first owner, and owners make others owners. Only owners change the mesa (its name, players written by hand, saved teams), remove matches, choose who may score, and delete it, which happens at once for everyone, without undo.
+- The live board of a shared mesa is the same on every phone at it: a hand added on one lands on the others, even when phones were offline at the time; each phone keeps working without signal and catches up. Whole-board undo takes back only this phone's step and keeps a hand another phone added meanwhile. While a tournament is played the board stays on the phone; its matches still go to the mesa's history. "Borrar historial" clears only what the phone keeps; a shared mesa's matches belong to the mesa.
+- Privacy: a shared mesa's names, teams and scores are stored in Firebase (Google Cloud) and readable only by its members. Nothing else leaves the phone.
 - Undecided: variants where both teams score in one hand; brackets or fixed fixtures.
 
 ## Brand Commitments

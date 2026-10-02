@@ -11,6 +11,7 @@ import { copy } from '../copy';
 import { FitText } from '../directives/fit-text';
 import { GameStore } from '../game/game.store';
 import { TEAM_IDS, TeamId } from '../game/state';
+import { MeStore } from '../game/me.store';
 import { TablesStore } from '../game/tables.store';
 import { Appearance, AppearanceChoice } from '../platform/appearance';
 import { Choice, ChoiceGroup } from './choice-group';
@@ -38,9 +39,14 @@ import { Sheet } from './sheet';
             </span>
           </button>
         }
-        <button type="button" class="slab lean entry" (click)="go(tournament)">
-          <span class="slab__label" [appFitText]="tournamentLabel()">{{ tournamentLabel() }}</span>
-        </button>
+        <!-- Only watching a shared mesa: no tournament of one's own over its board. -->
+        @if (store.canScore()) {
+          <button type="button" class="slab lean entry" (click)="go(tournament)">
+            <span class="slab__label" [appFitText]="tournamentLabel()">{{
+              tournamentLabel()
+            }}</span>
+          </button>
+        }
         <button type="button" class="slab lean entry" (click)="go(history)">
           <span class="slab__label" [appFitText]="copy.menu.history">{{ copy.menu.history }}</span>
         </button>
@@ -58,10 +64,22 @@ import { Sheet } from './sheet';
             <span class="entry-meta">{{ copy.menu.mesa(mesa()) }}</span>
           </span>
         </button>
+        <!-- How the others see this phone's person at a shared mesa. -->
+        <button
+          type="button"
+          class="slab lean entry"
+          [attr.aria-label]="copy.me.a11y(me.name())"
+          (click)="go(editMe)"
+        >
+          <span class="entry-text">
+            <span class="slab__label">{{ me.name() }}</span>
+            <span class="entry-meta">{{ copy.me.label }}</span>
+          </span>
+        </button>
       </div>
 
       <!-- At Inicio there is no board in view to change or clear. -->
-      @if (!store.atHome()) {
+      @if (!store.atHome() && store.canScore()) {
         <div class="group">
           <span class="label">{{ copy.menu.teams }}</span>
           <div class="teams">
@@ -91,7 +109,7 @@ import { Sheet } from './sheet';
         <button type="button" class="slab slab--compact lean" (click)="sheet().close()">
           <span class="slab__label" [appFitText]="copy.menu.close">{{ copy.menu.close }}</span>
         </button>
-        @if (!store.atHome()) {
+        @if (!store.atHome() && store.canScore()) {
           <button
             type="button"
             class="slab slab--compact slab--warn lean clear"
@@ -220,6 +238,10 @@ export class MenuSheet {
   readonly home = output<void>();
   // eslint-disable-next-line @angular-eslint/no-output-native
   readonly reset = output<void>();
+  /** Asks for the sheet that changes this phone's name. */
+  readonly editMe = output<void>();
+
+  protected readonly me = inject(MeStore);
 
   protected readonly store = inject(GameStore);
   private readonly mesas = inject(TablesStore);

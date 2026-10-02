@@ -340,6 +340,8 @@ export class PlayerPicker {
     const mesa = this.mesa();
     const name = cleanPlayer(this.query());
     if (mesa === null || name === '' || this.full()) return null;
+    // At a shared mesa only its owners add players.
+    if (mesa.shared && !mesa.shared.owner) return null;
     if (this.blocked().some((each) => sameName(each, name))) return null;
     return playerNamed(mesa, name) === null ? name : null;
   });

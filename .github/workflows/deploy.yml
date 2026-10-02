@@ -33,8 +33,24 @@ jobs:
         with:
           path: dist/domino/browser
 
-  deploy:
+  # The rules decide who may read and change a shared mesa. They go out before
+  # the site, so the published app never runs against older rules.
+  rules:
     needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+      # A service account key of the Firebase project, kept as a repository secret.
+      - uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+      - run: npx --yes firebase-tools@15 deploy --only firestore:rules --non-interactive
+
+  deploy:
+    needs: [build, rules]
     runs-on: ubuntu-latest
     environment:
       name: github-pages

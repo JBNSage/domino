@@ -32,6 +32,7 @@ import { play } from '../platform/motion';
         class="panel livery"
         [class]="'panel--' + team.id + ' livery--' + team.id"
         [attr.aria-label]="team.label"
+        [disabled]="!store.canScore()"
         (click)="pressTeam.emit(team.id)"
       >
         <!-- Light crossing the paint as a hand lands. -->
@@ -113,12 +114,17 @@ import { play } from '../platform/motion';
       padding-left: calc(var(--s-xl) + var(--s-sm));
     }
 
-    .panel:active::after {
+    /* Only watching: the liveries show the score but open nothing. */
+    .panel:disabled {
+      cursor: default;
+    }
+
+    .panel:not(:disabled):active::after {
       opacity: var(--pressed);
     }
 
     @media (hover: hover) {
-      .panel:hover::after {
+      .panel:not(:disabled):hover::after {
         filter: brightness(1.06);
       }
     }
@@ -392,7 +398,7 @@ export class TeamLockup {
   protected readonly copy = copy;
   readonly pressTeam = output<TeamId>();
 
-  private readonly store = inject(GameStore);
+  protected readonly store = inject(GameStore);
   private readonly totals = viewChildren<ElementRef<HTMLElement>>('total');
   private readonly panels = viewChildren<ElementRef<HTMLElement>>('panel');
 
