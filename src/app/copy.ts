@@ -1,4 +1,12 @@
-import { MAX_POINTS, MAX_TARGET, Players, UNDO_SECONDS } from './game/state';
+import {
+  DEFAULT_NAMES,
+  DEFAULT_QUICK_VALUE,
+  DEFAULT_TARGET,
+  MAX_POINTS,
+  MAX_TARGET,
+  Players,
+  UNDO_SECONDS,
+} from './game/state';
 import { MAX_SAVED_TEAMS, MAX_TABLES, MAX_TABLE_PLAYERS } from './game/tables';
 import { MAX_COUNT, MAX_TEAMS, Rule } from './game/tournament';
 
@@ -31,6 +39,28 @@ const teams = (count: number) => (count === 1 ? '1 equipo' : `${count} equipos`)
 
 export const copy = {
   date: (time: number) => dateFormat.format(time),
+  home: {
+    title: 'Dominó',
+    quick: 'Partida rápida',
+    quickA11y: `Partida rápida: ${DEFAULT_NAMES.a} contra ${DEFAULT_NAMES.b}, meta ${DEFAULT_TARGET}, puntos rápidos +${DEFAULT_QUICK_VALUE}`,
+    facts: `Meta ${DEFAULT_TARGET} · Puntos rápidos +${DEFAULT_QUICK_VALUE}`,
+    custom: 'Personalizar partida',
+    customShort: 'Personalizar',
+    customHelp: 'Equipos, jugadores, meta y puntos rápidos',
+    tournament: 'Torneo',
+    tournamentHelp: 'Varios equipos; quien gana sigue jugando',
+    choices: 'Otras formas de jugar',
+  },
+  setup: {
+    title: 'Personalizar partida',
+    lead: 'Toca un equipo para cambiar su nombre o sus jugadores.',
+    leadTable: 'Toca un equipo para cambiar sus jugadores o poner otro equipo de la mesa.',
+    rules: 'Reglas',
+    target: 'Meta',
+    targetA11y: (target: number) => `Meta: ${target} puntos para ganar. Cambiar`,
+    quick: 'Rápidos',
+    quickA11y: (value: number) => `Puntos rápidos: +${value}. Cambiar`,
+  },
   target: {
     label: 'Meta',
     edit: (target: number) => `Meta: ${target} puntos para ganar. Cambiar los ajustes.`,
@@ -116,6 +146,7 @@ export const copy = {
     handEdited: (hand: number, points: number) => `Mano ${hand} corregida a ${points}`,
     quickAdded: (value: number, team: string) => `+${value} a ${team}`,
     roundClosed: 'Partida cerrada',
+    quickMatch: 'Partida rápida empezada',
     handsCleared: 'Manos borradas',
     allReset: 'Todo reiniciado',
     matchDeleted: 'Partida eliminada',
@@ -156,6 +187,8 @@ export const copy = {
   menu: {
     a11y: 'Menú',
     title: 'Menú',
+    home: 'Inicio',
+    homeHelp: 'Elige cómo jugar',
     tournament: 'Torneo nuevo',
     table: 'Tabla del torneo',
     history: 'Historial',

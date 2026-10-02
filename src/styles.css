@@ -164,6 +164,64 @@ main:focus {
   transform: skewX(-12deg);
 }
 
+/*
+ * A team's livery: a flood cut on a fixed 36-pixel seam, so the diagonal between
+ * two liveries stays parallel at any height. Each reaches half a lean past the
+ * centre line and bleeds 48 past the outer edge. By day a slightly larger cut in
+ * ink sits behind it as the keyline.
+ */
+.livery {
+  --seam-lean: 36px;
+  --edge-x: calc(var(--team-edge-width) * 1.1);
+
+  position: relative;
+  isolation: isolate;
+}
+
+.livery--a {
+  --team: var(--c-team-a);
+}
+
+.livery--b {
+  --team: var(--c-team-b);
+}
+
+.livery::before,
+.livery::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: -1;
+}
+
+.livery--a::before,
+.livery--a::after {
+  left: -48px;
+  right: -15px;
+}
+
+.livery--b::before,
+.livery--b::after {
+  left: -15px;
+  right: -48px;
+}
+
+.livery::before {
+  background: var(--c-team-edge);
+  clip-path: polygon(var(--seam-lean) 0, 100% 0, calc(100% - var(--seam-lean)) 100%, 0 100%);
+}
+
+.livery::after {
+  background: var(--team);
+  clip-path: polygon(
+    calc(var(--seam-lean) + var(--edge-x)) var(--team-edge-width),
+    calc(100% - var(--edge-x)) var(--team-edge-width),
+    calc(100% - var(--seam-lean) - var(--edge-x)) calc(100% - var(--team-edge-width)),
+    var(--edge-x) calc(100% - var(--team-edge-width))
+  );
+}
+
 .slab {
   --fill: var(--c-ground);
   --edge: var(--c-line);

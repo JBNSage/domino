@@ -5,27 +5,36 @@ import { FitText } from '../directives/fit-text';
 import { GameStore } from '../game/game.store';
 import { TablesStore } from '../game/tables.store';
 import { winsNeeded } from '../game/tournament';
+import { Slashes } from './slashes';
 
 @Component({
   selector: 'app-target-header',
-  imports: [FitText],
+  imports: [FitText, Slashes],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <button
-      type="button"
-      class="slab slab--compact lean target"
-      [attr.aria-label]="copy.target.edit(target())"
-      (click)="editTarget.emit()"
-    >
-      <span class="label" [appFitText]="copy.target.label" [minScale]="0.5">{{
-        copy.target.label
-      }}</span>
-      <span class="value numerals">{{ target() }}</span>
-      <svg class="pencil" viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M4 20l1-4.5L16.5 4 20 7.5 8.5 19z" />
-        <path d="M14 6.5l3.5 3.5" />
-      </svg>
-    </button>
+    @if (brand()) {
+      <!-- At Inicio nothing is being played for yet, so the app's name stands in for the meta. -->
+      <span class="brand">
+        <app-slashes class="mark" [size]="22" />
+        <span class="brand__name">{{ copy.home.title }}</span>
+      </span>
+    } @else {
+      <button
+        type="button"
+        class="slab slab--compact lean target"
+        [attr.aria-label]="copy.target.edit(target())"
+        (click)="editTarget.emit()"
+      >
+        <span class="label" [appFitText]="copy.target.label" [minScale]="0.5">{{
+          copy.target.label
+        }}</span>
+        <span class="value numerals">{{ target() }}</span>
+        <svg class="pencil" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4 20l1-4.5L16.5 4 20 7.5 8.5 19z" />
+          <path d="M14 6.5l3.5 3.5" />
+        </svg>
+      </button>
+    }
     <button type="button" class="tool" [attr.aria-label]="copy.menu.a11y" (click)="menu.emit()">
       <!-- Three bars that lean like everything else. -->
       <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -59,6 +68,23 @@ import { winsNeeded } from '../game/tournament';
 
     .target {
       flex-shrink: 1;
+    }
+
+    /* As tall as the meta slab it replaces, so the header keeps its height. */
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: var(--s-md);
+      min-height: var(--min-target);
+    }
+
+    .mark {
+      color: var(--c-text);
+    }
+
+    .brand__name {
+      font: italic 800 var(--t-title) / 1.15 var(--font);
+      text-transform: uppercase;
     }
 
     @media (max-height: 36em) {
@@ -202,6 +228,8 @@ export class TargetHeader {
   });
 
   readonly target = input.required<number>();
+  /** At Inicio: the app's name instead of the meta. */
+  readonly brand = input(false);
   readonly editTarget = output<void>();
   readonly menu = output<void>();
   /** The table of the tournament being played. */

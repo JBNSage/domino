@@ -9,8 +9,40 @@ import { TablesStore } from './game/tables.store';
 describe('App', () => {
   beforeEach(() => localStorage.clear());
 
+  it('opens at Inicio with nothing being played, the board out of reach beneath it', async () => {
+    const fixture = TestBed.createComponent(App);
+    await fixture.whenStable();
+    const page = fixture.nativeElement as HTMLElement;
+    const home = page.querySelector('app-home-screen');
+
+    expect(home?.textContent).toContain(copy.home.quick);
+    expect(home?.textContent).toContain(copy.home.custom);
+    expect(home?.textContent).toContain(copy.home.tournament);
+    expect(page.querySelector('main')?.hasAttribute('inert')).toBe(true);
+  });
+
+  it('starts a quick match in one tap', async () => {
+    const fixture = TestBed.createComponent(App);
+    await fixture.whenStable();
+    const page = fixture.nativeElement as HTMLElement;
+
+    page.querySelector<HTMLButtonElement>('app-home-screen .grid')?.click();
+    await fixture.whenStable();
+
+    expect(page.querySelector('app-home-screen')).toBeNull();
+    expect(page.querySelector('main')?.hasAttribute('inert')).toBe(false);
+  });
+
+  it('opens on the scoreboard when a match is under way', async () => {
+    TestBed.inject(GameStore).addPoints('a', 20);
+    const fixture = TestBed.createComponent(App);
+    await fixture.whenStable();
+    expect((fixture.nativeElement as HTMLElement).querySelector('app-home-screen')).toBeNull();
+  });
+
   it('opens on the scoreboard, ready to score', async () => {
     const fixture = TestBed.createComponent(App);
+    TestBed.inject(GameStore).startQuickMatch();
     await fixture.whenStable();
     const page = fixture.nativeElement as HTMLElement;
 
@@ -22,6 +54,7 @@ describe('App', () => {
 
   it('offers the tournament, the history and the teams from the menu', async () => {
     const fixture = TestBed.createComponent(App);
+    TestBed.inject(GameStore).startQuickMatch();
     await fixture.whenStable();
     const page = fixture.nativeElement as HTMLElement;
     const menu = page.querySelector('app-menu-sheet');
@@ -32,6 +65,25 @@ describe('App', () => {
     expect(menu?.textContent).toContain(copy.menu.stats);
     expect(menu?.textContent).toContain(copy.appearance.label);
     expect(menu?.querySelectorAll('.team')).toHaveLength(2);
+  });
+
+  it('offers Inicio from the menu only while nothing is being played', async () => {
+    const fixture = TestBed.createComponent(App);
+    const store = TestBed.inject(GameStore);
+    await fixture.whenStable();
+    const menu = (fixture.nativeElement as HTMLElement).querySelector('app-menu-sheet');
+    // At Inicio itself: no way back to it, and nothing on the board to change or clear.
+    expect(menu?.textContent).not.toContain(copy.menu.home);
+    expect(menu?.querySelectorAll('.team')).toHaveLength(0);
+    expect(menu?.querySelector('.clear')).toBeNull();
+
+    store.startQuickMatch();
+    await fixture.whenStable();
+    expect(menu?.textContent).toContain(copy.menu.home);
+
+    store.addPoints('a', 10);
+    await fixture.whenStable();
+    expect(menu?.textContent).not.toContain(copy.menu.home);
   });
 
   it('shows the way to the table only during a tournament', async () => {
@@ -88,6 +140,7 @@ describe('App', () => {
 
   it('adds the quick points with one press', async () => {
     const fixture = TestBed.createComponent(App);
+    TestBed.inject(GameStore).startQuickMatch();
     await fixture.whenStable();
     const page = fixture.nativeElement as HTMLElement;
 
