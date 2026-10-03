@@ -88,6 +88,9 @@ export type SharedMesa = {
 /** What a link to a mesa carries. */
 export type Invite = { id: string; token: string; name: string };
 
+/** A shared mesa this phone lost from elsewhere: an owner deleted it, or took this phone out. */
+export type LostMesa = { id: string; name: string; why: 'deleted' | 'removed' };
+
 /** Why joining did not happen. */
 export type JoinFailure = 'offline' | 'refused';
 
@@ -96,6 +99,11 @@ export interface MesaCloud {
   readonly uid: Signal<string | null>;
   /** Every shared mesa this phone belongs to, kept up to date. */
   readonly mesas: Signal<ReadonlyMap<string, SharedMesa>>;
+  /**
+   * The last mesa taken away by someone else, so the person can be told.
+   * Leaving or deleting from this phone never sets it.
+   */
+  readonly lost: Signal<LostMesa | null>;
 
   /**
    * Loads what sharing needs and signs in, ahead of time, such as while the

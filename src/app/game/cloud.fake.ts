@@ -5,6 +5,7 @@ import {
   JoinFailure,
   LiveDoc,
   LiveWrites,
+  LostMesa,
   MatchDoc,
   Member,
   MesaCloud,
@@ -21,6 +22,7 @@ import {
 export class FakeMesaCloud implements MesaCloud {
   readonly uid = signal<string | null>('me');
   readonly mesas = signal<ReadonlyMap<string, SharedMesa>>(new Map());
+  readonly lost = signal<LostMesa | null>(null);
 
   /** Mesas on other phones that a link could join, by id. */
   readonly invites = new Map<string, { mesa: SharedMesa; token: string }>();
@@ -153,7 +155,14 @@ export class FakeMesaCloud implements MesaCloud {
     this.patch(id, change);
   }
 
-  /** This phone is taken out of a mesa, or the mesa is removed. */
+  /** An owner on another phone deletes the mesa, or takes this phone out of it. */
+  loseFromOtherPhone(id: string, why: LostMesa['why']): void {
+    const name = this.mesas().get(id)?.doc?.name;
+    this.drop(id);
+    if (name !== undefined) this.lost.set({ id, name, why });
+  }
+
+  /** Forgets a mesa quietly, as leaving or deleting it from this phone does. */
   drop(id: string): void {
     this.mesas.update((mesas) => {
       const next = new Map(mesas);

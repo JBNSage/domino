@@ -43,8 +43,8 @@ export type MesaSink = {
   matches: (matches: MatchDoc[]) => void;
   /** The live match, and whether that is what the server holds (not just an empty cache). */
   live: (live: LiveDoc | null, confirmed: boolean) => void;
-  /** The mesa is gone, or this phone was taken out of it. */
-  gone: () => void;
+  /** The mesa was deleted, or this phone was taken out of it (or cannot tell which). */
+  gone: (why: 'deleted' | 'removed') => void;
 };
 
 /** A batch holds at most 500 writes; this leaves room. */
@@ -95,7 +95,7 @@ export class Backend {
   listen(id: string, sink: MesaSink): () => void {
     const mesa = this.mesa(id);
     const fail = (error: unknown) => {
-      if (denied(error)) sink.gone();
+      if (denied(error)) sink.gone('removed');
       else console.warn('Mesa compartida', id, error);
     };
     const stops = [
@@ -104,7 +104,7 @@ export class Backend {
         (snap) => {
           if (snap.exists()) sink.mesa(snap.data() as MesaDoc);
           // Missing on the server, not just in the cache: it was removed.
-          else if (!snap.metadata.fromCache) sink.gone();
+          else if (!snap.metadata.fromCache) sink.gone('deleted');
         },
         fail,
       ),
@@ -211,6 +211,9 @@ export class Backend {
       getDocs(collection(mesa, 'members')),
       getDocs(collection(mesa, 'joins')),
     ]);
+    // The mesa itself first: the others, still members, read that it is gone
+    // and can say so. Owners are known by their member doc, kept until the end.
+    await deleteDoc(mesa);
     const refs = [
       ...matches.docs.map((each) => each.ref),
       ...joins.docs.map((each) => each.ref),
@@ -223,7 +226,6 @@ export class Backend {
       for (const ref of refs.slice(start, start + CHUNK)) batch.delete(ref);
       await batch.commit();
     }
-    await deleteDoc(mesa);
     await deleteDoc(this.member(id, this.uid));
   }
 

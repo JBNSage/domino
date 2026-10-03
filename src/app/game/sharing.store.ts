@@ -1,5 +1,6 @@
-import { Injectable, effect, inject, untracked } from '@angular/core';
+import { Injectable, effect, inject, signal, untracked } from '@angular/core';
 
+import { copy } from '../copy';
 import { Invite, JoinFailure, MESA_CLOUD, Member } from './cloud';
 import { GameStore } from './game.store';
 import { HistoryStore } from './history.store';
@@ -24,7 +25,27 @@ export class SharingStore {
   private readonly game = inject(GameStore);
   private readonly me = inject(MeStore);
 
+  /** What to tell the person about a mesa someone else took away, until they dismiss it. */
+  readonly notice = signal<string | null>(null);
+
   constructor() {
+    // A mesa deleted elsewhere, or this phone taken out of it: the board, if it
+    // was that mesa's, stays here as a match of this phone, and the person is told.
+    effect(() => {
+      const lost = this.cloud.lost();
+      if (lost === null) return;
+      untracked(() => {
+        const inUse = this.tables.releaseShared(lost.id);
+        const playing = inUse && this.game.state().rows.length > 0;
+        const message =
+          lost.why === 'deleted'
+            ? copy.tables.lostDeleted(lost.name, playing)
+            : copy.tables.lostRemoved(lost.name, playing);
+        this.notice.set(message);
+        this.game.announce(message);
+      });
+    });
+
     // A new name reaches every shared mesa this phone is in.
     let first = true;
     effect(() => {
@@ -35,6 +56,10 @@ export class SharingStore {
       }
       untracked(() => this.cloud.renameMe(name));
     });
+  }
+
+  dismissNotice(): void {
+    this.notice.set(null);
   }
 
   /** Gets the cloud ready while the person reads, so joining or sharing is one write. */

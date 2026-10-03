@@ -587,6 +587,12 @@ export const copy = {
     leaveTitle: (name: string) => `¿Salir de ${name}?`,
     leaveBody: 'Dejarás de ver sus partidas. Para volver necesitas un enlace de un dueño.',
     leaving: (name: string) => `Saliste de ${name}`,
+    /** Told when someone else takes a mesa away; `playing` when its match stays on this phone. */
+    lostDeleted: (name: string, playing: boolean) =>
+      `Un dueño eliminó la mesa ${name}.${playing ? ' La partida sigue en este teléfono.' : ''}`,
+    lostRemoved: (name: string, playing: boolean) =>
+      `Ya no estás en la mesa ${name}.${playing ? ' La partida sigue en este teléfono.' : ''}`,
+    lostDismiss: 'Entendido',
     view: 'Ver esta mesa',
     removeShared: 'Se borra para todos, con sus partidas. No se puede deshacer.',
     removeFailed: 'No se pudo eliminar. Revisa la conexión y vuelve a intentarlo.',

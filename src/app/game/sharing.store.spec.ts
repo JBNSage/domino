@@ -167,4 +167,44 @@ describe('Sharing a mesa', () => {
     await sharing.leave('m9');
     expect(tables.tables().tables).toHaveLength(0);
   });
+
+  it('says so when another owner deletes the mesa, and keeps the match on this phone', async () => {
+    local();
+    const shared = (await sharing.share('m1')) ?? '';
+    store.addPoints('a', 30);
+
+    cloud.loseFromOtherPhone(shared, 'deleted');
+    TestBed.tick();
+
+    expect(sharing.notice()).toBe(
+      'Un dueño eliminó la mesa Casa. La partida sigue en este teléfono.',
+    );
+    expect(tables.active()).toBeNull();
+    expect(store.state().rows).toHaveLength(1);
+    expect(store.canScore()).toBe(true);
+    // Not in use any more, even after a restart.
+    expect(localStorage.getItem('domino/tables-active/v1')).toBeNull();
+
+    sharing.dismissNotice();
+    expect(sharing.notice()).toBeNull();
+  });
+
+  it('says so when this phone is taken out of a mesa', async () => {
+    cloud.invites.set('m9', { mesa: theirs, token: 'k1' });
+    await sharing.join({ id: 'm9', token: 'k1', name: 'Club' });
+
+    cloud.loseFromOtherPhone('m9', 'removed');
+    TestBed.tick();
+
+    expect(sharing.notice()).toBe('Ya no estás en la mesa Club.');
+    expect(tables.tables().tables).toHaveLength(0);
+  });
+
+  it('says nothing when the mesa is deleted or left from this phone', async () => {
+    local();
+    const shared = (await sharing.share('m1')) ?? '';
+    await sharing.deleteMesa(shared);
+    TestBed.tick();
+    expect(sharing.notice()).toBeNull();
+  });
 });

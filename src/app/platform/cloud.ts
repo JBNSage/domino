@@ -4,6 +4,7 @@ import type {
   Invite,
   JoinFailure,
   LiveDoc,
+  LostMesa,
   LiveWrites,
   MatchDoc,
   Member,
@@ -61,10 +62,13 @@ export class FirestoreMesaCloud implements MesaCloud {
   private readonly marker = signal(loadMarker());
   readonly uid = computed(() => this.marker().uid);
   readonly mesas = signal<ReadonlyMap<string, SharedMesa>>(new Map());
+  readonly lost = signal<LostMesa | null>(null);
 
   private backend: Promise<Backend> | null = null;
   private readonly stops = new Map<string, () => void>();
   private readonly inviteStops = new Map<string, () => void>();
+  /** Mesas this phone is deleting, whose disappearance is no news to it. */
+  private readonly deleting = new Set<string>();
 
   constructor() {
     effect(() => saveMarker(this.marker()));
@@ -141,8 +145,13 @@ export class FirestoreMesaCloud implements MesaCloud {
 
   async deleteMesa(id: string): Promise<void> {
     const backend = await this.ready();
-    await backend.deleteMesa(id);
-    this.forget(id);
+    this.deleting.add(id);
+    try {
+      await backend.deleteMesa(id);
+      this.forget(id);
+    } finally {
+      this.deleting.delete(id);
+    }
   }
 
   writeMesa(id: string, doc: Pick<MesaDoc, 'name' | 'players' | 'teams'>): void {
@@ -257,6 +266,14 @@ export class FirestoreMesaCloud implements MesaCloud {
     this.listen(id);
   }
 
+  /** Someone else took the mesa away: forgotten, and kept long enough to say so. */
+  private lose(id: string, why: LostMesa['why']): void {
+    const name = this.mesas().get(id)?.doc?.name;
+    this.forget(id);
+    if (this.deleting.has(id) || name === undefined) return;
+    this.lost.set({ id, name, why });
+  }
+
   private forget(id: string): void {
     this.stops.get(id)?.();
     this.stops.delete(id);
@@ -288,7 +305,7 @@ export class FirestoreMesaCloud implements MesaCloud {
           matches: (matches) => this.patch(id, (mesa) => ({ ...mesa, matches })),
           live: (live, confirmed) =>
             this.patch(id, (mesa) => ({ ...mesa, live, liveLoaded: mesa.liveLoaded || confirmed })),
-          gone: () => this.forget(id),
+          gone: (why) => this.lose(id, why),
         }),
       );
     });

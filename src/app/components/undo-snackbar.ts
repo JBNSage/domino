@@ -2,12 +2,14 @@ import { ChangeDetectionStrategy, Component, computed, inject, input, output } f
 
 import { copy } from '../copy';
 import { GameStore } from '../game/game.store';
+import { SharingStore } from '../game/sharing.store';
 import { Update } from '../platform/update';
 
 /**
  * The board's one transient bar, on an inverse surface so it reads as a layer
- * in both appearances. It offers to undo; with nothing to undo and no round
- * under way, it can say that a new version is waiting.
+ * in both appearances. It first says when a shared mesa was taken away, until
+ * dismissed; then it offers to undo; with nothing to undo and no round under
+ * way, it can say that a new version is waiting.
  */
 @Component({
   selector: 'app-undo-snackbar',
@@ -19,7 +21,14 @@ import { Update } from '../platform/update';
     '(focusout)': 'store.releaseUndo()',
   },
   template: `
-    @if (offer(); as undo) {
+    @if (sharing.notice(); as notice) {
+      <div class="bar lean">
+        <span class="message">{{ notice }}</span>
+        <button type="button" class="action" (click)="sharing.dismissNotice()">
+          {{ copy.tables.lostDismiss }}
+        </button>
+      </div>
+    } @else if (offer(); as undo) {
       <div class="bar lean">
         <span class="message">{{ undo.message }}</span>
         <button
@@ -109,6 +118,7 @@ export class UndoSnackbar {
   protected readonly copy = copy;
   protected readonly store = inject(GameStore);
   protected readonly update = inject(Update);
+  protected readonly sharing = inject(SharingStore);
 
   /**
    * On the screens above the board: only entries removed from the history or

@@ -14,6 +14,7 @@ import {
 import { copy } from '../copy';
 import { FitText } from '../directives/fit-text';
 import { GameStore } from '../game/game.store';
+import { SharingStore } from '../game/sharing.store';
 import {
   DEFAULT_NAMES,
   DEFAULT_QUICK_VALUE,
@@ -666,8 +667,11 @@ export class HomeScreen {
 
   protected readonly arrive = shown;
   private readonly update = inject(Update);
-  /** The undo bar or the update notice takes the facts line's place. */
-  protected readonly covered = computed(() => this.store.undo() !== null || this.update.ready());
+  private readonly sharing = inject(SharingStore);
+  /** The bar (a lost mesa, undo, or the update notice) takes the facts line's place. */
+  protected readonly covered = computed(
+    () => this.sharing.notice() !== null || this.store.undo() !== null || this.update.ready(),
+  );
 
   /**
    * The match the grid holds and starts: the one set up in Personalizar, else

@@ -89,6 +89,13 @@ export class TablesStore {
     this.sharedActive.set(id);
   }
 
+  /** Stops using a shared mesa that is gone. Returns whether it was the one in use. */
+  releaseShared(id: string): boolean {
+    if (this.sharedActive() !== id) return false;
+    this.sharedActive.set(null);
+    return true;
+  }
+
   /** Takes a mesa off this device once it has moved to the cloud, where it is `cloudId`. */
   forgetLocal(id: string, cloudId: string): void {
     const wasActive = this.local().active === id;
