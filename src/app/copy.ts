@@ -301,6 +301,17 @@ export const copy = {
     offline: 'Sin conexión. Para unirte hace falta internet una vez.',
     refused: 'Este enlace ya no sirve. Pide uno nuevo a un dueño de la mesa.',
     joined: (mesa: string) => `Te uniste a ${mesa}`,
+    inApp:
+      '¿Tienes Dominó instalado? Para unirte desde la app, copia el enlace, abre la app y pégalo en Mesas → Unirse con un enlace.',
+    copyLink: 'Copiar enlace',
+    copied: 'Enlace copiado',
+    byLink: 'Unirse con un enlace',
+    linkTitle: 'Unirse con un enlace',
+    linkLabel: 'Enlace de la mesa',
+    linkHelp: 'Pega el enlace que te mandaron por WhatsApp o que copiaste.',
+    linkWrong: 'Ese enlace no es de una mesa de Dominó.',
+    paste: 'Pegar',
+    continue: 'Seguir',
   },
   menu: {
     a11y: 'Menú',

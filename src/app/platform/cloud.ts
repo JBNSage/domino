@@ -118,7 +118,8 @@ export class FirestoreMesaCloud implements MesaCloud {
     let backend: Backend;
     try {
       backend = await this.ready();
-    } catch {
+    } catch (error) {
+      console.warn('Unirse: no se pudo conectar con Firebase', error);
       return 'offline';
     }
     const failure = await backend.join(invite, me);

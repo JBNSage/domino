@@ -5,7 +5,8 @@ const DISMISSED_KEY = 'domino/install-hint/v1';
 /** Chrome's install event, which is not in the DOM typings yet. */
 type InstallEvent = Event & { prompt: () => Promise<unknown> };
 
-function isInstalled(): boolean {
+/** Running as the installed app, not in a browser tab. */
+export function isInstalled(): boolean {
   const standalone =
     typeof matchMedia === 'function' && matchMedia('(display-mode: standalone)').matches;
   return standalone || (navigator as { standalone?: boolean }).standalone === true;

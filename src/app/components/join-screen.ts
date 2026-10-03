@@ -12,7 +12,9 @@ import { copy } from '../copy';
 import { FitText } from '../directives/fit-text';
 import { Invite } from '../game/cloud';
 import { GameStore } from '../game/game.store';
+import { buildInvite } from '../game/invite';
 import { MeStore } from '../game/me.store';
+import { isInstalled } from '../platform/install';
 import { SharingStore } from '../game/sharing.store';
 import { Screen } from './screen';
 
@@ -45,6 +47,20 @@ import { Screen } from './screen';
       </div>
 
       <p class="message" role="status" [class.error]="failure() !== null">{{ message() }}</p>
+
+      @if (!installed) {
+        <!-- A link opens in the browser, which is not the installed app: on an iPhone, never. -->
+        <div class="in-app">
+          <p class="note">{{ copy.join.inApp }}</p>
+          <button type="button" class="slab slab--compact lean copy" (click)="copyLink()">
+            <span
+              class="slab__label"
+              [appFitText]="copied() ? copy.join.copied : copy.join.copyLink"
+              >{{ copied() ? copy.join.copied : copy.join.copyLink }}</span
+            >
+          </button>
+        </div>
+      }
 
       <ng-container screenFooter>
         <button type="button" class="slab slab--compact lean" (click)="screen().close()">
@@ -109,6 +125,27 @@ import { Screen } from './screen';
       stroke-linejoin: round;
     }
 
+    .in-app {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: var(--s-sm);
+      margin-top: var(--s-sm);
+      padding: var(--s-lg) var(--s-sm) 0;
+      border-top: 1px solid var(--c-line);
+    }
+
+    .note {
+      margin: 0;
+      max-width: 40ch;
+      color: var(--c-muted);
+      line-height: 1.35;
+    }
+
+    .copy {
+      max-width: 100%;
+    }
+
     .join:not(:disabled) {
       --fill: var(--c-text);
       --label: var(--c-ground);
@@ -128,6 +165,8 @@ export class JoinScreen {
   readonly joined = output<string>();
 
   protected readonly invite = signal<Invite | null>(null);
+  protected readonly installed = isInstalled();
+  protected readonly copied = signal(false);
   protected readonly busy = signal(false);
   protected readonly failure = signal<'offline' | 'refused' | null>(null);
 
@@ -143,7 +182,20 @@ export class JoinScreen {
     this.invite.set(invite);
     this.failure.set(null);
     this.busy.set(false);
+    this.copied.set(false);
     this.screen().open();
+  }
+
+  /** The same invitation as a link, for pasting into the installed app. */
+  protected async copyLink(): Promise<void> {
+    const invite = this.invite();
+    if (invite === null) return;
+    try {
+      await navigator.clipboard.writeText(buildInvite(document.baseURI, invite));
+      this.copied.set(true);
+    } catch {
+      // Not allowed here; the link the person opened is still in their chat.
+    }
   }
 
   protected async join(): Promise<void> {

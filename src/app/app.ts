@@ -14,6 +14,7 @@ import {
 import { ChampionScreen } from './components/champion-screen';
 import { HistoryScreen } from './components/history-screen';
 import { HomeScreen } from './components/home-screen';
+import { JoinLinkSheet } from './components/join-link-sheet';
 import { JoinScreen } from './components/join-screen';
 import { MatchScreen } from './components/match-screen';
 import { MatchSetupScreen } from './components/match-setup-screen';
@@ -41,6 +42,7 @@ import { TournamentSetupScreen } from './components/tournament-setup-screen';
 import { UndoSnackbar } from './components/undo-snackbar';
 import { WinnerModal } from './components/winner-modal';
 import { GameStore } from './game/game.store';
+import { Invite } from './game/cloud';
 import { parseInvite } from './game/invite';
 import { MeStore } from './game/me.store';
 import { copy } from './copy';
@@ -72,6 +74,7 @@ import { keepAwake } from './platform/wake-lock';
     TableScreen,
     ShareScreen,
     JoinScreen,
+    JoinLinkSheet,
     StatsScreen,
     PlayerStatsScreen,
     MatchScreen,
@@ -121,7 +124,7 @@ export class App {
       const invite = parseInvite(location.hash);
       if (invite === null) return;
       history.replaceState(history.state, '', location.pathname + location.search);
-      afterNextRender(() => this.joinScreen().open(invite), { injector: this.injector });
+      afterNextRender(() => this.openJoin(invite), { injector: this.injector });
     };
     check();
     window.addEventListener('hashchange', check);
@@ -135,6 +138,11 @@ export class App {
   protected editSide(side: TeamId): void {
     if (this.tables.active() !== null && this.store.tournament() === null) this.seat().open(side);
     else this.team().open(this.edits.side(side));
+  }
+
+  /** The screen that joins a mesa by its invitation. */
+  protected openJoin(invite: Invite): void {
+    this.joinScreen().open(invite);
   }
 
   /** This phone's name, as the others see it at a shared mesa. */

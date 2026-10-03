@@ -5,7 +5,6 @@ import {
   DocumentReference,
   FieldPath,
   Firestore,
-  FirestoreError,
   WriteBatch,
   collection,
   deleteDoc,
@@ -54,8 +53,11 @@ const CHUNK = 400;
 /** How long joining waits for the cloud before saying the phone is offline. */
 const JOIN_WAIT_MS = 15000;
 
+/** Refused by the rules. Checked by code: the SDK's error class is not always the one imported here. */
 const denied = (error: unknown) =>
-  error instanceof FirestoreError && error.code === 'permission-denied';
+  typeof error === 'object' &&
+  error !== null &&
+  (error as { code?: unknown }).code === 'permission-denied';
 
 function toMember(id: string, data: DocumentData): Member {
   return {
@@ -167,7 +169,10 @@ export class Backend {
     try {
       if ((await getDocFromServer(this.member(invite.id, this.uid))).exists()) return null;
     } catch (error) {
-      if (!denied(error)) return 'offline';
+      if (!denied(error)) {
+        console.warn('Unirse: no se pudo leer la mesa', error);
+        return 'offline';
+      }
     }
     // The code goes where no member can read it, in the same batch as the member.
     const batch = writeBatch(this.db);
@@ -186,6 +191,7 @@ export class Backend {
     try {
       return (await Promise.race([write.then(() => null), timeout])) ?? null;
     } catch (error) {
+      console.warn('Unirse', error);
       if (denied(error)) return 'refused';
       return 'offline';
     }

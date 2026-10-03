@@ -71,6 +71,14 @@ import { Screen } from './screen';
           <span class="slab__label" [appFitText]="copy.tables.add">{{ copy.tables.add }}</span>
         </button>
       }
+      <!-- A mesa someone else shared, from a link copied elsewhere. -->
+      <button type="button" class="slab slab--compact lean add" (click)="joinLink.emit()">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M10 14a4 4 0 0 0 5.66 0l3-3a4 4 0 0 0-5.66-5.66l-1 1" />
+          <path d="M14 10a4 4 0 0 0-5.66 0l-3 3a4 4 0 0 0 5.66 5.66l1-1" />
+        </svg>
+        <span class="slab__label" [appFitText]="copy.join.byLink">{{ copy.join.byLink }}</span>
+      </button>
     </app-screen>
 
     <app-name-sheet />
@@ -194,6 +202,8 @@ export class TablesScreen {
 
   /** Asks for one mesa, to change its players and teams. */
   readonly edit = output<string>();
+  /** Asks for the sheet that joins a mesa from a pasted link, which the shell owns. */
+  readonly joinLink = output<void>();
 
   private readonly store = inject(GameStore);
   private readonly tables = inject(TablesStore);
