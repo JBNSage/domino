@@ -37,6 +37,11 @@ export class SharingStore {
     });
   }
 
+  /** Gets the cloud ready while the person reads, so joining or sharing is one write. */
+  warmUp(): void {
+    this.cloud.warmUp();
+  }
+
   /** Whether this phone already belongs to a shared mesa. */
   isMember(id: string): boolean {
     return this.cloud.mesas().has(id);

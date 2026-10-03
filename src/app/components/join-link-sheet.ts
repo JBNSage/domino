@@ -3,6 +3,7 @@ import {
   Component,
   ElementRef,
   computed,
+  inject,
   output,
   signal,
   viewChild,
@@ -12,6 +13,7 @@ import { copy } from '../copy';
 import { FitText } from '../directives/fit-text';
 import { Invite } from '../game/cloud';
 import { parseInvite } from '../game/invite';
+import { SharingStore } from '../game/sharing.store';
 import { Sheet } from './sheet';
 
 /**
@@ -153,6 +155,7 @@ import { Sheet } from './sheet';
 export class JoinLinkSheet {
   protected readonly copy = copy;
   protected readonly sheet = viewChild.required(Sheet);
+  private readonly sharing = inject(SharingStore);
   private readonly input = viewChild.required<ElementRef<HTMLInputElement>>('input');
 
   /** A link that is an invitation, ready for the join screen. */
@@ -172,6 +175,8 @@ export class JoinLinkSheet {
 
   /** Called straight from the tap, so the keyboard opens with the sheet. */
   open(): void {
+    // Joining follows: Firebase loads while the link is pasted.
+    this.sharing.warmUp();
     this.text.set('');
     this.sheet().open();
     this.input().nativeElement.focus();

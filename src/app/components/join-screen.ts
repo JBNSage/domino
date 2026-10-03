@@ -217,6 +217,8 @@ export class JoinScreen {
   });
 
   open(invite: Invite): void {
+    // Firebase loads and signs in while the screen is read, not after the tap.
+    this.sharing.warmUp();
     this.invite.set(invite);
     this.failure.set(null);
     this.busy.set(false);

@@ -77,6 +77,12 @@ export class FirestoreMesaCloud implements MesaCloud {
     }
   }
 
+  warmUp(): void {
+    this.ready().catch(() => {
+      // Tried again by the step itself, which then says what went wrong.
+    });
+  }
+
   async signIn(): Promise<string> {
     return (await this.ready()).uid;
   }

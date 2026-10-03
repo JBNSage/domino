@@ -165,15 +165,6 @@ export class Backend {
   }
 
   async join(invite: Invite, me: string): Promise<JoinFailure | null> {
-    // A join that took too long the first time may have landed since.
-    try {
-      if ((await getDocFromServer(this.member(invite.id, this.uid))).exists()) return null;
-    } catch (error) {
-      if (!denied(error)) {
-        console.warn('Unirse: no se pudo leer la mesa', error);
-        return 'offline';
-      }
-    }
     // The code goes where no member can read it, in the same batch as the member.
     const batch = writeBatch(this.db);
     batch.set(doc(this.mesa(invite.id), 'joins', this.uid), { token: invite.token });
@@ -191,9 +182,20 @@ export class Backend {
     try {
       return (await Promise.race([write.then(() => null), timeout])) ?? null;
     } catch (error) {
-      console.warn('Unirse', error);
-      if (denied(error)) return 'refused';
-      return 'offline';
+      if (!denied(error)) {
+        console.warn('Unirse', error);
+        return 'offline';
+      }
+      // Refused: perhaps because an earlier, slow join already landed. Only then is it checked.
+      return (await this.isMember(invite.id)) ? null : 'refused';
+    }
+  }
+
+  private async isMember(id: string): Promise<boolean> {
+    try {
+      return (await getDocFromServer(this.member(id, this.uid))).exists();
+    } catch {
+      return false;
     }
   }
 

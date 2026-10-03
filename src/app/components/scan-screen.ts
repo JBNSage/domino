@@ -13,6 +13,7 @@ import {
 import { copy } from '../copy';
 import { Invite } from '../game/cloud';
 import { parseInvite } from '../game/invite';
+import { SharingStore } from '../game/sharing.store';
 import { Screen } from './screen';
 
 /** The browser's own barcode reader, where there is one (not on iPhone). */
@@ -94,6 +95,7 @@ const READ_WIDTH = 480;
 export class ScanScreen {
   protected readonly copy = copy;
   private readonly screen = viewChild.required(Screen);
+  private readonly sharing = inject(SharingStore);
   private readonly video = viewChild.required<ElementRef<HTMLVideoElement>>('video');
 
   /** A mesa's invitation, read from its code. */
@@ -128,6 +130,8 @@ export class ScanScreen {
 
   /** Called from the tap, so the camera prompt belongs to it. */
   open(): void {
+    // Joining follows a scan: Firebase loads while the camera looks for the code.
+    this.sharing.warmUp();
     this.problem.set(null);
     this.screen().open();
     void this.start();

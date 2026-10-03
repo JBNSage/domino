@@ -97,6 +97,11 @@ export interface MesaCloud {
   /** Every shared mesa this phone belongs to, kept up to date. */
   readonly mesas: Signal<ReadonlyMap<string, SharedMesa>>;
 
+  /**
+   * Loads what sharing needs and signs in, ahead of time, such as while the
+   * join screen is read, so the step itself only writes. Never fails.
+   */
+  warmUp(): void;
   /** Signs this phone in, once, and returns its account. Needs the network the first time. */
   signIn(): Promise<string>;
   /** Moves a mesa to the cloud, with this phone as its first owner. */

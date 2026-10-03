@@ -29,6 +29,13 @@ export class FakeMesaCloud implements MesaCloud {
   /** Set to make joining fail. */
   joinFailure: JoinFailure | null = null;
 
+  /** Counts the times sharing was prepared ahead, for specs. */
+  warmUps = 0;
+
+  warmUp(): void {
+    this.warmUps += 1;
+  }
+
   async signIn(): Promise<string> {
     return 'me';
   }
