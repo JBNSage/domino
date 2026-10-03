@@ -12,7 +12,8 @@ export function isInstalled(): boolean {
   return standalone || (navigator as { standalone?: boolean }).standalone === true;
 }
 
-function isIos(): boolean {
+/** An iPhone or iPad, where links and QR codes always open in Safari. */
+export function isIos(): boolean {
   const agent = navigator.userAgent;
   // iPadOS reports itself as a Mac, but only it has a touch screen.
   return (

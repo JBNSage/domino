@@ -302,7 +302,11 @@ export const copy = {
     refused: 'Este enlace ya no sirve. Pide uno nuevo a un dueño de la mesa.',
     joined: (mesa: string) => `Te uniste a ${mesa}`,
     inApp:
-      '¿Tienes Dominó instalado? Para unirte desde la app, copia el enlace, abre la app y pégalo en Mesas → Unirse con un enlace.',
+      '¿Tienes Dominó instalado? Para unirte desde la app, ábrela y en Mesas toca Escanear QR, o copia este enlace y pégalo en Unirse con un enlace.',
+    inAppIosTitle: '¿Usas la app instalada?',
+    inAppIos:
+      'En iPhone los enlaces y los QR siempre abren Safari, no la app. Para unirte desde la app: ábrela, ve a Mesas y toca Escanear QR, o copia este enlace y pégalo en Unirse con un enlace.',
+    here: 'O únete aquí, en Safari:',
     copyLink: 'Copiar enlace',
     copied: 'Enlace copiado',
     byLink: 'Unirse con un enlace',
@@ -312,6 +316,15 @@ export const copy = {
     linkWrong: 'Ese enlace no es de una mesa de Dominó.',
     paste: 'Pegar',
     continue: 'Seguir',
+    scan: 'Escanear QR',
+    scanTitle: 'Escanear QR',
+    scanLead: 'Apunta al código QR de la mesa, en el teléfono de quien la comparte.',
+    scanStarting: 'Abriendo la cámara…',
+    scanDenied:
+      'Para escanear hace falta la cámara. Permítela en los ajustes del teléfono, o pega el enlace.',
+    scanUnavailable: 'Este teléfono no deja usar la cámara aquí. Pega el enlace.',
+    scanWrong: 'Ese código no es de una mesa de Dominó.',
+    scanVideo: 'Vista de la cámara',
   },
   menu: {
     a11y: 'Menú',

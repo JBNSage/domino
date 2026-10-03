@@ -14,7 +14,7 @@ import { Invite } from '../game/cloud';
 import { GameStore } from '../game/game.store';
 import { buildInvite } from '../game/invite';
 import { MeStore } from '../game/me.store';
-import { isInstalled } from '../platform/install';
+import { isInstalled, isIos } from '../platform/install';
 import { SharingStore } from '../game/sharing.store';
 import { Screen } from './screen';
 
@@ -28,6 +28,21 @@ import { Screen } from './screen';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <app-screen [heading]="copy.join.title(invite()?.name ?? '')">
+      @if (!installed && ios) {
+        <!-- On an iPhone a link never reaches the installed app: say so first, and how to join there. -->
+        <div class="in-app in-app--first">
+          <p class="in-app-title">{{ copy.join.inAppIosTitle }}</p>
+          <p class="note">{{ copy.join.inAppIos }}</p>
+          <button type="button" class="slab slab--compact lean copy" (click)="copyLink()">
+            <span
+              class="slab__label"
+              [appFitText]="copied() ? copy.join.copied : copy.join.copyLink"
+              >{{ copied() ? copy.join.copied : copy.join.copyLink }}</span
+            >
+          </button>
+        </div>
+        <p class="here">{{ copy.join.here }}</p>
+      }
       <p class="lead">{{ copy.join.lead }}</p>
 
       <div class="as">
@@ -48,8 +63,8 @@ import { Screen } from './screen';
 
       <p class="message" role="status" [class.error]="failure() !== null">{{ message() }}</p>
 
-      @if (!installed) {
-        <!-- A link opens in the browser, which is not the installed app: on an iPhone, never. -->
+      @if (!installed && !ios) {
+        <!-- A link opens in the browser, which may not be the installed app. -->
         <div class="in-app">
           <p class="note">{{ copy.join.inApp }}</p>
           <button type="button" class="slab slab--compact lean copy" (click)="copyLink()">
@@ -135,6 +150,28 @@ import { Screen } from './screen';
       border-top: 1px solid var(--c-line);
     }
 
+    /* First on an iPhone: a raised panel, so it is read before joining here. */
+    .in-app--first {
+      margin: 0 var(--s-sm);
+      padding: var(--s-lg);
+      border-top: 0;
+      background: var(--c-surface);
+    }
+
+    .in-app-title {
+      margin: 0;
+      font: italic 800 var(--t-button) / 1.2 var(--font);
+      text-transform: uppercase;
+    }
+
+    .here {
+      margin: 0;
+      padding: 0 var(--s-sm);
+      color: var(--c-text);
+      font: italic 600 var(--t-label) / 1.3 var(--font);
+      text-transform: uppercase;
+    }
+
     .note {
       margin: 0;
       max-width: 40ch;
@@ -166,6 +203,7 @@ export class JoinScreen {
 
   protected readonly invite = signal<Invite | null>(null);
   protected readonly installed = isInstalled();
+  protected readonly ios = isIos();
   protected readonly copied = signal(false);
   protected readonly busy = signal(false);
   protected readonly failure = signal<'offline' | 'refused' | null>(null);

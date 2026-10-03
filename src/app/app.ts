@@ -15,6 +15,7 @@ import { ChampionScreen } from './components/champion-screen';
 import { HistoryScreen } from './components/history-screen';
 import { HomeScreen } from './components/home-screen';
 import { JoinLinkSheet } from './components/join-link-sheet';
+import { ScanScreen } from './components/scan-screen';
 import { JoinScreen } from './components/join-screen';
 import { MatchScreen } from './components/match-screen';
 import { MatchSetupScreen } from './components/match-setup-screen';
@@ -75,6 +76,7 @@ import { keepAwake } from './platform/wake-lock';
     ShareScreen,
     JoinScreen,
     JoinLinkSheet,
+    ScanScreen,
     StatsScreen,
     PlayerStatsScreen,
     MatchScreen,

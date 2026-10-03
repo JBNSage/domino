@@ -60,7 +60,13 @@
 <app-stats-screen #stats (openPlayer)="playerStats.open($event)" />
 <app-player-stats-screen #playerStats />
 
-<app-tables-screen #tables (edit)="mesa.open($event)" (joinLink)="joinLink.open()" />
+<app-tables-screen
+  #tables
+  (edit)="mesa.open($event)"
+  (scan)="scan.open()"
+  (joinLink)="joinLink.open()"
+/>
+<app-scan-screen #scan (scanned)="openJoin($event)" />
 <app-join-link-sheet #joinLink (chosen)="openJoin($event)" />
 <app-table-screen
   #mesa
