@@ -440,7 +440,9 @@ export class ShareScreen {
       const link = this.link();
       const canvas = this.canvas()?.nativeElement;
       if (link === null || canvas === undefined) return;
-      untracked(() => void this.draw(canvas, link));
+      untracked(() => {
+        this.draw(canvas, link).catch((error: unknown) => console.warn('Código QR', error));
+      });
     });
     // Once this phone no longer owns the mesa, or it is gone, there is nothing to share here.
     effect(() => {
@@ -502,12 +504,22 @@ export class ShareScreen {
   }
 
   private async draw(canvas: HTMLCanvasElement, link: string): Promise<void> {
-    const qr = await import('qrcode');
-    await qr.toCanvas(canvas, link, {
-      margin: 0,
-      width: 480,
-      errorCorrectionLevel: 'M',
-      color: { dark: '#0e1114', light: '#ffffff' },
-    });
+    // The library is CommonJS: loaded on demand, its functions may sit under `default`.
+    const loaded = await import('qrcode');
+    const qr = loaded.default ?? loaded;
+    try {
+      await qr.toCanvas(canvas, link, {
+        margin: 0,
+        width: 480,
+        errorCorrectionLevel: 'M',
+        color: { dark: '#0e1114', light: '#ffffff' },
+      });
+    } catch (error) {
+      console.warn('Código QR', error);
+      return;
+    }
+    // Drawn at 480 for sharpness; the frame sets the size it shows at.
+    canvas.style.removeProperty('width');
+    canvas.style.removeProperty('height');
   }
 }
