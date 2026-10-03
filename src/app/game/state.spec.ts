@@ -5,6 +5,7 @@ import {
   cleanPlayers,
   initialState,
   isDefault,
+  isLisa,
   leadTaken,
   matchPoint,
   parseAmount,
@@ -13,6 +14,7 @@ import {
   selectTotals,
   selectWinner,
   sharedPlayer,
+  winsFor,
 } from './state';
 
 function play(actions: Action[], from: State = initialState): State {
@@ -103,6 +105,7 @@ describe('winner', () => {
       { type: 'renameTeam', team: 'a', name: 'Los Primos' },
       { type: 'setTarget', target: 100 },
       { type: 'setQuickValue', value: 25 },
+      add('b', 10, '0'),
       add('a', 100, '1'),
     ]);
     const next = reducer(won, { type: 'closeRound', winner: 'a' });
@@ -111,6 +114,17 @@ describe('winner', () => {
     expect(next.teams.b.roundsWon).toBe(0);
     expect(next.target).toBe(100);
     expect(next.quickValue).toBe(25);
+  });
+
+  it('counts a lisa, won while the other team never scored, as two wins', () => {
+    const lisa = play([add('a', 120, '1'), add('a', 80, '2')]);
+    expect(isLisa(selectTotals(lisa), 'a')).toBe(true);
+    expect(winsFor(selectTotals(lisa), 'a')).toBe(2);
+    expect(reducer(lisa, { type: 'closeRound', winner: 'a' }).teams.a.roundsWon).toBe(2);
+
+    const fought = play([add('b', 5, '1'), add('a', 200, '2')]);
+    expect(isLisa(selectTotals(fought), 'a')).toBe(false);
+    expect(winsFor(selectTotals(fought), 'a')).toBe(1);
   });
 });
 
@@ -132,6 +146,7 @@ describe('settings', () => {
     const state = play([
       { type: 'renameTeam', team: 'a', name: 'Los Primos' },
       { type: 'setTarget', target: 150 },
+      add('b', 10, '0'),
       add('a', 150, '1'),
       { type: 'closeRound', winner: 'a' },
       add('b', 40, '2'),
@@ -286,12 +301,15 @@ describe('teams at a side', () => {
       saved: 's1',
       roundsWon: 3,
     });
-    const won = play([add('a', 200, '1'), { type: 'closeRound', winner: 'a' }], seated);
+    const won = play(
+      [add('b', 10, '0'), add('a', 200, '1'), { type: 'closeRound', winner: 'a' }],
+      seated,
+    );
     expect(won.teams.a).toMatchObject({ roundsWon: 4, saved: 's1' });
   });
 
   it('take the wins given when their players change, and keep theirs otherwise', () => {
-    const won = play([add('a', 200, '1'), { type: 'closeRound', winner: 'a' }]);
+    const won = play([add('b', 10, '0'), add('a', 200, '1'), { type: 'closeRound', winner: 'a' }]);
     const renamed = reducer(won, { type: 'setTeam', team: 'a', name: 'Otro', players: null });
     expect(renamed.teams.a.roundsWon).toBe(1);
     const changed = reducer(won, {

@@ -35,9 +35,21 @@ describe('GameStore', () => {
   });
 
   it('announces the winner', () => {
+    store.addPoints('a', 10);
     store.addPoints('b', 200);
     TestBed.tick();
+    expect(store.result()).toMatchObject({ lisa: false, roundsBefore: 0, roundsAfter: 1 });
     expect(store.announcement()).toBe(copy.winner.body('Equipo B'));
+  });
+
+  it('says a lisa, won while the other team never scored, and counts it as two wins', () => {
+    store.addPoints('b', 200);
+    TestBed.tick();
+    expect(store.result()).toMatchObject({ lisa: true, roundsBefore: 0, roundsAfter: 2 });
+    expect(store.announcement()).toBe(`${copy.winner.body('Equipo B')}. ${copy.winner.lisa}`);
+
+    store.closeRound();
+    expect(store.state().teams.b.roundsWon).toBe(2);
   });
 
   describe('moments', () => {
@@ -156,6 +168,7 @@ describe('GameStore', () => {
     });
 
     it('restores a closed round', () => {
+      store.addPoints('b', 10);
       store.addPoints('a', 200);
       const before = store.state();
 
@@ -363,6 +376,8 @@ describe('GameStore', () => {
 
     /** Plays the match on the table to the end and closes it. */
     const win = (side: 'a' | 'b') => {
+      // The loser scores too, so the match is not a lisa.
+      store.addPoints(side === 'a' ? 'b' : 'a', 10);
       store.addPoints(side, 200);
       store.closeRound();
     };
@@ -415,12 +430,24 @@ describe('GameStore', () => {
     it('says what closing the match leads to', () => {
       store.startTournament(teams, { kind: 'firstTo', count: 2 });
       store.startNextMatch();
+      store.addPoints('b', 10);
       store.addPoints('a', 200);
       expect(store.closeLabel()).toBe(copy.tournament.next);
       store.closeRound();
       store.startNextMatch();
+      store.addPoints('b', 10);
       store.addPoints('a', 200);
       expect(store.closeLabel()).toBe(copy.tournament.result);
+    });
+
+    it('counts a lisa as two wins, which can decide it at once', () => {
+      store.startTournament(teams, { kind: 'firstTo', count: 2 });
+      store.startNextMatch();
+      store.addPoints('a', 200);
+      expect(store.closeLabel()).toBe(copy.tournament.result);
+      store.closeRound();
+      expect(store.tournament()?.phase).toBe('done');
+      expect(standings(store.tournament()!)[0]).toMatchObject({ id: 't1', won: 2 });
     });
 
     it('ends on the limit, and is kept in the history when saved', () => {
@@ -673,6 +700,7 @@ describe('GameStore at a mesa', () => {
     const saved = { id: 's1', name: 'Lo Malo', players: ['Chiky Chang', 'El Vale'] as Players };
     store.saveTableTeam('m1', saved);
     store.seatTeam('a', { name: saved.name, players: saved.players, saved: 's1' });
+    store.addPoints('b', 10);
     store.addPoints('a', 200);
     store.closeRound();
     expect(store.state().teams.a.roundsWon).toBe(1);
@@ -684,6 +712,7 @@ describe('GameStore at a mesa', () => {
     store.setTeam('a', 'Lo Malo', ['Chiky Chang', 'Jose Miguel'], null);
     expect(store.state().teams.a).toMatchObject({ roundsWon: 0, saved: null });
     for (let match = 0; match < 4; match += 1) {
+      store.addPoints('b', 10);
       store.addPoints('a', 200);
       store.closeRound();
     }
@@ -695,6 +724,12 @@ describe('GameStore at a mesa', () => {
     // Back together, they bring their one win.
     store.seatTeam('a', { name: saved.name, players: saved.players, saved: 's1' });
     expect(store.state().teams.a.roundsWon).toBe(1);
+
+    // A lisa is two wins, at the board and when worked out from the history.
+    store.addPoints('a', 200);
+    store.closeRound();
+    expect(store.state().teams.a.roundsWon).toBe(3);
+    expect(teamWinsAt(history(), mesa(), saved)).toBe(3);
   });
 
   it('gives back the match and its win on undo', () => {

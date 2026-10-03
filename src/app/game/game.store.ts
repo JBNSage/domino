@@ -42,6 +42,8 @@ import {
   reducer,
   selectTotals,
   selectWinner,
+  winsFor,
+  isLisa,
 } from './state';
 import {
   STORAGE_KEY,
@@ -116,7 +118,11 @@ export type MatchResult = {
   names: Record<TeamId, string>;
   players: Record<TeamId, Players | null>;
   totals: Record<TeamId, number>;
-  /** Matches the winner will have won once this one is counted. */
+  /** The loser never scored, so the win counts as two. */
+  lisa: boolean;
+  /** Wins the winner had before this match. */
+  roundsBefore: number;
+  /** Wins the winner will have once this one is counted. */
   roundsAfter: number;
 };
 
@@ -154,12 +160,15 @@ export class GameStore {
     const winner = this.winner();
     if (winner === null) return null;
     const { teams } = this.state();
+    const totals = this.totals();
     return {
       winner,
       names: { a: teams.a.name, b: teams.b.name },
       players: { a: teams.a.players, b: teams.b.players },
-      totals: this.totals(),
-      roundsAfter: teams[winner].roundsWon + 1,
+      totals,
+      lisa: isLisa(totals, winner),
+      roundsBefore: teams[winner].roundsWon,
+      roundsAfter: teams[winner].roundsWon + winsFor(totals, winner),
     };
   });
 
@@ -275,7 +284,8 @@ export class GameStore {
       const result = this.result();
       if (result === null) return;
       haptics.win();
-      untracked(() => this.announce(copy.winner.body(result.names[result.winner])));
+      const body = copy.winner.body(result.names[result.winner]);
+      untracked(() => this.announce(result.lisa ? `${body}. ${copy.winner.lisa}` : body));
     });
 
     // A way back to older mesas would undo whatever changed them since.

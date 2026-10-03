@@ -108,7 +108,7 @@ export const copy = {
         players ? `${name}, ${joinNames(players)}` : name,
         `${total} puntos`,
         `faltan ${remaining}`,
-        won === 1 ? '1 partida ganada' : `${won} partidas ganadas`,
+        wins(won),
       ].join(', '),
     a11yHint: 'Anotar puntos',
     announce: (name: string, total: number) => `${name}: ${total}`,
@@ -150,8 +150,10 @@ export const copy = {
     title: '¡Felicidades!',
     // A team name can be singular or plural, so no verb depends on it.
     body: (name: string) => `Victoria de ${name}`,
-    winsAfter: (count: number) =>
-      count === 1 ? 'Primera partida ganada' : `${count} partidas ganadas`,
+    // The other team never scored.
+    lisa: '¡Lisa! Vale dos victorias',
+    // Victories, not matches: a lisa counts as two.
+    winsAfter: (count: number) => (count === 1 ? 'Primera victoria' : `${count} victorias`),
     close: 'Nueva partida',
     correct: 'Corregir última mano',
     restoreTarget: (target: number) => `Volver a meta ${target}`,

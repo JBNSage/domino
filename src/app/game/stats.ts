@@ -1,5 +1,5 @@
 import { History, MatchRecord } from './history';
-import { Players, TEAM_IDS, fold, sameName } from './state';
+import { Players, TEAM_IDS, fold, sameName, totalsOf, winsFor } from './state';
 
 /** Which mesa the statistics look at. */
 export type TableChoice =
@@ -188,7 +188,8 @@ function* teamsIn(matches: MatchRecord[]) {
 /**
  * A team's wins at one mesa, from the history: those of the same two people,
  * in either order, or for a team without players, of a team of that name
- * without players. Changing a player makes it another team.
+ * without players. Changing a player makes it another team. A lisa counts
+ * as two.
  */
 export function teamWinsAt(
   history: History,
@@ -204,7 +205,7 @@ export function teamWinsAt(
       key === null
         ? side.players === null && sameName(side.name, team.name)
         : side.players !== null && coupleKey(side.players) === key;
-    if (same) won += 1;
+    if (same) won += winsFor(totalsOf(match.rows), match.winner);
   }
   return won;
 }

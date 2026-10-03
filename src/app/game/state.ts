@@ -250,7 +250,7 @@ export function reducer(state: State, action: Action): State {
     }
     case 'closeRound': {
       const winner = state.teams[action.winner];
-      const roundsWon = winner.roundsWon + 1;
+      const roundsWon = winner.roundsWon + winsFor(totalsOf(state.rows), action.winner);
       return {
         ...state,
         rows: [],
@@ -315,6 +315,16 @@ export function selectWinner(state: State): TeamId | null {
     if (running[row.team] >= state.target) return row.team;
   }
   return null;
+}
+
+/** A lisa: the match was won and the other team never scored. */
+export function isLisa(totals: Record<TeamId, number>, winner: TeamId): boolean {
+  return totals[winner] > 0 && totals[otherTeam(winner)] === 0;
+}
+
+/** The victories a won match is worth: a lisa counts as two. */
+export function winsFor(totals: Record<TeamId, number>, winner: TeamId): number {
+  return isLisa(totals, winner) ? 2 : 1;
 }
 
 /**

@@ -1,4 +1,4 @@
-import { Players, TeamId, cleanLabel, otherTeam, parsePlayers } from './state';
+import { Players, TeamId, cleanLabel, otherTeam, parsePlayers, winsFor } from './state';
 
 export const MIN_TEAMS = 2;
 export const MAX_TEAMS = 12;
@@ -63,7 +63,7 @@ export function teamOf(tournament: Tournament, id: string): TournamentTeam {
   return tournament.teams.find((team) => team.id === id) ?? tournament.teams[0];
 }
 
-/** Most wins first; then fewest defeats, most points, and the order of entry. */
+/** Most wins first, a lisa counting as two; then fewest defeats, most points, and the order of entry. */
 export function standings(tournament: Pick<Tournament, 'teams' | 'results'>): Standing[] {
   const table = new Map<string, Standing>(
     tournament.teams.map((team) => [team.id, { ...team, won: 0, lost: 0, points: 0 }]),
@@ -72,7 +72,7 @@ export function standings(tournament: Pick<Tournament, 'teams' | 'results'>): St
     const winner = table.get(result.seats[result.winner]);
     const loser = table.get(result.seats[otherTeam(result.winner)]);
     if (winner) {
-      winner.won += 1;
+      winner.won += winsFor(result.points, result.winner);
       winner.points += result.points[result.winner];
     }
     if (loser) {
@@ -93,7 +93,9 @@ export function leaders(tournament: Pick<Tournament, 'teams' | 'results'>): Stan
 }
 
 export function winsOf(tournament: Tournament, id: string): number {
-  return tournament.results.filter((result) => result.seats[result.winner] === id).length;
+  return tournament.results
+    .filter((result) => result.seats[result.winner] === id)
+    .reduce((won, result) => won + winsFor(result.points, result.winner), 0);
 }
 
 /** The side a team last won on, which is the colour it is remembered in. */

@@ -41,11 +41,14 @@ import { Slashes } from './slashes';
                 {{ copy.winner.title }}
               </h2>
               <p class="body">{{ copy.winner.body(result.names[result.winner]) }}</p>
+              @if (result.lisa) {
+                <p class="lisa">{{ copy.winner.lisa }}</p>
+              }
               <!-- The count of wins turns over to its new value. -->
               <p class="rounds">
-                @if (result.roundsAfter > 1) {
+                @if (result.roundsBefore > 0) {
                   <span class="was" aria-hidden="true">{{
-                    copy.winner.winsAfter(result.roundsAfter - 1)
+                    copy.winner.winsAfter(result.roundsBefore)
                   }}</span>
                 }
                 <span class="now">{{ copy.winner.winsAfter(result.roundsAfter) }}</span>
@@ -193,6 +196,7 @@ import { Slashes } from './slashes';
 
     .title,
     .body,
+    .lisa,
     .rounds,
     .scores p {
       margin: 0;
@@ -209,6 +213,17 @@ import { Slashes } from './slashes';
       text-transform: uppercase;
       text-wrap: balance;
       overflow-wrap: anywhere;
+    }
+
+    /* An ink tag on the flood, so the double win is not missed. */
+    .lisa {
+      align-self: flex-start;
+      margin-top: var(--s-xs);
+      padding: var(--s-xs) var(--s-md);
+      background: var(--c-ink);
+      color: var(--team);
+      font: italic 800 var(--t-body) / 1.3 var(--font);
+      text-transform: uppercase;
     }
 
     .rounds {
@@ -477,6 +492,10 @@ import { Slashes } from './slashes';
 
       .body {
         animation: rise 260ms 230ms var(--ease-out) backwards;
+      }
+
+      .lisa {
+        animation: rise 260ms 300ms var(--ease-out) backwards;
       }
 
       @keyframes rise {
