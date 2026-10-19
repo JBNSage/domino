@@ -14,6 +14,7 @@ import { GameStore } from '../game/game.store';
 import { Players, TeamId } from '../game/state';
 import { HistoryStore } from '../game/history.store';
 import { teamWinsAt } from '../game/stats';
+import { filterTeams } from '../game/tables';
 import { TablesStore } from '../game/tables.store';
 import { available, standings, teamOf } from '../game/tournament';
 import { PlayerPair } from './player-pair';
@@ -51,8 +52,32 @@ type Option = { id: string; name: string; players: Players | null; won: number }
           @if (options().length === 0) {
             <p class="note">{{ copy.seat.noSaved }}</p>
           } @else {
-            <ol class="options">
-              @for (team of options(); track team.id) {
+            <!-- A long list is searched by team or by player; a short one is read. -->
+            @if (options().length > searchFrom) {
+              <div class="find">
+                <label class="find-label" [for]="searchId">{{ copy.seat.search }}</label>
+                <input
+                  #search
+                  [id]="searchId"
+                  class="find-input"
+                  type="text"
+                  autocomplete="off"
+                  autocapitalize="words"
+                  autocorrect="off"
+                  spellcheck="false"
+                  enterkeyhint="done"
+                  [attr.aria-controls]="optionsId"
+                  [value]="query()"
+                  (input)="query.set(search.value)"
+                  (keydown.enter)="$event.preventDefault()"
+                />
+              </div>
+            }
+            @if (shown().length === 0) {
+              <p class="note" role="status">{{ copy.seat.noMatch }}</p>
+            }
+            <ol class="options" [id]="optionsId">
+              @for (team of shown(); track team.id) {
                 <li>
                   <button
                     type="button"
@@ -138,6 +163,44 @@ type Option = { id: string; name: string; players: Players | null; won: number }
       line-height: 1.35;
     }
 
+    .find {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .find-label {
+      color: var(--c-muted);
+      font: italic 600 var(--t-label) / 1.3 var(--font);
+      text-transform: uppercase;
+    }
+
+    /* 16px or more, or iOS zooms the page. */
+    .find-input {
+      width: 100%;
+      min-height: var(--min-target);
+      padding: var(--s-xs) 0;
+      border: 0;
+      border-bottom: 2px solid var(--c-line);
+      border-radius: 0;
+      background: none;
+      color: var(--c-text);
+      caret-color: var(--c-text);
+      font: italic 800 max(16px, var(--t-button)) / 1.2 var(--font);
+      text-transform: uppercase;
+    }
+
+    .find-input:focus {
+      border-bottom-color: var(--c-text);
+    }
+
+    .find-input:focus-visible {
+      outline-offset: 0;
+    }
+
+    .options:empty {
+      display: none;
+    }
+
     .options {
       display: flex;
       flex-direction: column;
@@ -212,6 +275,13 @@ export class SeatSheet {
   protected readonly sheet = viewChild.required(Sheet);
 
   private readonly side = signal<TeamId>('a');
+  /** More teams than this are searched. */
+  protected readonly searchFrom = 3;
+  protected readonly query = signal('');
+  // One sheet per screen that seats teams, so each field needs an id of its own.
+  private static nextId = 0;
+  protected readonly searchId = `seat-search-${SeatSheet.nextId}`;
+  protected readonly optionsId = `seat-options-${SeatSheet.nextId++}`;
 
   protected readonly accent = computed(() => `var(--c-team-${this.side()})`);
   protected readonly inTournament = computed(() => this.store.tournament() !== null);
@@ -244,9 +314,13 @@ export class SeatSheet {
       );
   });
 
+  /** The options that match what was typed, by team name or by player. */
+  protected readonly shown = computed(() => filterTeams(this.options(), this.query()));
+
   /** Called straight from the tap. */
   open(side: TeamId): void {
     this.side.set(side);
+    this.query.set('');
     this.sheet().open();
   }
 

@@ -213,6 +213,20 @@ export function removeTeam(table: Table, id: string): Table {
   return { ...table, teams: table.teams.filter((team) => team.id !== id) };
 }
 
+/** The teams whose name, or one of whose players, contains what was typed, accents and case aside. */
+export function filterTeams<T extends { name: string; players: Players | null }>(
+  teams: T[],
+  text: string,
+): T[] {
+  const wanted = fold(text);
+  if (wanted === '') return teams;
+  return teams.filter(
+    (team) =>
+      fold(team.name).includes(wanted) ||
+      (team.players?.some((player) => fold(player).includes(wanted)) ?? false),
+  );
+}
+
 /** The players whose name contains what was typed, accents and case aside. */
 export function filterPlayers(players: string[], text: string): string[] {
   const wanted = fold(text);

@@ -7,6 +7,7 @@ import {
   addPlayer,
   addTable,
   filterPlayers,
+  filterTeams,
   mergePlayer,
   noTables,
   parseTables,
@@ -118,6 +119,21 @@ describe('players of a mesa', () => {
   it('are found by any part of the name, accents and case aside', () => {
     expect(filterPlayers(['Ángel', 'Rosa', 'Ana'], 'an')).toEqual(['Ángel', 'Ana']);
     expect(filterPlayers(['Ángel', 'Rosa'], '')).toEqual(['Ángel', 'Rosa']);
+  });
+});
+
+describe('teams', () => {
+  it('are found by any part of their name or of a player, accents and case aside', () => {
+    const teams = [
+      { id: 's1', name: 'Los Primos', players: ['Ana', 'Luis'] as Players },
+      { id: 's2', name: 'Tías', players: ['Rosa', 'Ángela'] as Players },
+      { id: 's3', name: 'Sin nombre', players: null },
+    ];
+    expect(filterTeams(teams, '  ').map((team) => team.id)).toEqual(['s1', 's2', 's3']);
+    expect(filterTeams(teams, 'tia').map((team) => team.id)).toEqual(['s2']);
+    expect(filterTeams(teams, 'ÁN').map((team) => team.id)).toEqual(['s1', 's2']);
+    expect(filterTeams(teams, 'prim').map((team) => team.id)).toEqual(['s1']);
+    expect(filterTeams(teams, 'nadie')).toEqual([]);
   });
 });
 

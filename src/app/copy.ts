@@ -730,6 +730,8 @@ export const copy = {
     saved: 'Equipos de la mesa',
     waiting: 'Esperan turno',
     noSaved: 'No hay otros equipos guardados en la mesa.',
+    search: 'Buscar equipo o jugador',
+    noMatch: 'Ningún equipo con ese nombre o jugador.',
     optionA11y: (name: string, pair: Players | null, won: number) =>
       `${pair ? `${name}, ${joinNames(pair)}` : name}, ${wins(won)}. Poner este equipo`,
     announce: (name: string) => `Ahora juega ${name}`,
