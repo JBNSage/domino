@@ -6,18 +6,27 @@ import { History } from './history';
 import { HistoryStore } from './history.store';
 import { MESA_CLOUD, LiveRow } from './cloud';
 import { newId } from './ids';
-import { fromLiveDoc, isEmptyWrite, liveWrites, sameBoard, toLiveDoc } from './mesa-doc';
+import {
+  fromLiveDoc,
+  isEmptyWrite,
+  liveWrites,
+  memberNamed,
+  sameBoard,
+  toLiveDoc,
+} from './mesa-doc';
 import { teamWinsAt } from './stats';
 import { TablesStore } from './tables.store';
 import {
   SavedTeam,
   Tables,
+  mergePlayer,
   removePlayer,
   removeTable,
   removeTeam,
   renamePlayer,
   saveTeam,
   setActive,
+  tableOf,
   updateTable,
 } from './tables';
 import { TournamentDraft } from './tournament-draft';
@@ -468,25 +477,47 @@ export class GameStore {
 
   /** Renames a player at a mesa, in its saved teams, at the board and in its matches. */
   renameTablePlayer(table: string, from: string, to: string): void {
-    const before = this.tables.tables();
+    const before = tableOf(this.tables.tables(), table);
+    if (before === null || !before.players.includes(from)) return;
     this.tables.changeTable(table, (current) => renamePlayer(current, from, to));
-    const mesa = this.tables.tables().tables.find((each) => each.id === table);
-    if (this.tables.tables() === before || mesa === undefined) return;
+    const mesa = tableOf(this.tables.tables(), table);
+    // Refused, such as a name already taken: nothing else changes.
+    if (mesa === null || mesa.players.includes(from)) return;
     const renamed = mesa.players.find((player) => sameName(player, to)) ?? to;
+    this.history.renamePlayerAt({ id: table, name: mesa.name }, from, renamed);
+    this.renameOnBoard(table, from, renamed);
+  }
 
-    this.history.renamePlayer(
-      (match) =>
-        match.tableId === table ||
-        (match.tableId === null && match.table !== null && sameName(match.table, mesa.name)),
-      from,
-      renamed,
-    );
+  /**
+   * A player written by hand at a shared mesa is a person who joined under
+   * their own name: that person takes their place in the saved teams, in the
+   * matches of the mesa and at the board, and the written name goes. Owners
+   * only, and not undone: the matches are rewritten in the cloud.
+   */
+  mergeTablePlayer(table: string, from: string, uid: string): void {
+    const mesa = tableOf(this.tables.tables(), table);
+    const shared = mesa?.shared;
+    if (mesa === null || shared === undefined || !shared.owner) return;
+    const member = shared.members.find((each) => each.uid === uid);
+    if (member === undefined || !mesa.players.includes(from)) return;
+    if (memberNamed(shared.members, from) !== null) return;
+    const into = member.name;
+
+    this.tables.changeTable(table, (current) => mergePlayer(current, from, into));
+    if (tableOf(this.tables.tables(), table)?.players.includes(from) !== false) return;
+    this.history.renamePlayerAt({ id: table, name: mesa.name }, from, into);
+    this.renameOnBoard(table, from, into);
+    this.announce(copy.tables.merged(from, into));
+  }
+
+  /** A player renamed at the mesa in use is renamed at the board too, which a shared mesa mirrors. */
+  private renameOnBoard(table: string, from: string, to: string): void {
     if (this.tables.active()?.id !== table) return;
     const { teams } = this.state();
     for (const side of TEAM_IDS) {
       const players = teams[side].players;
       if (players === null || !players.some((player) => sameName(player, from))) continue;
-      const next = players.map((player) => (sameName(player, from) ? renamed : player)) as Players;
+      const next = players.map((player) => (sameName(player, from) ? to : player)) as Players;
       this.dispatch({ type: 'setTeam', team: side, name: teams[side].name, players: next });
     }
   }

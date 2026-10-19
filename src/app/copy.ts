@@ -563,9 +563,14 @@ export const copy = {
     nameA11y: (name: string) => `Nombre: ${name}. Cambiar`,
     create: 'Crear',
     players: (count: number) => `Jugadores (${count})`,
-    showAll: (count: number) => `Ver los ${count}`,
-    showFewer: 'Ver menos',
+    playersTitle: 'Jugadores',
+    playersFacts: (name: string, count: number) => `${name} · ${players(count)}`,
+    /** The saved teams a player of the mesa plays in. */
+    playerTeams: (names: string[]) => `Juega en ${joinNames(names)}`,
+    /** The role of a person who joined a shared mesa. */
+    role: (owner: boolean, scores: boolean) => (owner ? 'Dueño' : scores ? 'Anota' : 'Mira'),
     noPlayers: 'Todavía no hay jugadores. Añade a quienes suelen jugar aquí.',
+    noPlayersWatch: 'Todavía no hay jugadores en esta mesa.',
     addPlayer: 'Añadir jugador',
     playersFull: `Una mesa tiene ${MAX_TABLE_PLAYERS} jugadores como máximo.`,
     playerTitle: 'Jugador',
@@ -573,17 +578,27 @@ export const copy = {
     playerLabel: 'Nombre del jugador',
     playerTaken: 'Ya hay un jugador con ese nombre en esta mesa.',
     playerEmpty: 'Escribe el nombre del jugador.',
-    playerA11y: (name: string) => `${name}. Cambiar el nombre o eliminar`,
+    /** Heard after a player's row, which already reads the name and the teams. */
+    playerEdit: 'Cambiar el nombre o eliminar',
     playerInUse: (names: string[]) =>
       `Juega en ${joinNames(names)}. Para eliminarlo, cambia o elimina ese equipo antes.`,
     removePlayer: 'Eliminar jugador',
+    /** Under a written player's name sheet at a shared mesa, for an owner: the people they may be. */
+    mergeHeading: 'Es alguien de la mesa',
+    mergeHelp:
+      'Si esta persona se unió con otro nombre, elígela: sus equipos y partidas pasan a ese nombre.',
+    mergeOption: (name: string) => `Es ${name}`,
+    mergeTitle: (from: string, name: string) => `¿${from} es ${name}?`,
+    mergeBody: (from: string, name: string) =>
+      `Los equipos guardados y las partidas de ${from} en esta mesa pasan a ${name}, con su nombre. ${from} deja de estar en la mesa.`,
+    mergeIrreversible: 'No se puede deshacer.',
+    mergeConfirm: 'Es la misma persona',
+    merged: (from: string, name: string) => `${from} ahora es ${name}`,
     shared: 'Compartida',
     sharedSummary: (people: number) =>
       people === 1 ? 'Compartida con 1 persona' : `Compartida con ${people} personas`,
     people: (count: number) => `Personas (${count})`,
     person: 'Persona',
-    personA11y: (name: string, owner: boolean, scores: boolean) =>
-      `${name}${owner ? ', dueño' : scores ? ', anota' : ', mira'}`,
     watchOnly: 'Solo los dueños cambian esta mesa.',
     leaveMesa: 'Salir de la mesa',
     leaveTitle: (name: string) => `¿Salir de ${name}?`,
@@ -600,7 +615,10 @@ export const copy = {
     removeFailed: 'No se pudo eliminar. Revisa la conexión y vuelve a intentarlo.',
     playerAdded: (name: string) => `${name} está en la mesa`,
     teams: (count: number) => `Equipos guardados (${count})`,
+    teamsTitle: 'Equipos guardados',
+    teamsFacts: (name: string, count: number) => `${name} · ${teams(count)}`,
     noTeams: 'Sin equipos guardados. Añade uno aquí o márcalo en la partida.',
+    noTeamsWatch: 'Esta mesa no tiene equipos guardados.',
     addTeam: 'Añadir equipo',
     teamsFull: `Una mesa guarda ${MAX_SAVED_TEAMS} equipos como máximo.`,
     teamA11y: (name: string, pair: Players | null, won: number) =>

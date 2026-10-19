@@ -21,7 +21,11 @@ export type NameEdit = {
   remove?: { label: string; run: () => void };
   /** Why the entry cannot be removed, shown instead of the button. */
   kept?: string | null;
+  /** People this name may be, offered under the field: choosing one closes the sheet. */
+  people?: { heading: string; help: string; options: PersonOption[] } | null;
 };
+
+export type PersonOption = { label: string; pick: () => void };
 
 @Component({
   selector: 'app-name-sheet',
@@ -45,6 +49,18 @@ export type NameEdit = {
       <p class="message" id="name-sheet-message" role="status" [class.error]="taken()">
         {{ message() }}
       </p>
+
+      @if (request()?.people; as people) {
+        <section class="people">
+          <h3 class="heading">{{ people.heading }}</h3>
+          <p class="kept">{{ people.help }}</p>
+          @for (option of people.options; track option.label) {
+            <button type="button" class="slab slab--compact lean person" (click)="choose(option)">
+              <span class="slab__label" [appFitText]="option.label">{{ option.label }}</span>
+            </button>
+          }
+        </section>
+      }
 
       @if (request()?.kept; as kept) {
         <p class="kept">{{ kept }}</p>
@@ -96,6 +112,22 @@ export type NameEdit = {
       color: var(--c-danger);
     }
 
+    .people {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: var(--s-sm);
+    }
+
+    .heading {
+      margin: 0;
+      padding: 0 var(--s-sm);
+      color: var(--c-muted);
+      font: italic 600 var(--t-label) / 1.3 var(--font);
+      text-transform: uppercase;
+    }
+
+    .person,
     .remove {
       align-self: flex-start;
       max-width: calc(100% - var(--s-lg));
@@ -148,6 +180,11 @@ export class NameSheet {
     if (request === null || !this.canSave()) return;
     this.sheet().close();
     request.save(this.name());
+  }
+
+  protected choose(option: PersonOption): void {
+    this.sheet().close();
+    option.pick();
   }
 
   protected drop(): void {

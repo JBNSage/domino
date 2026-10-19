@@ -1,3 +1,4 @@
+import { Players } from './state';
 import {
   MAX_TABLES,
   MAX_TABLE_PLAYERS,
@@ -6,11 +7,13 @@ import {
   addPlayer,
   addTable,
   filterPlayers,
+  mergePlayer,
   noTables,
   parseTables,
   removePlayer,
   removeTable,
   renamePlayer,
+  sameSavedTeam,
   saveTeam,
   setActive,
   teamsUsing,
@@ -91,6 +94,27 @@ describe('players of a mesa', () => {
     expect(removePlayer(current, 'Rosa').players).toEqual(['Ana', 'Luis']);
   });
 
+  it('can be folded into another, who takes their place in the saved teams', () => {
+    const current = table(
+      ['Luis', 'Pedro', 'Pedro Bello', 'Rosa'],
+      [
+        { id: 's1', name: 'Primos', players: ['Pedro', 'Luis'] },
+        { id: 's2', name: 'Tías', players: ['Rosa', 'Pedro Bello'] },
+        { id: 's3', name: 'Dobles', players: ['Pedro', 'Pedro Bello'] },
+      ],
+    );
+    const merged = mergePlayer(current, 'Pedro', 'Pedro Bello');
+    expect(merged.players).toEqual(['Luis', 'Pedro Bello', 'Rosa']);
+    expect(merged.teams[0].players).toEqual(['Pedro Bello', 'Luis']);
+    expect(merged.teams[1]).toBe(current.teams[1]);
+    // A team that would hold the same player twice is left as it is.
+    expect(merged.teams[2]).toBe(current.teams[2]);
+
+    expect(mergePlayer(current, 'Pedro', 'pedro')).toBe(current);
+    expect(mergePlayer(current, 'Pedro', 'Ana')).toBe(current);
+    expect(mergePlayer(current, 'Ana', 'Pedro Bello')).toBe(current);
+  });
+
   it('are found by any part of the name, accents and case aside', () => {
     expect(filterPlayers(['Ángel', 'Rosa', 'Ana'], 'an')).toEqual(['Ángel', 'Ana']);
     expect(filterPlayers(['Ángel', 'Rosa'], '')).toEqual(['Ángel', 'Rosa']);
@@ -110,6 +134,14 @@ describe('saved teams', () => {
     expect(saveTeam(second, { id: 's2', name: 'primos', players: null })).toBe(second);
     const renamed = saveTeam(second, { id: 's1', name: 'Primas', players: null });
     expect(renamed.teams.map((team) => team.name)).toEqual(['Primas', 'Tías']);
+  });
+
+  it('are their two players: a pair with none of them is another team', () => {
+    const saved = { id: 's1', name: 'Primos', players: ['Ana', 'Luis'] as Players };
+    expect(sameSavedTeam(saved, ['ana', 'Rosa'])).toBe(true);
+    expect(sameSavedTeam(saved, ['Rosa', 'Pepe'])).toBe(false);
+    expect(sameSavedTeam(saved, null)).toBe(true);
+    expect(sameSavedTeam({ ...saved, players: null }, ['Rosa', 'Pepe'])).toBe(true);
   });
 });
 

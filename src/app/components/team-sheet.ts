@@ -18,7 +18,7 @@ import {
   cleanPlayers,
   sameName,
 } from '../game/state';
-import { MAX_SAVED_TEAMS } from '../game/tables';
+import { MAX_SAVED_TEAMS, sameSavedTeam } from '../game/tables';
 import { TablesStore } from '../game/tables.store';
 import { PlayerPicker } from './player-picker';
 import { Sheet } from './sheet';
@@ -296,9 +296,13 @@ export class TeamSheet {
     const id = this.table();
     return this.tables.tables().tables.find((table) => table.id === id) ?? null;
   });
+  /** The saved team this one changes: null once the pair makes another team. */
   private readonly savedHere = computed(() => {
     const id = this.request()?.savedId ?? null;
-    return this.mesa()?.teams.some((team) => team.id === id) ? id : null;
+    const saved = this.mesa()?.teams.find((team) => team.id === id);
+    if (saved === undefined) return null;
+    const players = this.players();
+    return players === 'incomplete' || sameSavedTeam(saved, players) ? saved.id : null;
   });
   protected readonly keepFull = computed(
     () => this.savedHere() === null && (this.mesa()?.teams.length ?? 0) >= MAX_SAVED_TEAMS,

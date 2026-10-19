@@ -1,4 +1,4 @@
-import { Member, SharedMesa } from './cloud';
+import { MatchDoc, Member, SharedMesa } from './cloud';
 import {
   fromLiveDoc,
   fromMatchDoc,
@@ -6,6 +6,7 @@ import {
   idsFor,
   liveWrites,
   mesaPlayers,
+  renameInMatchDoc,
   resolvePlayers,
   toLiveDoc,
   toMatchDoc,
@@ -97,6 +98,34 @@ describe('a finished match', () => {
       ...match,
       teams: { ...match.teams, a: { name: 'A', players: ['Ana', 'Lucho'] } },
     });
+  });
+
+  it('renames a player written by hand, linking the new name when it is a member', () => {
+    const doc: MatchDoc = {
+      id: 'x1',
+      endedAt: 5,
+      target: 200,
+      teams: {
+        a: { name: 'A', players: ['Pedro', 'Rosa'], playerIds: null },
+        b: { name: 'B', players: ['Luis', 'Pepe'], playerIds: ['u2', null] },
+      },
+      rows: [],
+      winner: 'a',
+      tournament: null,
+      tieBreak: false,
+    };
+    const pedro: Member = { uid: 'u3', name: 'Pedro Bello', owner: false, scores: false, joinedAt: 2 };
+
+    const merged = renameInMatchDoc(doc, 'pedro', 'Pedro Bello', [ana, luis, pedro]);
+    expect(merged?.teams.a).toEqual({ name: 'A', players: ['Pedro Bello', 'Rosa'], playerIds: ['u3', null] });
+    expect(merged?.teams.b).toBe(doc.teams.b);
+
+    const renamed = renameInMatchDoc(doc, 'Rosa', 'Rosi', [ana, luis]);
+    expect(renamed?.teams.a).toEqual({ name: 'A', players: ['Pedro', 'Rosi'], playerIds: null });
+
+    // A slot with a member id is that member's, whatever its name says.
+    expect(renameInMatchDoc(doc, 'Luis', 'Lucho', [ana, luis])).toBeNull();
+    expect(renameInMatchDoc(doc, 'Nadie', 'Alguien', [ana, luis])).toBeNull();
   });
 });
 

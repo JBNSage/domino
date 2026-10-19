@@ -71,6 +71,38 @@ export function mesaPlayers(written: readonly string[], members: readonly Member
   return players.sort(alphabetical);
 }
 
+/**
+ * A match with a player written by hand renamed. A slot with a member id is
+ * that member's and stays, whatever its name. The new name is linked to a
+ * member when it is one, as `toMatchDoc` would. Null when nothing changed.
+ */
+export function renameInMatchDoc(
+  match: MatchDoc,
+  from: string,
+  to: string,
+  members: readonly Member[],
+): MatchDoc | null {
+  let changed = false;
+  const teams = { ...match.teams };
+  for (const side of TEAM_IDS) {
+    const team = teams[side];
+    if (team.players === null) continue;
+    const players = [...team.players] as Players;
+    const ids: PlayerIds = team.playerIds ? [...team.playerIds] : [null, null];
+    let renamed = false;
+    for (const index of [0, 1] as const) {
+      if (ids[index] !== null || !sameName(players[index], from)) continue;
+      players[index] = to;
+      ids[index] = memberNamed(members, to)?.uid ?? null;
+      renamed = true;
+    }
+    if (!renamed) continue;
+    teams[side] = { ...team, players, playerIds: ids[0] === null && ids[1] === null ? null : ids };
+    changed = true;
+  }
+  return changed ? { ...match, teams } : null;
+}
+
 /** The parts of a mesa its owners write. Members are left out: they are players by joining. */
 export function toMesaDoc(
   table: Table,

@@ -13,7 +13,8 @@ import {
   remove,
   renamePlayer,
 } from './history';
-import { fromMatchDoc, toMatchDoc } from './mesa-doc';
+import { fromMatchDoc, renameInMatchDoc, toMatchDoc } from './mesa-doc';
+import { sameName } from './state';
 import { HISTORY_KEY, loadHistory, readHistory, saveHistory } from './storage';
 
 const newestFirst = (one: MatchRecord, other: MatchRecord) => other.endedAt - one.endedAt;
@@ -86,9 +87,23 @@ export class HistoryStore {
     return removed;
   }
 
-  /** Renames a player in the matches kept here; shared ones follow their members by themselves. */
-  renamePlayer(at: (match: MatchRecord) => boolean, from: string, to: string): void {
+  /**
+   * Renames a player written by hand in the matches of one mesa: those kept
+   * here and, at a shared mesa, those in the cloud. A member's name is theirs,
+   * and follows them by itself.
+   */
+  renamePlayerAt(mesa: { id: string; name: string }, from: string, to: string): void {
+    const at = (match: MatchRecord) =>
+      match.tableId === mesa.id ||
+      (match.tableId === null && match.table !== null && sameName(match.table, mesa.name));
     this.local.update((history) => renamePlayer(history, at, from, to));
+
+    const shared = this.cloud.mesas().get(mesa.id);
+    if (shared === undefined || shared.doc === null) return;
+    for (const match of shared.matches) {
+      const renamed = renameInMatchDoc(match, from, to, shared.members);
+      if (renamed !== null) this.cloud.addMatch(mesa.id, renamed);
+    }
   }
 
   restore(removed: History): void {

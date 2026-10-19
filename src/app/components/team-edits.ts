@@ -4,7 +4,7 @@ import { copy } from '../copy';
 import { GameStore } from '../game/game.store';
 import { newId } from '../game/ids';
 import { DEFAULT_NAMES, TeamId, otherTeam, samePlayers } from '../game/state';
-import { SavedTeam } from '../game/tables';
+import { SavedTeam, sameSavedTeam } from '../game/tables';
 import { TablesStore } from '../game/tables.store';
 import { teamOf } from '../game/tournament';
 import { TeamEdit } from './team-sheet';
@@ -79,7 +79,9 @@ export class TeamEdits {
           this.store.setTeam(side, name, players, same ? undefined : null);
           return;
         }
-        const id = savedHere ?? newId('s');
+        // A pair with none of the saved team's players is another team: the saved one stays.
+        const kept = this.tables.active()?.teams.find((each) => each.id === savedHere);
+        const id = kept !== undefined && sameSavedTeam(kept, players) ? kept.id : newId('s');
         this.store.saveTableTeam(table, { id, name, players });
         this.store.setTeam(side, name, players, id);
       },

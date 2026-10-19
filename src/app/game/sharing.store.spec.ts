@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 
+import { copy } from '../copy';
 import { MESA_CLOUD, SharedMesa } from './cloud';
 import { FakeMesaCloud } from './cloud.fake';
 import { GameStore } from './game.store';
@@ -142,6 +143,89 @@ describe('Sharing a mesa', () => {
 
     sharing.removeMember(shared, 'eva');
     expect(tables.active()?.players).toEqual(['Juan', 'Luis', 'Pedro']);
+  });
+
+  it('folds a player written by hand into the person they are, everywhere at the mesa', async () => {
+    local();
+    tables.changeTable('m1', (table) =>
+      saveTeam(table, { id: 's2', name: 'Los Tíos', players: ['Pedro', 'Luis'] }),
+    );
+    store.setTeam('a', 'Los Tíos', ['Pedro', 'Luis']);
+    store.addPoints('a', 200);
+    store.closeRound();
+    const shared = (await sharing.share('m1')) ?? '';
+    cloud.fromOtherPhone(shared, (mesa) => ({
+      ...mesa,
+      members: [
+        ...mesa.members,
+        { uid: 'pedro', name: 'Pedro Bello', owner: false, scores: false, joinedAt: 2 },
+      ],
+    }));
+    expect(tables.active()?.players).toEqual(['Juan', 'Luis', 'Pedro', 'Pedro Bello']);
+    store.setTeam('a', 'Los Tíos', ['Pedro', 'Luis']);
+
+    store.mergeTablePlayer(shared, 'Pedro', 'pedro');
+
+    expect(tables.active()?.players).toEqual(['Juan', 'Luis', 'Pedro Bello']);
+    const doc = cloud.mesas().get(shared)?.doc;
+    expect(doc?.players).toEqual(['Luis']);
+    expect(doc?.teams.find((team) => team.id === 's2')).toMatchObject({
+      players: ['Pedro Bello', 'Luis'],
+      playerIds: ['pedro', null],
+    });
+    expect(cloud.mesas().get(shared)?.matches[0].teams.a).toMatchObject({
+      players: ['Pedro Bello', 'Luis'],
+      playerIds: ['pedro', null],
+    });
+    const history = () => TestBed.inject(HistoryStore).history();
+    expect(history().matches[0].teams.a.players).toEqual(['Pedro Bello', 'Luis']);
+    expect(store.state().teams.a.players).toEqual(['Pedro Bello', 'Luis']);
+    expect(cloud.mesas().get(shared)?.live?.teams.a.playerIds).toEqual(['pedro', null]);
+    expect(store.announcement()).toBe(copy.tables.merged('Pedro', 'Pedro Bello'));
+
+    // From then on the person's name is theirs, in the team and the match alike.
+    cloud.fromOtherPhone(shared, (mesa) => ({
+      ...mesa,
+      members: mesa.members.map((member) =>
+        member.uid === 'pedro' ? { ...member, name: 'Pedro B.' } : member,
+      ),
+    }));
+    expect(tables.active()?.teams.find((team) => team.id === 's2')?.players).toEqual([
+      'Pedro B.',
+      'Luis',
+    ]);
+    expect(history().matches[0].teams.a.players).toEqual(['Pedro B.', 'Luis']);
+  });
+
+  it('folds nobody for someone who does not own the mesa, or into someone not in it', async () => {
+    cloud.invites.set('m9', { mesa: theirs, token: 'k1' });
+    await sharing.join({ id: 'm9', token: 'k1', name: 'Club' });
+    store.mergeTablePlayer('m9', 'Pedro', 'ana');
+    expect(tables.active()?.players).toEqual(['Ana', 'Juan', 'Pedro']);
+
+    local();
+    const shared = (await sharing.share('m1')) ?? '';
+    store.mergeTablePlayer(shared, 'Pedro', 'nobody');
+    expect(tables.active()?.players).toEqual(['Juan', 'Luis', 'Pedro']);
+    expect(cloud.writes.filter((write) => write.startsWith('match'))).toEqual([]);
+  });
+
+  it('renames a player written by hand in the matches kept in the cloud too', async () => {
+    local();
+    store.setTeam('a', 'Los Tíos', ['Pedro', 'Luis']);
+    store.addPoints('a', 200);
+    store.closeRound();
+    const shared = (await sharing.share('m1')) ?? '';
+
+    store.renameTablePlayer(shared, 'Pedro', 'Pedrito');
+    expect(cloud.mesas().get(shared)?.matches[0].teams.a).toMatchObject({
+      players: ['Pedrito', 'Luis'],
+      playerIds: null,
+    });
+    expect(TestBed.inject(HistoryStore).history().matches[0].teams.a.players).toEqual([
+      'Pedrito',
+      'Luis',
+    ]);
   });
 
   it('carries a new name to every shared mesa', async () => {

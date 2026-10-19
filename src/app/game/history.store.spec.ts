@@ -59,6 +59,45 @@ describe('HistoryStore with shared mesas', () => {
     expect(store.history().matches[0].teams.a.players).toEqual(['Anita', 'Luis']);
   });
 
+  it('renames a player written by hand in the cloud matches of a mesa, linking a member', () => {
+    store.addMatch(match('shared', 2, 'm1'));
+    cloud.fromOtherPhone('m1', (shared) => ({
+      ...shared,
+      members: [
+        ...shared.members,
+        { uid: 'luis', name: 'Luis Gómez', owner: false, scores: false, joinedAt: 2 },
+      ],
+    }));
+
+    store.renamePlayerAt({ id: 'm1', name: 'Casa' }, 'Luis', 'Luis Gómez');
+    expect(cloud.writes).toEqual(['match m1 shared', 'match m1 shared']);
+    expect(cloud.mesas().get('m1')?.matches[0].teams.a).toEqual({
+      name: 'A',
+      players: ['Ana', 'Luis Gómez'],
+      playerIds: ['me', 'luis'],
+    });
+    cloud.fromOtherPhone('m1', (shared) => ({
+      ...shared,
+      members: shared.members.map((member) =>
+        member.uid === 'luis' ? { ...member, name: 'Lucho' } : member,
+      ),
+    }));
+    expect(store.history().matches[0].teams.a.players).toEqual(['Ana', 'Lucho']);
+  });
+
+  it('renames a player written by hand to another name of their own', () => {
+    store.addMatch(match('shared', 2, 'm1'));
+    store.renamePlayerAt({ id: 'm1', name: 'Casa' }, 'luis', 'Luisito');
+    expect(cloud.mesas().get('m1')?.matches[0].teams.a).toEqual({
+      name: 'A',
+      players: ['Ana', 'Luisito'],
+      playerIds: ['me', null],
+    });
+    // Nothing to rename writes nothing.
+    store.renamePlayerAt({ id: 'm1', name: 'Casa' }, 'Nadie', 'Alguien');
+    expect(cloud.writes).toEqual(['match m1 shared', 'match m1 shared']);
+  });
+
   it('removes and brings back a shared match through the cloud', () => {
     store.addMatch(match('shared', 2, 'm1'));
     const removed = store.remove({ matches: ['shared'] });

@@ -2,40 +2,31 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
   inject,
   output,
   signal,
+  untracked,
   viewChild,
 } from '@angular/core';
 
 import { copy } from '../copy';
 import { FitText } from '../directives/fit-text';
 import { GameStore } from '../game/game.store';
-import { MAX_PLAYER_LENGTH, cleanPlayer, sameName } from '../game/state';
-import {
-  MAX_SAVED_TEAMS,
-  MAX_TABLE_PLAYERS,
-  SavedTeam,
-  addPlayer,
-  playerNamed,
-  renameTable,
-  teamsUsing,
-} from '../game/tables';
-import { HistoryStore } from '../game/history.store';
-import { teamWinsAt } from '../game/stats';
+import { renameTable } from '../game/tables';
 import { SharingStore } from '../game/sharing.store';
 import { TablesStore } from '../game/tables.store';
 import { NameSheet } from './name-sheet';
-import { PlayerPair } from './player-pair';
 import { Screen } from './screen';
 import { Sheet } from './sheet';
 import { TeamEdit } from './team-sheet';
-import { TeamEdits } from './team-edits';
+import { TablePlayersScreen } from './table-players-screen';
+import { TableTeamsScreen } from './table-teams-screen';
 
-/** One mesa: its name, the people who play there, and the teams they form. */
+/** One mesa: its name, its sharing, and the way to its players and its saved teams. */
 @Component({
   selector: 'app-table-screen',
-  imports: [Screen, Sheet, NameSheet, PlayerPair, FitText],
+  imports: [Screen, Sheet, NameSheet, TablePlayersScreen, TableTeamsScreen, FitText],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <app-screen [heading]="mesa()?.name ?? copy.tables.title">
@@ -84,142 +75,22 @@ import { TeamEdits } from './team-edits';
           <p class="note error" role="status">{{ shareFailed() ? copy.share.failed : '' }}</p>
         }
 
-        <section class="part">
-          <h3 class="heading numerals">{{ copy.tables.players(mesa.players.length) }}</h3>
-          @if (mesa.players.length === 0) {
-            <p class="note">{{ copy.tables.noPlayers }}</p>
-          } @else {
-            <ul class="chips">
-              @for (player of shownPlayers(); track player) {
-                <li>
-                  @if (memberOf(player); as member) {
-                    <!-- A person in the mesa: their name is theirs to change. -->
-                    <span
-                      class="chip chip--member lean"
-                      [attr.aria-label]="
-                        copy.tables.personA11y(member.name, member.owner, member.scores)
-                      "
-                    >
-                      {{ player }}
-                    </span>
-                  } @else if (owner()) {
-                    <button
-                      type="button"
-                      class="chip lean"
-                      [attr.aria-label]="copy.tables.playerA11y(player)"
-                      (click)="editPlayer(player)"
-                    >
-                      {{ player }}
-                    </button>
-                  } @else {
-                    <span class="chip lean">{{ player }}</span>
-                  }
-                </li>
-              }
-            </ul>
-            <!-- A long list is shortened, so the teams stay within reach. -->
-            @if (mesa.players.length > collapseAt) {
-              <button
-                type="button"
-                class="slab slab--compact lean more"
-                [attr.aria-expanded]="allPlayers()"
-                (click)="allPlayers.set(!allPlayers())"
-              >
-                <span class="slab__label" [appFitText]="moreLabel()">{{ moreLabel() }}</span>
-              </button>
-            }
-          }
-
-          @if (!owner()) {
-            <!-- Only owners add players. -->
-          } @else if (playersFull()) {
-            <p class="note">{{ copy.tables.playersFull }}</p>
-          } @else {
-            <div class="new-player">
-              <div class="field">
-                <label class="label" for="table-new-player">{{ copy.tables.addPlayer }}</label>
-                <input
-                  #field
-                  id="table-new-player"
-                  class="input"
-                  type="text"
-                  autocomplete="off"
-                  autocapitalize="words"
-                  autocorrect="off"
-                  spellcheck="false"
-                  enterkeyhint="done"
-                  aria-describedby="table-new-player-message"
-                  [class.invalid]="playerTaken()"
-                  [attr.aria-invalid]="playerTaken() ? 'true' : null"
-                  [attr.maxlength]="maxPlayer"
-                  [value]="newPlayer()"
-                  (input)="newPlayer.set(field.value)"
-                  (keydown.enter)="$event.preventDefault(); addNewPlayer()"
-                />
-              </div>
-              <button
-                type="button"
-                class="slab slab--compact lean add-player"
-                [attr.aria-label]="copy.tables.addPlayer"
-                [disabled]="!canAddPlayer()"
-                (click)="addNewPlayer()"
-              >
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
-              </button>
-            </div>
-            <p
-              class="note"
-              id="table-new-player-message"
-              role="status"
-              [class.error]="playerTaken()"
-            >
-              {{ playerTaken() ? copy.tables.playerTaken : '' }}
-            </p>
-          }
-        </section>
-
-        <section class="part">
-          <h3 class="heading numerals">{{ copy.tables.teams(mesa.teams.length) }}</h3>
-          @if (mesa.teams.length === 0) {
-            <p class="note">{{ copy.tables.noTeams }}</p>
-          } @else {
-            <ol class="teams">
-              @for (team of teams(); track team.id) {
-                <li>
-                  <button
-                    type="button"
-                    class="team lean"
-                    [attr.aria-label]="copy.tables.teamA11y(team.name, team.players, team.won)"
-                    [disabled]="!owner()"
-                    (click)="editTeam.emit(edits.saved(mesa.id, team, team.name))"
-                  >
-                    <span class="who">
-                      <span class="team-name">{{ team.name }}</span>
-                      @if (team.players; as players) {
-                        <app-player-pair class="team-players" [players]="players" [wrap]="true" />
-                      } @else {
-                        <span class="team-players">{{ copy.players.none }}</span>
-                      }
-                    </span>
-                    <span class="team-wins numerals">{{ copy.tournament.wins(team.won) }}</span>
-                  </button>
-                </li>
-              }
-            </ol>
-          }
-          @if (!owner()) {
-            <!-- Only owners keep teams. -->
-          } @else if (teamsFull()) {
-            <p class="note">{{ copy.tables.teamsFull }}</p>
-          } @else {
-            <button type="button" class="slab slab--compact lean add" (click)="addTeam()">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
-              <span class="slab__label" [appFitText]="copy.tables.addTeam">{{
-                copy.tables.addTeam
+        <ul class="rows">
+          <li>
+            <button type="button" class="entry lean" (click)="players.open()">
+              <span class="entry-name numerals">{{
+                copy.tables.players(mesa.players.length)
               }}</span>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 5l6 7-6 7" /></svg>
             </button>
-          }
-        </section>
+          </li>
+          <li>
+            <button type="button" class="entry lean" (click)="teams.open()">
+              <span class="entry-name numerals">{{ copy.tables.teams(mesa.teams.length) }}</span>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 5l6 7-6 7" /></svg>
+            </button>
+          </li>
+        </ul>
       }
 
       @if (owner()) {
@@ -257,6 +128,13 @@ import { TeamEdits } from './team-edits';
     </app-screen>
 
     <app-name-sheet />
+    <app-table-players-screen #players [mesa]="mesa()" [owner]="owner()" />
+    <app-table-teams-screen
+      #teams
+      [mesa]="mesa()"
+      [owner]="owner()"
+      (editTeam)="editTeam.emit($event)"
+    />
 
     <app-sheet #ask accent="var(--c-danger)" labelledBy="table-remove-title">
       @if (asking() === 'leave') {
@@ -316,65 +194,9 @@ import { TeamEdits } from './team-edits';
       color: var(--c-text);
     }
 
-    /* A person in the mesa, not a name written by hand: outlined, not filled. */
-    .chip--member {
-      --fill: transparent;
-      --edge: var(--c-line);
-
-      display: inline-flex;
-      align-items: center;
-    }
-
-    span.chip:not(.chip--member) {
-      display: inline-flex;
-      align-items: center;
-    }
-
-    .team:disabled {
-      cursor: default;
-    }
-
-    .rename,
-    .more {
-      align-self: flex-start;
-      max-width: calc(100% - var(--s-lg));
-      margin: 0 var(--s-sm);
-    }
-
     .play {
       --fill: var(--c-text);
       --label: var(--c-ground);
-    }
-
-    button.team:not(:disabled):active::before,
-    button.chip:active::before {
-      opacity: var(--pressed);
-    }
-
-    @media (hover: hover) {
-      button.team:not(:disabled):hover::before,
-      button.chip:hover::before {
-        filter: brightness(1.12);
-      }
-    }
-
-    .who {
-      flex: 1;
-      min-width: 0;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .label,
-    .heading {
-      margin: 0;
-      color: var(--c-muted);
-      font: italic 600 var(--t-label) / 1.3 var(--font);
-      text-transform: uppercase;
-    }
-
-    .heading {
-      padding: 0 var(--s-sm);
     }
 
     svg {
@@ -386,12 +208,6 @@ import { TeamEdits } from './team-edits';
       stroke-width: 2;
       stroke-linecap: round;
       stroke-linejoin: round;
-    }
-
-    .part {
-      display: flex;
-      flex-direction: column;
-      gap: var(--s-md);
     }
 
     .note {
@@ -410,82 +226,7 @@ import { TeamEdits } from './team-edits';
       color: var(--c-danger);
     }
 
-    .chips {
-      display: flex;
-      flex-wrap: wrap;
-      gap: var(--s-sm) var(--s-xs);
-      margin: 0;
-      padding: 0;
-      list-style: none;
-    }
-
-    .chip {
-      --fill: var(--c-surface);
-      --lean-inset: 4px;
-
-      min-height: var(--min-target);
-      max-width: 100%;
-      padding: var(--s-xs) var(--s-lg);
-      border: 0;
-      background: none;
-      color: var(--c-text);
-      font: italic 800 var(--t-body) / 1.2 var(--font);
-      text-transform: uppercase;
-      overflow-wrap: anywhere;
-    }
-
-    .new-player {
-      display: flex;
-      align-items: flex-end;
-      gap: var(--s-md);
-      padding: 0 var(--s-sm);
-    }
-
-    .field {
-      flex: 1;
-      min-width: 0;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .label {
-      margin-bottom: var(--s-xs);
-    }
-
-    /* 16px or more, or iOS zooms the page. */
-    .input {
-      width: 100%;
-      min-height: var(--min-target);
-      padding: var(--s-xs) 0;
-      border: 0;
-      border-bottom: 2px solid var(--c-line);
-      border-radius: 0;
-      background: none;
-      color: var(--c-text);
-      caret-color: var(--c-text);
-      font: italic 800 max(16px, var(--t-button)) / 1.2 var(--font);
-      text-transform: uppercase;
-    }
-
-    .input:focus {
-      border-bottom-color: var(--c-text);
-    }
-
-    .input.invalid {
-      border-bottom-color: var(--c-danger);
-    }
-
-    .input:focus-visible {
-      outline-offset: 0;
-    }
-
-    .add-player {
-      flex: none;
-      width: calc(var(--min-target) + 16px);
-      padding: 0;
-    }
-
-    .teams {
+    .rows {
       display: flex;
       flex-direction: column;
       gap: var(--s-sm);
@@ -494,12 +235,13 @@ import { TeamEdits } from './team-edits';
       list-style: none;
     }
 
-    .team {
+    /* Same row as a mesa in the list: it opens what it names. */
+    .entry {
       --fill: var(--c-surface);
       --lean-inset: 8px;
 
       width: 100%;
-      min-height: calc(var(--min-target) + 12px);
+      min-height: calc(var(--min-target) + 16px);
       display: flex;
       align-items: center;
       gap: var(--s-md);
@@ -510,27 +252,26 @@ import { TeamEdits } from './team-edits';
       text-align: left;
     }
 
-    .team-name {
+    .entry:active::before {
+      opacity: var(--pressed);
+    }
+
+    @media (hover: hover) {
+      .entry:hover::before {
+        filter: brightness(1.12);
+      }
+    }
+
+    .entry-name {
+      flex: 1;
+      min-width: 0;
       font: italic 800 var(--t-button) / 1.2 var(--font);
       text-transform: uppercase;
       overflow-wrap: break-word;
     }
 
-    .team-players,
-    .team-wins {
+    .entry svg {
       color: var(--c-muted);
-      font: italic 600 var(--t-label) / 1.3 var(--font);
-      text-transform: uppercase;
-    }
-
-    .team-wins {
-      flex: none;
-    }
-
-    .add {
-      align-self: flex-start;
-      max-width: calc(100% - var(--s-lg));
-      margin: 0 var(--s-sm);
     }
 
     .title {
@@ -568,8 +309,6 @@ import { TeamEdits } from './team-edits';
 })
 export class TableScreen {
   protected readonly copy = copy;
-  protected readonly maxPlayer = MAX_PLAYER_LENGTH;
-  protected readonly edits = inject(TeamEdits);
 
   /** Asks for the team sheet, which the shell owns. */
   readonly editTeam = output<TeamEdit>();
@@ -578,20 +317,14 @@ export class TableScreen {
   /** The mesa is now played at: the screens above the board close. */
   readonly played = output<void>();
 
-  /** Longer lists of players show 12 until asked for all. */
-  protected readonly collapseAt = 16;
-  protected readonly allPlayers = signal(false);
-
   private readonly store = inject(GameStore);
   private readonly tables = inject(TablesStore);
   private readonly sharingStore = inject(SharingStore);
-  private readonly history = inject(HistoryStore);
   private readonly screen = viewChild.required(Screen);
   private readonly names = viewChild.required(NameSheet);
   private readonly ask = viewChild.required<Sheet>('ask');
 
   private readonly id = signal<string | null>(null);
-  protected readonly newPlayer = signal('');
 
   protected readonly mesa = computed(
     () => this.tables.tables().tables.find((table) => table.id === this.id()) ?? null,
@@ -612,47 +345,19 @@ export class TableScreen {
   );
   protected readonly asking = signal<'remove' | 'leave'>('remove');
 
-  protected memberOf(player: string) {
-    return this.mesa()?.shared?.members.find((member) => sameName(member.name, player)) ?? null;
+  constructor() {
+    // Deleted or left, here or on another phone: the screens of the mesa close together.
+    // While it is being shared it moves to a new id, so it is briefly not found.
+    effect(() => {
+      if (this.id() !== null && this.mesa() === null && !this.sharing()) {
+        untracked(() => this.screen().close());
+      }
+    });
   }
-
-  protected readonly shownPlayers = computed(() => {
-    const players = this.mesa()?.players ?? [];
-    return this.allPlayers() || players.length <= this.collapseAt ? players : players.slice(0, 12);
-  });
-  protected readonly moreLabel = computed(() =>
-    this.allPlayers()
-      ? copy.tables.showFewer
-      : copy.tables.showAll(this.mesa()?.players.length ?? 0),
-  );
-
-  protected readonly teams = computed(() => {
-    const mesa = this.mesa();
-    if (mesa === null) return [];
-    // A saved team's wins are those its two players won together here.
-    const history = this.history.history();
-    return mesa.teams.map((team) => ({ ...team, won: teamWinsAt(history, mesa, team) }));
-  });
-
-  protected readonly playersFull = computed(
-    () => (this.mesa()?.players.length ?? 0) >= MAX_TABLE_PLAYERS,
-  );
-  protected readonly teamsFull = computed(
-    () => (this.mesa()?.teams.length ?? 0) >= MAX_SAVED_TEAMS,
-  );
-  protected readonly playerTaken = computed(() => {
-    const mesa = this.mesa();
-    return mesa !== null && playerNamed(mesa, this.newPlayer()) !== null;
-  });
-  protected readonly canAddPlayer = computed(
-    () => cleanPlayer(this.newPlayer()) !== '' && !this.playerTaken(),
-  );
 
   open(id: string): void {
     this.id.set(id);
     this.shareFailed.set(false);
-    this.newPlayer.set('');
-    this.allPlayers.set(false);
     this.screen().open();
   }
 
@@ -675,37 +380,6 @@ export class TableScreen {
     });
   }
 
-  protected addNewPlayer(): void {
-    const mesa = this.mesa();
-    if (mesa === null || !this.canAddPlayer()) return;
-    const name = cleanPlayer(this.newPlayer());
-    this.tables.changeTable(mesa.id, (table) => addPlayer(table, name));
-    this.newPlayer.set('');
-    this.store.announce(copy.tables.playerAdded(name));
-  }
-
-  protected editPlayer(player: string): void {
-    const mesa = this.mesa();
-    if (mesa === null) return;
-    const using = teamsUsing(mesa, player).map((team) => team.name);
-    this.names().open({
-      title: copy.tables.playerTitle,
-      label: copy.tables.playerLabel,
-      value: player,
-      placeholder: null,
-      taken: mesa.players.filter((other) => !sameName(other, player)),
-      takenMessage: copy.tables.playerTaken,
-      emptyMessage: copy.tables.playerEmpty,
-      confirm: copy.players.save,
-      save: (name) => this.store.renameTablePlayer(mesa.id, player, name),
-      remove: {
-        label: copy.tables.removePlayer,
-        run: () => this.store.removeTablePlayer(mesa.id, player),
-      },
-      kept: using.length > 0 ? copy.tables.playerInUse(using) : null,
-    });
-  }
-
   /** Plays at this mesa; at a clean board its first two teams are chosen next. */
   protected play(): void {
     const mesa = this.mesa();
@@ -714,12 +388,6 @@ export class TableScreen {
     this.store.chooseTable(mesa.id);
     this.store.announce(copy.tables.announce(mesa.name));
     this.played.emit();
-  }
-
-  protected addTeam(): void {
-    const mesa = this.mesa();
-    if (mesa === null) return;
-    this.editTeam.emit(this.edits.saved(mesa.id, null, this.freeName(mesa.teams)));
   }
 
   /** Moves the mesa to the cloud the first time, then opens the screen that shares it. */
@@ -777,14 +445,5 @@ export class TableScreen {
     this.screen().close();
     await this.sharingStore.leave(mesa.id);
     this.store.announce(copy.tables.leaving(mesa.name));
-  }
-
-  /** "Equipo 3", or the next number no saved team uses. */
-  private freeName(teams: SavedTeam[]): string {
-    let number = teams.length + 1;
-    while (teams.some((team) => sameName(team.name, copy.tournament.defaultName(number)))) {
-      number += 1;
-    }
-    return copy.tournament.defaultName(number);
   }
 }

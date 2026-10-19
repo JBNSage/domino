@@ -1,5 +1,13 @@
 import type { Member } from './cloud';
-import { Players, cleanLabel, cleanPlayer, fold, parsePlayers, sameName } from './state';
+import {
+  Players,
+  cleanLabel,
+  cleanPlayer,
+  fold,
+  parsePlayers,
+  sameName,
+  sharedPlayer,
+} from './state';
 
 export const MAX_TABLES = 12;
 export const MAX_TABLE_PLAYERS = 40;
@@ -130,6 +138,27 @@ export function renamePlayer(table: Table, from: string, to: string): Table {
   };
 }
 
+/**
+ * Folds one player into another, as when a name written by hand turns out to
+ * be a person who joined under their own: `from` leaves the mesa and `into`
+ * takes its place in the saved teams. A team that would then hold the same
+ * player twice is left as it is.
+ */
+export function mergePlayer(table: Table, from: string, into: string): Table {
+  if (sameName(from, into) || !table.players.includes(from) || !table.players.includes(into)) {
+    return table;
+  }
+  return {
+    ...table,
+    players: table.players.filter((player) => player !== from),
+    teams: table.teams.map((team) => {
+      if (team.players === null || !team.players.includes(from)) return team;
+      const players = team.players.map((player) => (player === from ? into : player)) as Players;
+      return sameName(players[0], players[1]) ? team : { ...team, players };
+    }),
+  };
+}
+
 export function teamsUsing(table: Table, player: string): SavedTeam[] {
   return table.teams.filter(
     (team) => team.players?.some((each) => sameName(each, player)) ?? false,
@@ -167,6 +196,16 @@ export function saveTeam(table: Table, team: SavedTeam): Table {
       ? table.teams.map((each) => (each.id === team.id ? saved : each))
       : [...table.teams, saved],
   };
+}
+
+/**
+ * Whether a pair kept from the seat a saved team sits at is that team, changed,
+ * or another team. A team is its two players: a pair with none of them is
+ * another team, which is added beside the saved one. A team without players,
+ * or a seat without a pair, takes what it is given.
+ */
+export function sameSavedTeam(saved: SavedTeam, players: Players | null): boolean {
+  return saved.players === null || players === null || sharedPlayer(saved.players, players) !== null;
 }
 
 export function removeTeam(table: Table, id: string): Table {
