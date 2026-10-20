@@ -592,7 +592,10 @@ export class WinnerModal {
   private readonly dialog = viewChild.required<ElementRef<HTMLDialogElement>>('dialog');
 
   // The winner waits until the sheet that caused it has closed.
-  protected readonly result = computed(() => (this.overlays.any() ? null : this.store.result()));
+  // At a shared mesa the verdict waits for the live match: the saved board may be an old one.
+  protected readonly result = computed(() =>
+    this.overlays.any() || this.store.liveLoading() ? null : this.store.result(),
+  );
   protected readonly loser = computed(() => otherTeam(this.result()?.winner ?? 'a'));
 
   constructor() {

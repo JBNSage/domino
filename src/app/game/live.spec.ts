@@ -152,6 +152,55 @@ describe('The live match at a shared mesa', () => {
     expect(cloud.writes).toEqual([]);
   });
 
+  /**
+   * The app opens again on the board it saved, before the cloud answers: as
+   * when Android discards the app in the background and reloads it.
+   */
+  const relaunch = (mesa: SharedMesa) => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [{ provide: MESA_CLOUD, useClass: FakeMesaCloud }],
+    });
+    cloud = TestBed.inject(MESA_CLOUD) as FakeMesaCloud;
+    cloud.mesas.set(new Map([[mesa.id, mesa]]));
+    store = TestBed.inject(GameStore);
+    TestBed.tick();
+  };
+
+  /** A phone that never saw the match closed still keeps the winning board. */
+  const winAndSave = async () => {
+    const mesaId = await shareMine();
+    store.addPoints('a', 210);
+    TestBed.tick();
+    const saved = localStorage.getItem('domino/state/v1');
+    store.closeRound();
+    const closed = cloud.mesas().get(mesaId) as SharedMesa;
+    localStorage.setItem('domino/state/v1', saved ?? '');
+    return closed;
+  };
+
+  it('does not close a saved board again before the mesa arrives', async () => {
+    const closed = await winAndSave();
+    relaunch({ ...closed, doc: null, members: [], matches: [], live: null, liveLoaded: false });
+
+    expect(store.liveLoading()).toBe(true);
+    store.closeRound();
+    expect(TestBed.inject(HistoryStore).kept().matches).toEqual([]);
+    expect(cloud.writes).toEqual([]);
+  });
+
+  it('does not close a saved board again before the live match arrives', async () => {
+    const closed = await winAndSave();
+    relaunch({ ...closed, live: null, liveLoaded: false });
+
+    expect(store.liveLoading()).toBe(true);
+    store.closeRound();
+    expect(cloud.mesas().get(closed.id)?.matches.map((match) => match.id)).toEqual(
+      closed.matches.map((match) => match.id),
+    );
+    expect(cloud.writes).toEqual([]);
+  });
+
   it('closes a match again as the same match after undoing it', async () => {
     const mesaId = await shareMine();
     store.addPoints('a', 200);

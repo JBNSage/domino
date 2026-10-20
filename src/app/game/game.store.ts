@@ -609,7 +609,8 @@ export class GameStore {
    */
   closeRound(rotate = false): void {
     const result = this.result();
-    if (result === null || !this.canScore()) return;
+    // A board saved before the mesa's match is read may already be closed elsewhere.
+    if (result === null || !this.canScore() || this.liveLoading()) return;
     const { teams, target, rows } = this.state();
     const tournament = this.tournament();
     const table = this.tables.active();
